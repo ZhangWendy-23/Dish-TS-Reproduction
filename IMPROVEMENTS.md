@@ -39,34 +39,59 @@
 
 ---
 
-### 3. 新建 `run_experiments.sh`
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 新增文件 |
-| **原因** | 原始仓库无自动化脚本，复现论文需手动运行约 168 次训练，极易出错且耗时 |
-| **规模** | 179 行 Bash 脚本，覆盖全部 5 个实验阶段 |
-
-该脚本将论文实验分为 5 个独立阶段，每个阶段可单独执行：
-
-| 阶段 | 内容 | 运行次数 |
-|------|------|----------|
-| Phase 1 | ETTm2: 3 种模型 × 3 种归一化 × 4 种预测长度 | 36 |
-| Phase 2 | ETTh1: 同上组合 | 36 |
-| Phase 3 | ECL/WTH/ILI: Autoformer × 2 种归一化 × 4 种预测长度 | 24 |
-| Phase 4 | ETTm2 多 seed（5 seeds）— 生成论文级别结果 | 60 |
-| Phase 5 | DishTS 初始化方式消融实验 | 12 |
-
-每条训练结果自动保存至 `logs/` 目录，Phase 4 结束后自动计算均值与标准差。
-
----
-
-### 4. 重写 `README.md`
+### 3. 重写 `run_experiments.sh`
 
 | 属性 | 说明 |
 |------|------|
 | **类型** | 重大修改 |
-| **原因** | 原始 README 仅包含项目名称和基本使用说明，缺乏结构化文档 |
+| **原因** | 原始脚本采用"Phase 1-5"结构，参数与论文 4 个 Table 不一致，容易产生错误复现结果；缺少 pred_len=24/48/168 等关键长度，且未区分单变量/多变量设置 |
+
+新脚本严格对照论文 Table 1–4 的设置，按论文命名提供入口：
+
+| 命令 | 对应论文 | seq_len | pred_len | 说明 |
+|------|---------|---------|----------|------|
+| `./run_experiments.sh table1` | Table 1 | **= pred_len** ∈ {24,48,96,168,336} | 24,48,96,168,336 | 单变量，lookback=horizon |
+| `./run_experiments.sh table2` | Table 2 | **96** | 24,48,96,168,336 | 多变量，固定 lookback |
+| `./run_experiments.sh table3` | Table 3 | **96** | 24,168,336 | RevIN vs Dish-TS 对比（3 seeds） |
+| `./run_experiments.sh table4` | Table 4 | **96** | 336,420,540,600,720 | 长窗口预测 |
+| `./run_experiments.sh ablation` | — | 96 | 24,48,96,168,336 | DishTS 初始化方式（standard/avg/uniform） |
+| `./run_experiments.sh multi_seed` | — | 96 | 24,48,96,168,336 | 3 seeds，计算 mean±std |
+| `./run_experiments.sh summarize` | — | — | — | 从 logs/ 汇总结果 |
+| `./run_experiments.sh all_paper` | — | — | — | 顺序运行 Table 1–4 并汇总 |
+
+每条训练结果自动保存至 `logs/{data}_{model}_{norm}_s{seq_len}_p{pred_len}_seed{seed}.log`，便于后续解析。
+
+---
+
+### 4. 新建 `results/collect_results.py`
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 新增文件 |
+| **原因** | 原始仓库没有任何结果汇总工具，用户需手动从终端输出提取数字填入论文表格 |
+| **规模** | ~180 行 Python 脚本 |
+
+功能：
+
+- **日志解析**：用正则表达式匹配 `train.py` 的 DataFrame 输出行（格式：`data model norm seed seq_len pred_len mse mae rmse`），自动解析 `logs/` 目录下所有 `.log`
+- **聚合统计**：按 (data, model, norm, seq_len, pred_len) 分组，计算 mean ± std（论文 Table 3 必需）
+- **CSV 输出**：`summary.csv`（原始）+ `summary_aggregated.csv`（聚合）
+- **LaTeX 表格**：自动生成 `table2_ettm2_multivariate.tex` 和 `table3_revin_vs_dishts.tex`，格式与论文表格一致，可直接插入论文/报告
+- **可视化**：使用 matplotlib 生成 3 个对比图：
+  1. ETTm2 + Autoformer 在不同归一化下 MSE 随 pred_len 的变化曲线（含误差带）
+  2. RevIN vs Dish-TS 在多个数据集上的柱状对比
+  3. 不同模型在 ETTm2 上使用 Dish-TS 的对比
+
+依赖：`pandas`、`numpy`、`matplotlib`（均在 `requirements.txt` 中）
+
+---
+
+### 5. 重写 `README.md`
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 重大修改 |
+| **原因** | 原始 README 缺乏结构化文档，且未按照论文 4 个 Table 的参数精确设置 |
 
 改进后的 README 包含以下标准模块：
 
@@ -75,25 +100,25 @@
 | 标题与徽章 | 论文链接、Python 版本、License 标识 |
 | 目录 | 锚点链接导航 |
 | 背景与动机 | 分布偏移问题定义、Dual-CoNet 架构、核心贡献 |
-| 项目结构 | 完整目录树（含所有新增文件） |
+| 项目结构 | 完整目录树（含所有新增文件，标注 generated 目录） |
 | 安装指南 | 克隆、安装、验证三步流程 |
 | 数据准备 | 5 个数据集的格式、下载地址、文件重命名对照表 |
-| 快速开始 | 一行命令验证 |
-| 复现实验 | 自动化脚本 + 分步手动命令，与脚本完全一致 |
+| 复现实验 | **按论文 Table 1–4 逐一精确设置**的参数表和运行命令 |
 | 参数说明 | 完整命令行参数表 |
-| 实验结果 | 论文预期改善幅度、指标说明、待填充的结果表 |
+| 结果汇总 | `results/collect_results.py` 的输出说明、快速验证命令 |
+| 指标定义 | MSE / MAE / RMSE / MAPE / MSPE 的解释 |
 | 引用 | BibTeX 格式 |
 | 致谢 | 上游项目致谢 |
 
 关键改进：
 
-- **下载地址修正**: 原 README 和 `train.py` 中的数据集来源链接已失效（指向已被删除的 Autoformer 原始仓库）。更新为可用的 GitHub raw URL（ETT 系列）和 Google Drive（ECL/WTH/ILI）
-- **参数说明完善**: 为 `--data` 参数添加了全部 5 个可选值的说明
-- **Git 地址更新**: 从原始作者的仓库改为本仓库地址
+- **精确对应论文 4 个 Table 的参数**：每个 Table 单独给出 seq_len / pred_len / 模型 / 数据集列表，并在 `run_experiments.sh` 中提供对应入口
+- **下载地址修正**：原 README 中的数据集来源链接已失效（指向被删除的 Autoformer 原始仓库），更新为 GitHub raw URL（ETT 系列）和 Google Drive（ECL/WTH/ILI）
+- **Git 地址更新**：从原始作者仓库改为本仓库地址
 
 ---
 
-### 5. 为 `train.py` 添加模块文档字符串
+### 6. 为 `train.py` 添加模块文档字符串
 
 | 属性 | 说明 |
 |------|------|
@@ -109,7 +134,7 @@
 
 ---
 
-### 6. 为 `utils/dataset.py` 添加模块文档字符串
+### 7. 为 `utils/dataset.py` 添加模块文档字符串
 
 | 属性 | 说明 |
 |------|------|
@@ -125,7 +150,7 @@
 
 ---
 
-### 7. 更新 `.gitignore`
+### 8. 更新 `.gitignore`
 
 | 属性 | 说明 |
 |------|------|
@@ -140,7 +165,7 @@
 
 ---
 
-### 8. 数据集入库
+### 9. 数据集入库
 
 | 属性 | 说明 |
 |------|------|

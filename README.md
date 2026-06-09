@@ -66,13 +66,13 @@ This design is **model-agnostic** and can be plugged into any forecasting archit
 
 ```
 Dish-TS/
-├── train.py                     # Main training script
+├── train.py                     # Main training script (configurable via CLI args)
 ├── Model.py                     # Unified model wrapper (forecast + normalization)
 ├── DishTS.py                    # Dish-TS normalization module (core contribution)
 ├── REVIN.py                     # RevIN baseline normalization
 ├── .gitignore                   # Git ignore rules
 ├── requirements.txt             # Python dependencies
-├── run_experiments.sh           # Automated experiment runner
+├── run_experiments.sh           # Automated experiment runner (table1..table4 modes)
 │
 ├── backbones/                   # Forecasting model backbones
 │   ├── __init__.py
@@ -94,8 +94,21 @@ Dish-TS/
 │   ├── earlystop.py             # Early stopping mechanism
 │   └── metric.py                # Evaluation metrics (MAE, MSE, RMSE, MAPE, MSPE)
 │
+├── results/                     # (generated) Output of collect_results.py
+│   ├── collect_results.py       # Parse logs → CSV + LaTeX tables + plots
+│   ├── summary.csv              # Per-seed raw results
+│   ├── summary_aggregated.csv   # mean ± std
+│   ├── *.tex                    # Auto-generated LaTeX tables (Table 2/3 format)
+│   └── *.png                    # Auto-generated comparison plots
+│
+├── logs/                        # (generated) Experiment log files, one per run
+│
 └── dataset/                     # Datasets directory
-    └── ETTm2.csv                # ETTm2 dataset (15-minutely, 7 variables)
+    ├── ETTm2.csv                # ETTm2 (15-minutely, 7 variables) — included
+    ├── ETTh1.csv                # ETTh1 (hourly, 7 variables)
+    ├── ECL.csv                  # Electricity (hourly, 321 variables)
+    ├── WTH.csv                  # Weather (10-minutely, 21 variables)
+    └── ILI.csv                  # Illness (weekly, 7 variables)
 ```
 
 ---
@@ -158,39 +171,39 @@ date,HUFL,HULL,MUFL,MULL,LUFL,LULL,OT
 
 ### Download Instructions
 
-**ETT 系列（ETTm2 + ETTh1）— 通过命令行即可下载：**
+**ETT Series (ETTm2 + ETTh1) — Download via command line:**
 
 ```bash
 cd dataset
 
-# ETTh1（已内置 ETTm2，只需下载此文件）
+# ETTh1 (ETTm2 is already included, only download this file)
 wget -O ETTh1.csv "https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTh1.csv"
 
-# 验证
-wc -l ETTh1.csv    # 应输出 17421
+# Verify
+wc -l ETTh1.csv    # Should output 17421
 ```
 
-**Electricity / Weather / Illness — 需手动从 Google Drive 下载：**
+**Electricity / Weather / Illness — Manual download from Google Drive:**
 
-1. 打开 Google Drive 链接：
+1. Open the Google Drive link:
    **https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy**
 
-2. 下载以下三个文件到 `dataset/` 目录：
+2. Download the following three files to the `dataset/` directory:
 
-   | Google Drive 中文件名 | 保存为 | `--data` 参数值 |
-   |----------------------|--------|-----------------|
+   | Google Drive Filename | Save As | `--data` Value |
+   |----------------------|--------|----------------|
    | `electricity.csv` | `ECL.csv` | `ECL` |
    | `weather.csv` | `WTH.csv` | `WTH` |
    | `national_illness.csv` | `ILI.csv` | `ILI` |
 
-3. 验证所有数据集已就绪：
+3. Verify all datasets are ready:
 
 ```bash
 ls -lh dataset/*.csv
-# 应看到 5 个文件: ETTm2.csv, ETTh1.csv, ECL.csv, WTH.csv, ILI.csv
+# Should see 5 files: ETTm2.csv, ETTh1.csv, ECL.csv, WTH.csv, ILI.csv
 ```
 
-> **注意**：即使没有 Electricity/Weather/Illness，也可以使用 ETTm2 和 ETTh1 完成大部分论文实验。这两个 ETT 数据集是论文中最重要的 benchmark。
+> **Note**: Even without Electricity/Weather/Illness, you can complete most paper experiments using ETTm2 and ETTh1 alone. These two ETT datasets are the most important benchmarks in the paper.
 
 ### Data Splitting
 
@@ -226,166 +239,198 @@ ETTm2  Transformer  dishts  2023  96  96  0.xxxxx  0.xxxxx  0.xxxxx
 
 ## Reproducing Paper Experiments
 
-### Quickest Way: Use the Automation Script
+The paper reports results across **4 tables**. Each table has a different experimental setup (seq_len / pred_len). Please follow the exact parameters below to reproduce faithfully.
 
-The repository includes `run_experiments.sh` which automates all paper experiments in 5 phases:
+### Quick Start via Automation Script
 
 ```bash
 chmod +x run_experiments.sh
 
-./run_experiments.sh phase1   # ETTm2: 3 models x 3 norms x 4 pred_lens (36 runs)
-./run_experiments.sh phase2   # ETTh1: 3 models x 3 norms x 4 pred_lens (36 runs)
-./run_experiments.sh phase3   # ECL/WTH/ILI: Autoformer x 2 norms x 4 pred_lens (24 runs)
-./run_experiments.sh phase4   # Multi-seed paper-level results (60 runs)
-./run_experiments.sh phase5   # DishTS initialization ablation (12 runs)
+# Recommended: run all four paper tables
+./run_experiments.sh table2     # Table 2: Multivariate (seq_len=96)
+./run_experiments.sh table3     # Table 3: RevIN vs Dish-TS (3 seeds)
+./run_experiments.sh table1     # Table 1: Univariate (seq_len=pred_len)
+./run_experiments.sh table4     # Table 4: Longer horizons (336..720)
 
-./run_experiments.sh all      # Run everything (~168 runs, several hours)
+# Or run everything at once:
+./run_experiments.sh all_paper
 ```
 
-Results are saved to `logs/` directory. Phase 4 auto-computes mean +- std across seeds.
-
-### Step-by-Step Manual Execution
-
-If you prefer running experiments manually, here are the exact commands:
-
-#### Phase 1: ETTm2 Full Comparison (1 seed)
-
-ETTm2 is the primary benchmark included in this repo. Test all combinations of 3 forecast models x 3 normalization methods across 4 prediction lengths:
+After experiments finish, collect results and generate LaTeX tables + plots:
 
 ```bash
-cd Dish-TS
-mkdir -p logs
-
-for model in Transformer Informer Autoformer; do
-  for norm in none revin dishts; do
-    for pred_len in 96 192 336 720; do
-      echo "[$(date +%H:%M:%S)] $model + $norm, pred_len=$pred_len"
-      python train.py --data ETTm2 --model $model --norm $norm \
-        --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-        2>&1 | tee "logs/ETTm2_${model}_${norm}_pred${pred_len}_seed2023.log"
-    done
-  done
-done
+./run_experiments.sh summarize
+# or manually:
+python results/collect_results.py
 ```
 
-#### Phase 2: ETTh1 Full Comparison (1 seed)
+Generated files go to `results/`:
 
-Repeat the same on ETTh1 after downloading it:
+| File | Purpose |
+|------|---------|
+| `summary.csv` | All raw results (per seed) |
+| `summary_aggregated.csv` | Aggregated mean/std per configuration |
+| `table2_ettm2_multivariate.tex` | LaTeX table matching paper Table 2 format |
+| `table3_revin_vs_dishts.tex` | LaTeX table matching paper Table 3 format |
+| `*.png` | Comparison figures (MSE vs pred_len, RevIN vs Dish-TS, etc.) |
+
+---
+
+### Table 1 — Univariate Time Series Forecasting
+
+**Setup**: Lookback window = Horizon window (seq_len = pred_len). All input features collapsed to a single channel.
+
+| Parameter | Value |
+|-----------|-------|
+| seq_len | **24, 48, 96, 168, 336** (= pred_len) |
+| pred_len | **24, 48, 96, 168, 336** |
+| models | Transformer, Informer, Autoformer |
+| normalization | none, revin, dishts |
+| datasets | ETTm2, ETTh1, ECL, WTH |
+| seed | 2023 |
+
+**Run**:
 
 ```bash
-for model in Transformer Informer Autoformer; do
-  for norm in none revin dishts; do
-    for pred_len in 96 192 336 720; do
-      python train.py --data ETTh1 --model $model --norm $norm \
-        --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-        2>&1 | tee "logs/ETTh1_${model}_${norm}_pred${pred_len}_seed2023.log"
-    done
-  done
-done
+./run_experiments.sh table1
 ```
 
-#### Phase 3: Multi-Dataset Evaluation (1 seed)
+This runs `4 datasets × 3 models × 3 norms × 5 pred_lens = 180 configurations`.
 
-After downloading ECL / WTH / ILI from Google Drive:
+---
+
+### Table 2 — Multivariate Time Series Forecasting
+
+**Setup**: Lookback window is fixed at 96, horizon varies. All input features are used simultaneously.
+
+| Parameter | Value |
+|-----------|-------|
+| seq_len | **96** (fixed) |
+| pred_len | **24, 48, 96, 168, 336** |
+| models | Transformer, Informer, Autoformer |
+| normalization | none, revin, dishts |
+| datasets | ETTm2, ETTh1, ECL, WTH |
+| seed | 2023 |
+
+**Run**:
 
 ```bash
-for data in ECL WTH ILI; do
-  for norm in none dishts; do
-    for pred_len in 96 192 336 720; do
-      python train.py --data $data --model Autoformer --norm $norm \
-        --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-        2>&1 | tee "logs/${data}_Autoformer_${norm}_pred${pred_len}_seed2023.log"
-    done
-  done
-done
+./run_experiments.sh table2
 ```
 
-#### Phase 4: Multi-Seed Evaluation (Paper-Level)
+This runs `4 datasets × 3 models × 3 norms × 5 pred_lens = 180 configurations`.
 
-The paper reports **mean +- std** across 5 random seeds. This is the most important phase for final results:
+---
+
+### Table 3 — RevIN vs Dish-TS Comparison (Autoformer backbone)
+
+**Setup**: Same multivariate setup as Table 2, but **3 random seeds** to compute mean ± std. Focus on Autoformer only to directly compare RevIN vs Dish-TS.
+
+| Parameter | Value |
+|-----------|-------|
+| seq_len | **96** (fixed) |
+| pred_len | **24, 168, 336** |
+| model | Autoformer |
+| normalization | **revin, dishts** (direct comparison) |
+| datasets | ETTm2, ETTh1, ECL, WTH |
+| seeds | **2023, 2024, 2025** |
+
+**Run**:
 
 ```bash
-for seed in 2023 2024 2025 2026 2027; do
-  for norm in none revin dishts; do
-    for pred_len in 96 192 336 720; do
-      python train.py --data ETTm2 --model Autoformer --norm $norm \
-        --pred_len $pred_len --seq_len 96 --seed $seed --gpu 0 \
-        2>&1 | tee "logs/ETTm2_Autoformer_${norm}_pred${pred_len}_seed${seed}.log"
-    done
-  done
-done
-
-# Collect results and compute mean +- std
-for norm in none revin dishts; do
-  for pred_len in 96 192 336 720; do
-    echo "--- Autoformer + $norm, pred_len=$pred_len ---"
-    grep -h "Autoformer.*$norm" logs/ETTm2_Autoformer_${norm}_pred${pred_len}_seed*.log | awk '{print $7}'
-  done
-done
+./run_experiments.sh table3
 ```
 
-#### Phase 5: DishTS Initialization Ablation
+This runs `4 datasets × 2 norms × 3 pred_lens × 3 seeds = 72 configurations`.
 
-Compare `standard`, `avg`, and `uniform` initialization for the CoNet:
+---
+
+### Table 4 — Impact of Longer Horizons (Long TSF)
+
+**Setup**: Fixed lookback (seq_len=96), progressively longer horizons to test extrapolation capability.
+
+| Parameter | Value |
+|-----------|-------|
+| seq_len | **96** (fixed) |
+| pred_len | **336, 420, 540, 600, 720** |
+| model | Autoformer *(paper uses N-BEATS; not in this repo)* |
+| normalization | none, dishts |
+| datasets | ECL, ETTh1 |
+| seed | 2023 |
+
+**Run**:
 
 ```bash
-for init in standard avg uniform; do
-  for pred_len in 96 192 336 720; do
-    python train.py --data ETTm2 --model Autoformer --norm dishts \
-      --dish_init $init --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-      2>&1 | tee "logs/ETTm2_Autoformer_dishts-init${init}_pred${pred_len}_seed2023.log"
-  done
-done
+./run_experiments.sh table4
 ```
 
-### Summary Table
+---
 
-| Phase | Content | Runs | Time (est.) | Priority |
-|-------|---------|------|-------------|----------|
-| Phase 1 | ETTm2 full comparison | 36 | ~60 min | Must run |
-| Phase 2 | ETTh1 full comparison | 36 | ~40 min | High |
-| Phase 3 | ECL/WTH/ILI evaluation | 24 | ~90 min | Medium |
-| **Phase 4** | **Multi-seed (paper results)** | **60** | **~120 min** | **Must run** |
-| Phase 5 | DishTS init ablation | 12 | ~20 min | Low |
-| **Total** | | **~168** | **~5 hours** | |
+### Ablation: Dish-TS Initialization
 
-> **Minimum viable reproduction**: Phase 1 + Phase 4 = 96 runs, ~3 hours, yields the core paper table.
+The paper studies how CoNet initialization (standard vs avg vs uniform) affects performance:
+
+```bash
+./run_experiments.sh ablation
+# Runs: ETTm2 + Autoformer + dishts, 3 init methods × 5 pred_lens = 15 configurations
+```
+
+---
+
+### Multi-Seed Evaluation (Paper-Level Final Numbers)
+
+To get **mean ± std** numbers (as in the paper), run the multi-seed pipeline:
+
+```bash
+./run_experiments.sh multi_seed
+# Runs: ETTm2 + Autoformer × 3 norms × 5 pred_lens × 3 seeds = 45 configurations
+# Then: python results/collect_results.py   # computes mean±std, generates LaTeX tables
+```
+
+---
+
+### Summary: Parameter Cheat Sheet
+
+| Table | Type | seq_len | pred_len | models | datasets |
+|-------|------|---------|----------|--------|----------|
+| **Table 1** | Univariate | **24,48,96,168,336** (= pred_len) | 24,48,96,168,336 | Trans/Inform/Auto | ETTm2, ETTh1, ECL, WTH |
+| **Table 2** | Multivariate | **96** | 24,48,96,168,336 | Trans/Inform/Auto | ETTm2, ETTh1, ECL, WTH |
+| **Table 3** | RevIN vs Dish-TS | **96** | 24,168,336 | Autoformer | ETTm2, ETTh1, ECL, WTH |
+| **Table 4** | Long horizon | **96** | 336,420,540,600,720 | Autoformer | ECL, ETTh1 |
+
+---
+
+### Collecting Results
+
+After running the experiments, aggregate and visualize:
+
+```bash
+python results/collect_results.py
+# Outputs:
+#   results/summary.csv              # raw results
+#   results/summary_aggregated.csv   # mean ± std
+#   results/table2_ettm2_multivariate.tex
+#   results/table3_revin_vs_dishts.tex
+#   results/ETTm2_Autoformer_MSE_vs_predlen.png
+#   results/RevIN_vs_DishTS_across_datasets.png
+#   results/ETTm2_models_MSE_with_DishTS.png
+```
+
+The `.tex` files can be inserted directly into a LaTeX report. The `.png` plots compare Dish-TS vs RevIN vs baseline across prediction lengths.
+
+---
+
+### Expected Improvement
+
+Per the paper, Dish-TS achieves:
+
+- **Univariate forecasting**: Average **28.6%** MSE improvement over baselines
+- **Multivariate forecasting**: Average **21.9%** MSE improvement over baselines
 
 ---
 
 ## Arguments
-, pred_len=$pred_len ---"
-    grep -h "Autoformer.*$norm" logs/ETTm2_Autoformer_${norm}_pred${pred_len}_seed*.log | awk '{print $7}'
-  done
-done
-```
 
-#### Phase 5: DishTS Initialization Ablation
-
-Compare `standard`, `avg`, and `uniform` initialization for the CoNet:
-
-```bash
-for init in standard avg uniform; do
-  for pred_len in 96 192 336 720; do
-    python train.py --data ETTm2 --model Autoformer --norm dishts \
-      --dish_init $init --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-      2>&1 | tee "logs/ETTm2_Autoformer_dishts-init${init}_pred${pred_len}_seed2023.log"
-  done
-done
-```
-
-### Summary Table
-
-| Phase | Content | Runs | Time (est.) | Priority |
-|-------|---------|------|-------------|----------|
-| Phase 1 | ETTm2 full comparison | 36 | ~60 min | Must run |
-| Phase 2 | ETTh1 full comparison | 36 | ~40 min | High |
-| Phase 3 | ECL/WTH/ILI evaluation | 24 | ~90 min | Medium |
-| **Phase 4** | **Multi-seed (paper results)** | **60** | **~120 min** | **Must run** |
-| Phase 5 | DishTS init ablation | 12 | ~20 min | Low |
-| **Total** | | **~168** | **~5 hours** | |
-
-> **Minimum viable reproduction**: Phase 1 + Phase 4 = 96 runs, ~3 hours, yields the core paper table.
 ### Forecast Configuration
 
 | Argument | Type | Default | Description |
@@ -435,40 +480,53 @@ done
 
 ## Results
 
-### Main Results: MSE on ETTm2 (Example Format)
+### How Results Are Generated
 
-Results format from the paper. Reproduce by running the multi-seed experiments above.
+After running the experiments, run the aggregation script:
 
-| Model        | Norm  | pred_len=96 | pred_len=192 | pred_len=336 | pred_len=720 |
-|-------------|-------|-------------|--------------|--------------|--------------|
-| Transformer | none  | _TBD_       | _TBD_        | _TBD_        | _TBD_        |
-| Transformer | revin | _TBD_       | _TBD_        | _TBD_        | _TBD_        |
-| Transformer | dishts| _TBD_       | _TBD_        | _TBD_        | _TBD_        |
-| Autoformer  | none  | _TBD_       | _TBD_        | _TBD_        | _TBD_        |
-| Autoformer  | revin | _TBD_       | _TBD_        | _TBD_        | _TBD_        |
-| Autoformer  | dishts| _TBD_       | _TBD_        | _TBD_        | _TBD_        |
-| Informer    | none  | _TBD_       | _TBD_        | _TBD_        | _TBD_        |
-| Informer    | revin | _TBD_       | _TBD_        | _TBD_        | _TBD_        |
-| Informer    | dishts| _TBD_       | _TBD_        | _TBD_        | _TBD_        |
+```bash
+python results/collect_results.py
+```
 
-*Replace _TBD_ with your experimental results after running.*
+This produces:
+
+- **`results/summary.csv`** — All per-seed results (MSE / MAE / RMSE)
+- **`results/summary_aggregated.csv`** — mean ± std for each config
+- **`results/table2_ettm2_multivariate.tex`** — LaTeX table matching paper Table 2
+- **`results/table3_revin_vs_dishts.tex`** — LaTeX table matching paper Table 3
+- **`results/*.png`** — Comparison plots (e.g., MSE vs pred_len, RevIN vs Dish-TS)
+
+### Quick Check: Run a Single Experiment
+
+Before running hundreds of combinations, verify the pipeline works with one quick run:
+
+```bash
+python train.py --data ETTm2 --model Autoformer --norm dishts \
+    --pred_len 96 --seq_len 96 --seed 2023 --gpu 0
+```
+
+Expected output ends with something like:
+
+```
+0  ETTm2  Autoformer  dishts  2023  96  96  X.XXXX  X.XXXX  X.XXXX
+```
 
 ### Expected Improvement
 
-Per paper results, Dish-TS achieves:
+Per the paper, Dish-TS achieves:
 
-- **Univariate forecasting**: Average **28.6%** improvement over baselines
-- **Multivariate forecasting**: Average **21.9%** improvement over baselines
+- **Univariate forecasting**: Average **28.6%** MSE improvement over baselines
+- **Multivariate forecasting**: Average **21.9%** MSE improvement over baselines
 
 ### Metrics Explanation
 
 | Metric | Formula | Range | Lower is Better? |
 |--------|---------|-------|------------------|
-| **MSE** | Mean Squared Error | [0, +∞) | Yes |
-| **MAE** | Mean Absolute Error | [0, +∞) | Yes |
-| **RMSE** | Root Mean Squared Error | [0, +∞) | Yes |
-| **MAPE** | Mean Absolute Percentage Error | [0, +∞) | Yes |
-| **MSPE** | Mean Squared Percentage Error | [0, +∞) | Yes |
+| **MSE** | Mean Squared Error | [0, +Inf) | Yes |
+| **MAE** | Mean Absolute Error | [0, +Inf) | Yes |
+| **RMSE** | Root Mean Squared Error | [0, +Inf) | Yes |
+| **MAPE** | Mean Absolute Percentage Error | [0, +Inf) | Yes |
+| **MSPE** | Mean Squared Percentage Error | [0, +Inf) | Yes |
 
 ---
 
@@ -478,7 +536,7 @@ If you find this work useful, please cite our paper:
 
 ```bibtex
 @inproceedings{fan2023dish,
-  title     = {Dish-TS: A General Paradigm for Alleviating Distribution Shift 
+  title     = {Dish-TS: A General Paradigm for Alleviating Distribution Shift
                in Time Series Forecasting},
   author    = {Fan, Wei and Wang, Pengyang and Wang, Dongkun and
                Wang, Dongjie and Zhou, Yuanchun and Fu, Yanjie},
