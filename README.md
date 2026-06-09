@@ -262,7 +262,7 @@ for model in Transformer Informer Autoformer; do
       echo "[$(date +%H:%M:%S)] $model + $norm, pred_len=$pred_len"
       python train.py --data ETTm2 --model $model --norm $norm \
         --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-        2>&1 | tee "logs/ETTm2_${model}_${norm}_pred${pred_len}.log"
+        2>&1 | tee "logs/ETTm2_${model}_${norm}_pred${pred_len}_seed2023.log"
     done
   done
 done
@@ -278,7 +278,7 @@ for model in Transformer Informer Autoformer; do
     for pred_len in 96 192 336 720; do
       python train.py --data ETTh1 --model $model --norm $norm \
         --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-        2>&1 | tee "logs/ETTh1_${model}_${norm}_pred${pred_len}.log"
+        2>&1 | tee "logs/ETTh1_${model}_${norm}_pred${pred_len}_seed2023.log"
     done
   done
 done
@@ -294,7 +294,7 @@ for data in ECL WTH ILI; do
     for pred_len in 96 192 336 720; do
       python train.py --data $data --model Autoformer --norm $norm \
         --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-        2>&1 | tee "logs/${data}_Autoformer_${norm}_pred${pred_len}.log"
+        2>&1 | tee "logs/${data}_Autoformer_${norm}_pred${pred_len}_seed2023.log"
     done
   done
 done
@@ -333,7 +333,7 @@ for init in standard avg uniform; do
   for pred_len in 96 192 336 720; do
     python train.py --data ETTm2 --model Autoformer --norm dishts \
       --dish_init $init --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-      2>&1 | tee "logs/ETTm2_Autoformer_dishts-init${init}_pred${pred_len}.log"
+      2>&1 | tee "logs/ETTm2_Autoformer_dishts-init${init}_pred${pred_len}_seed2023.log"
   done
 done
 ```
@@ -369,7 +369,7 @@ for init in standard avg uniform; do
   for pred_len in 96 192 336 720; do
     python train.py --data ETTm2 --model Autoformer --norm dishts \
       --dish_init $init --pred_len $pred_len --seq_len 96 --seed 2023 --gpu 0 \
-      2>&1 | tee "logs/ETTm2_Autoformer_dishts-init${init}_pred${pred_len}.log"
+      2>&1 | tee "logs/ETTm2_Autoformer_dishts-init${init}_pred${pred_len}_seed2023.log"
   done
 done
 ```
