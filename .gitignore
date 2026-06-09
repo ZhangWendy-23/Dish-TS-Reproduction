@@ -29,3 +29,8 @@ checkpoint.pt/
 
 # Output
 forecast.csv
+logs/
+
+# Dataset (large files, keep only ETTm2)
+dataset/*.csv
+!dataset/ETTm2.csv
