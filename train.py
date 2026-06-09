@@ -1,3 +1,27 @@
+"""
+Dish-TS Training Script
+=======================
+This script trains time series forecasting models with optional normalization
+methods (Dish-TS, RevIN, or none) on various benchmark datasets.
+
+Datasets (place CSV files under ./dataset/):
+  - ETTm2.csv  : Electricity Transformer Temperature, 15-minutely (included)
+  - ETTh1.csv  : Electricity Transformer Temperature, hourly
+                 Download: https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTh1.csv
+  - ECL.csv    : Electricity consumption, hourly (321 clients)
+                 Download: https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy
+  - WTH.csv    : Weather, 10-minutely (21 features)
+                 Download: https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy
+  - ILI.csv    : Influenza-like illness, weekly
+                 Download: https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy
+
+CSV format: date column + feature columns (no index column)
+
+Usage:
+  python train.py --data ETTm2 --model Autoformer --norm dishts --gpu 0
+  python train.py --data ETTh1 --model Transformer --norm revin --pred_len 192 --gpu 0
+"""
+
 import os
 import pandas as pd
 import numpy as np

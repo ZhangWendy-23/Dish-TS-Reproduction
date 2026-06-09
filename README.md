@@ -109,7 +109,9 @@ Dish-TS/
 
 ```bash
 # Clone the repository
-git clone https://github.com/weifantt/Dish-TS.git
+git clone git@github.com:ZhangWendy-23/Dish-TS.git
+# or via HTTPS:
+# git clone https://github.com/ZhangWendy-23/Dish-TS.git
 cd Dish-TS
 
 # Install dependencies
@@ -144,21 +146,49 @@ date,HUFL,HULL,MUFL,MULL,LUFL,LULL,OT
 
 ### Datasets Used in the Paper
 
-| Dataset      | Granularity  | Variables | Timesteps | Download Link |
-|-------------|-------------|-----------|-----------|---------------|
-| **ETTm2**   | 15 minutes  | 7         | ~69,680   | Included (`dataset/ETTm2.csv`) |
-| **ETTh1**   | 1 hour      | 7         | ~17,420   | [Autoformer Repo](https://github.com/thuml/Autoformer) |
-| **Electricity** | 1 hour  | 321       | ~26,304   | [Autoformer Repo](https://github.com/thuml/Autoformer) |
-| **Weather** | 10 minutes  | 21        | ~52,696   | [Autoformer Repo](https://github.com/thuml/Autoformer) |
-| **Illness** | Weekly      | 7         | ~966      | [Autoformer Repo](https://github.com/thuml/Autoformer) |
+| Dataset      | File Name   | Granularity | Variables | Timesteps | Source |
+|-------------|-------------|-------------|-----------|-----------|--------|
+| **ETTm2**   | `ETTm2.csv` | 15 minutes  | 7         | ~69,680   | Included in this repo |
+| **ETTh1**   | `ETTh1.csv` | 1 hour      | 7         | ~17,420   | [ETDataset](https://github.com/zhouhaoyi/ETDataset) |
+| **Electricity** | `ECL.csv` | 1 hour      | 321       | ~26,304   | [Google Drive](https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy) |
+| **Weather** | `WTH.csv`  | 10 minutes  | 21        | ~52,696   | [Google Drive](https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy) |
+| **Illness** | `ILI.csv`  | Weekly      | 7         | ~966      | [Google Drive](https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy) |
 
-To download additional datasets:
+### Download Instructions
+
+**ETT 系列（ETTm2 + ETTh1）— 通过命令行即可下载：**
 
 ```bash
-mkdir -p dataset
-# Download from Autoformer's official repository:
-# https://github.com/thuml/Autoformer/tree/main/dataset
+cd dataset
+
+# ETTh1（已内置 ETTm2，只需下载此文件）
+wget -O ETTh1.csv "https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTh1.csv"
+
+# 验证
+wc -l ETTh1.csv    # 应输出 17421
 ```
+
+**Electricity / Weather / Illness — 需手动从 Google Drive 下载：**
+
+1. 打开 Google Drive 链接：
+   **https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy**
+
+2. 下载以下三个文件到 `dataset/` 目录：
+
+   | Google Drive 中文件名 | 保存为 | `--data` 参数值 |
+   |----------------------|--------|-----------------|
+   | `electricity.csv` | `ECL.csv` | `ECL` |
+   | `weather.csv` | `WTH.csv` | `WTH` |
+   | `national_illness.csv` | `ILI.csv` | `ILI` |
+
+3. 验证所有数据集已就绪：
+
+```bash
+ls -lh dataset/*.csv
+# 应看到 5 个文件: ETTm2.csv, ETTh1.csv, ECL.csv, WTH.csv, ILI.csv
+```
+
+> **注意**：即使没有 Electricity/Weather/Illness，也可以使用 ETTm2 和 ETTh1 完成大部分论文实验。这两个 ETT 数据集是论文中最重要的 benchmark。
 
 ### Data Splitting
 
@@ -237,7 +267,7 @@ done
 
 ```bash
 # After downloading all datasets:
-for data in ETTh1 ETTm2 Electricity Weather Illness; do
+for data in ETTh1 ETTm2 ECL WTH ILI; do
   python train.py --data $data --model Autoformer --norm dishts \
     --pred_len 96 --seq_len 96 --seed 2023 --gpu 0
 done

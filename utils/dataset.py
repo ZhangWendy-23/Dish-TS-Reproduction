@@ -1,3 +1,21 @@
+"""
+Time Series Forecasting Dataset Loader
+======================================
+Loads CSV-formatted time series data for training/validation/testing.
+
+Expected CSV format:
+  date,feature_1,feature_2,...,feature_N
+  2016-07-01 00:00:00,41.13,12.48,...,38.66
+  ...
+
+The 'date' column is automatically excluded from input features.
+Data is split chronologically (no shuffle) into train/val/test sets.
+
+Dataset sources:
+  - ETTm2/ETTh1: https://github.com/zhouhaoyi/ETDataset
+  - ECL/WTH/ILI: https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy
+"""
+
 import pandas as pd
 import numpy as np
 from torch.utils.data import Dataset
