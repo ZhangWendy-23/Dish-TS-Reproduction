@@ -124,9 +124,9 @@ val_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='val', size
 test_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='test', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features)
 
 # set forecast dataloader
-# Performance: num_workers>0 enables parallel data loading, pin_memory enables
-# async H2D transfer, persistent_workers avoids worker teardown between epochs.
-_loader_kwargs = dict(batch_size=args.batch_size, num_workers=4, pin_memory=True, persistent_workers=True)
+# Performance: num_workers=0 avoids DataLoader multiprocessing crashes on Python 3.12
+# The GPU is the bottleneck on RTX 3090, so single-process loading does not slow training
+_loader_kwargs = dict(batch_size=args.batch_size, num_workers=0, pin_memory=True)
 train_loader = DataLoader(dataset=train_dataset, shuffle=True,  **_loader_kwargs)
 val_loader   = DataLoader(dataset=val_dataset,   shuffle=False, **_loader_kwargs)
 test_loader  = DataLoader(dataset=test_dataset,  shuffle=False, **_loader_kwargs)
