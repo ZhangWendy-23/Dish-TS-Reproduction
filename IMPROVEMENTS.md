@@ -363,17 +363,32 @@ if args.label_len == 0:
 
 ---
 
+### 21. `num_workers=0` — Python 3.12 兼容性修复
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 环境兼容性修复 |
+| **文件** | `train.py` |
+| **原因** | Python 3.12 下 `num_workers=4` 触发 PyTorch DataLoader `collate` 竞态崩溃（`Trying to resize storage that is not resizable`），导致 ETTh1 等数据集部分实验失败 |
+
+修改内容：
+- 将 `num_workers=4` 改为 `num_workers=0`
+- 移除 `persistent_workers=True`（仅当 `num_workers>0` 有效）
+- README Notes 新增 Python 3.12 兼容说明
+
+---
+
 ## 修改统计
 
 | 类别 | 新增文件 | 修改文件 | 删除文件 | 说明 |
 |------|---------|---------|---------|------|
-| 核心代码 | 1 | 3 | 0 | 修复导入 + 论文参数对齐 + 单变量 + label_len |
+| 核心代码 | 1 | 4 | 0 | 修复导入 + 论文参数对齐 + 单变量 + label_len + num_workers |
 | 脚本 | 3 | 2 | 2 | run_paper_exps + run_simplified + collect_results；删除旧版 |
 | 配置 | 1 | 1 | 0 | requirements.txt + .gitignore |
 | 数据 | 4 | 0 | 0 | 5 个数据集纳入版本控制 |
 | 文档 | 1 | 1 | 0 | IMPROVEMENTS + README |
 | 清理 | 0 | 0 | 4 | 冗余脚本 + parse_paper + progress.csv |
-| **合计** | **10** | **7** | **6** | 最终仓库简洁、无冗余 |
+| **合计** | **10** | **8** | **6** | 最终仓库简洁、无冗余 |
 
 ---
 
@@ -401,7 +416,8 @@ if args.label_len == 0:
 | 18 | 删除 4 个冗余文件（旧版脚本 + parse_paper + progress.csv） | 2026-06-10 17:37:36 |
 | 19 | README 添加 SSH 断连防护（screen/tmux 教程 + Warning 对比表） | 2026-06-10 19:35:47 |
 | 20 | README 平台适配（AutoDL 编码/tmux 安装）+ 去重（screen/nohup 合并） | 2026-06-10 20:54:33 |
+| 21 | `train.py` num_workers=0 修复 Python 3.12 DataLoader 崩溃 + README Notes | 2026-06-10 23:18:42 |
 
 ---
 
-*最后更新: 2026-06-10 20:54:33 CST*
+*最后更新: 2026-06-10 23:18:42 CST*
