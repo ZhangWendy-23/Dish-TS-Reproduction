@@ -30,12 +30,10 @@ Thumbs.db
 *.pth
 checkpoint/
 
-# Large dataset files (get download instructions from README)
-# These are provided as direct downloads, not in git
-data/*.csv
-dataset/*.csv
+# NOTE: Dataset CSV files are kept in git for convenience of reproduction
+# (Total ~120MB, all under GitHub 100MB per-file limit)
 
-# Experiment logs & results (too large for git)
+# Experiment logs (too large, regenerated every run)
 logs/
 results/*.csv
 results/*.pdf
