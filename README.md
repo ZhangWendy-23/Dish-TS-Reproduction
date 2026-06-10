@@ -39,6 +39,7 @@
 7. [Expected Results](#expected-results)
 8. [Citation](#citation)
 9. [Acknowledgments](#acknowledgments)
+10. [Notes](#notes)
 
 ---
 
