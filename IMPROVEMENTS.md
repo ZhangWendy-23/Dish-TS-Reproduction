@@ -349,6 +349,20 @@ if args.label_len == 0:
 
 ---
 
+### 20. README 平台适配 + 内容去重
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 文档增强 |
+| **原因** | AutoDL 等云平台 screen 默认编码与 tmux 未预装等问题影响上手；One-Click Run 与 SSH 章节存在重复 |
+
+修改内容：
+- 新增 Cloud Platform Notes（AutoDL screen -U 编码参数、tmux 安装命令）
+- 将 One-Click Run 区的 screen/nohup 双方案去重，统一到 SSH 章节
+- 保留每个 Table 的参数表（独立阅读路径所需）
+
+---
+
 ## 修改统计
 
 | 类别 | 新增文件 | 修改文件 | 删除文件 | 说明 |
@@ -365,28 +379,29 @@ if args.label_len == 0:
 
 ## 完整改动时间线
 
-| 序号 | 改动 | 日期 |
-|------|------|------|
-| 1 | 新建 `backbones/__init__.py` | 初始 |
-| 2 | 新建 `requirements.txt` | 初始 |
-| 3 | 重写 `run_experiments.sh`（Phase→Table 结构化） | 初始 |
-| 4 | 新建 `results/collect_results.py` | 初始 |
-| 5 | 重写 `README.md`（初版） | 初始 |
-| 6 | 添加 `train.py` 文档字符串 | 初始 |
-| 7 | 添加 `utils/dataset.py` 文档字符串 | 初始 |
-| 8 | 更新 `.gitignore` | 初始 |
-| 9 | 数据集入库（4 个新数据集） | 随后 |
-| 10 | `train.py` 论文参数对齐（batch/lr/patience/prior loss） | 随后 |
-| 11 | 新建 `run_paper_exps.sh`（4-Table 严格脚本） | 随后 |
-| 12 | 数据目录 `dataset/` → `data/` | 随后 |
-| 13 | `dataset.py` 支持单变量 `features='S'` | 最新 |
-| 14 | `train.py` label_len 越界保护 | 最新 |
-| 15 | `run_paper_exps.sh` 按 Table 传入 features | 最新 |
-| 16 | `README.md` 一键运行方案 + 7步部署指南 | 最新 |
-| 17 | 仓库重命名 → `Dish-TS-Reproduction` + 公开 + README 学术格式重写 | 最新 |
-| 18 | 删除 4 个冗余文件（旧版脚本 + parse_paper + progress.csv） | 最新 |
-| 19 | README 添加 SSH 断连防护（screen/tmux 教程 + Warning 对比表） | 最新 |
+| 序号 | 改动 | 时间戳 |
+|------|------|--------|
+| 1 | 新建 `backbones/__init__.py` | 2026-06-09 11:44:46 |
+| 2 | 新建 `requirements.txt` | 2026-06-09 11:44:46 |
+| 3 | 重写 `run_experiments.sh`（Phase→Table 结构化） | 2026-06-09 13:05:51 |
+| 4 | 新建 `results/collect_results.py` | 2026-06-09 19:46:40 |
+| 5 | 重写 `README.md`（初版） | 2026-06-09 13:05:51 |
+| 6 | 添加 `train.py` 文档字符串 | 2026-06-09 12:49:32 |
+| 7 | 添加 `utils/dataset.py` 文档字符串 | 2026-06-09 12:49:32 |
+| 8 | 更新 `.gitignore` | 2026-06-09 13:27:36 |
+| 9 | 数据集入库（4 个新数据集） | 2026-06-09 13:27:36 |
+| 10 | `train.py` 论文参数对齐（batch/lr/patience/prior loss） | 2026-06-10 15:41:55 |
+| 11 | 新建 `run_paper_exps.sh`（4-Table 严格脚本） | 2026-06-10 15:50:39 |
+| 12 | 数据目录 `dataset/` → `data/` | 2026-06-10 16:05:06 |
+| 13 | `dataset.py` 支持单变量 `features='S'` | 2026-06-10 16:05:06 |
+| 14 | `train.py` label_len 越界保护 | 2026-06-10 16:05:06 |
+| 15 | `run_paper_exps.sh` 按 Table 传入 features | 2026-06-10 16:05:06 |
+| 16 | `README.md` 一键运行方案 + 7步部署指南 | 2026-06-10 16:10:50 |
+| 17 | 仓库重命名 → `Dish-TS-Reproduction` + 公开 + README 学术格式重写 | 2026-06-10 16:36:55 |
+| 18 | 删除 4 个冗余文件（旧版脚本 + parse_paper + progress.csv） | 2026-06-10 17:37:36 |
+| 19 | README 添加 SSH 断连防护（screen/tmux 教程 + Warning 对比表） | 2026-06-10 19:35:47 |
+| 20 | README 平台适配（AutoDL 编码/tmux 安装）+ 去重（screen/nohup 合并） | 2026-06-10 20:54:33 |
 
 ---
 
-*最后更新: 2026-06-10*
+*最后更新: 2026-06-10 20:54:33 CST*
