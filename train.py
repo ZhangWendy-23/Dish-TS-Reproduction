@@ -91,12 +91,10 @@ device = torch.device(f'cuda:{GPU}' if torch.cuda.is_available() else 'cpu')
 # Special case: Electricity (ECL) → 64 for all models (many series × long sequences)
 # Long horizon (pred_len > 168): reduced to avoid OOM — safely capped at 64 for 12GB GPU
 if args.label_len == 0:
-    # Paper: label_len = max(48, pred_len//2) for standard 96-length lookback
-    # But must not exceed seq_len (e.g., Table 1: seq_len=24, pred_len=24)
-    args.label_len = max(48, args.pred_len // 2)
-    if args.label_len > args.seq_len:
-        args.label_len = args.pred_len // 2
-        print(f"[INFO] label_len capped to {args.label_len} (seq_len={args.seq_len} too short for 48)")
+    # Paper: label_len = max(48, pred_len//2), but must not exceed seq_len
+    # Without this clamp, r_begin in __getitem__ can go negative, causing
+    # inconsistent tensor sizes across batch samples -> RuntimeError
+    args.label_len = min(args.seq_len, max(48, args.pred_len // 2))
 
 if args.batch_size == 0:
     if DATA == 'ECL':

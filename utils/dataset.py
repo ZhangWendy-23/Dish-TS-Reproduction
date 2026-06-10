@@ -49,7 +49,7 @@ class TSForecastDataset(Dataset):
 
     def __getitem__(self, index):
         s_begin = index; s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len
+        r_begin = max(0, s_end - self.label_len)  # guard: label_len > seq_len case
         r_end = r_begin + self.label_len + self.pred_len
         seq_x = self.data_x[s_begin:s_end]
         seq_y = self.data_y[r_begin:r_end]
