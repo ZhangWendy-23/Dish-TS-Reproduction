@@ -431,3 +431,9 @@ If you use this code or the Dish-TS method in your research, please cite the ori
 This reproduction is based on the official [Dish-TS repository](https://github.com/weifantt/Dish-TS). We thank the authors of [Autoformer](https://github.com/thuml/Autoformer), [Informer](https://github.com/zhouhaoyi/Informer2020), and [RevIN](https://github.com/ts-kim/RevIN) for open-sourcing their code and datasets.
 
 For a detailed record of all modifications made in this reproduction, see [IMPROVEMENTS.md](IMPROVEMENTS.md).
+
+---
+
+## Notes
+
+- **Commit message encoding**: Some early commits display `???` in their messages. This is a known Git encoding artifact caused by Emoji/Unicode characters in early commit messages during initial setup. These are purely cosmetic and do not affect any code, results, or reproducibility.
