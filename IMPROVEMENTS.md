@@ -2,7 +2,7 @@
 
 > **课程**: 金融数据分析和机器学习  
 > **原始仓库**: [weifantt/Dish-TS](https://github.com/weifantt/Dish-TS)  
-> **改进后仓库**: [ZhangWendy-23/Dish-TS](https://github.com/ZhangWendy-23/Dish-TS)  
+> **改进后仓库**: [ZhangWendy-23/Dish-TS-Reproduction](https://github.com/ZhangWendy-23/Dish-TS-Reproduction)  
 > **论文**: Fan et al., *Dish-TS: A General Paradigm for Alleviating Distribution Shift in Time Series Forecasting*, AAAI 2023
 
 ---
@@ -295,31 +295,62 @@ if args.label_len == 0:
 
 ---
 
+### 17. 仓库重命名 + 公开可见性 + README 全面重写
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 重大修改 |
+| **原因** | (1) 仓库从 `Dish-TS` 重命名为 `Dish-TS-Reproduction` 以明确课程作业属性，避免与原论文仓库混淆；(2) 从私有改为公开；(3) 适配公开仓库的 README 全面重写 |
+
+修改内容：
+- 仓库重命名为 `Dish-TS-Reproduction`
+- 可见性改为 Public
+- README 全面重写为英文标准学术格式
+- 新增 HTTPS clone 方式（公开仓库无需 SSH）
+- 移除私有仓库特有的 SSH 密钥配置步骤
+- 结构化目录：Requirements → Quick Start → Project Structure → 4-Table Guide → Configuration → Metrics → Citation
+- 每个 Table 独立章节，含参数表和运行命令
+- 新增 Evaluation Metrics 章节（含公式、范围）
+- 新增 Expected Results 章节
+- 新增 Acknowledgments 章节
+
+---
+
 ## 修改统计
 
 | 类别 | 新增文件 | 修改文件 | 说明 |
 |------|---------|---------|------|
-| 核心代码 | 1 (`backbones/__init__.py`) | 2 (`train.py`, `Model.py`) | 修复导入 + 论文参数对齐 |
-| 工具脚本 | 3 (`run_paper_exps.sh`, `run_simplified_exps.sh`, `results/collect_results.py`) | 1 (`run_experiments.sh`) | 按论文 4 个 Table 自动运行实验 |
-| 配置文件 | 1 (`requirements.txt`) | 1 (`.gitignore`) | 添加依赖列表、排除大文件 |
-| 文档 | 1 (`IMPROVEMENTS.md`) | 1 (`README.md`) | 详细说明每一处改动 |
-| **合计** | **6** | **5** | 共约 500+ 行代码/文档 |
+| 核心代码 | 1 (`backbones/__init__.py`) | 3 (`train.py`, `Model.py`, `utils/dataset.py`) | 修复导入 + 论文参数对齐 + 单变量支持 + label_len 修复 |
+| 工具脚本 | 3 (`run_paper_exps.sh`, `run_simplified_exps.sh`, `results/collect_results.py`) | 2 (`run_experiments.sh`, `run_final_exps.sh`) | 按论文 4 个 Table 自动运行实验 |
+| 配置文件 | 1 (`requirements.txt`) | 1 (`.gitignore`) | 添加依赖列表、精简排除规则 |
+| 数据 | 4 (`ETTh1.csv`, `ECL.csv`, `WTH.csv`, `ILI.csv`) | 0 | 全部 5 个数据集纳入版本控制 |
+| 文档 | 1 (`IMPROVEMENTS.md`) | 1 (`README.md`) | 17 项改动完整记录 + 标准学术 README |
+| **合计** | **10** | **7** | 共约 1000+ 行代码/文档/配置 |
 
 ---
 
-## 复现验证
+## 完整改动时间线
 
-以下命令可在 5 分钟内验证项目可用性：
-
-```bash
-git clone git@github.com:ZhangWendy-23/Dish-TS.git
-cd Dish-TS
-pip install -r requirements.txt
-python train.py --data ETTm2 --model Transformer --norm dishts --gpu 0
-```
-
-预期输出 MSE、MAE、RMSE 等评估指标。
+| 序号 | 改动 | 日期 |
+|------|------|------|
+| 1 | 新建 `backbones/__init__.py` | 初始 |
+| 2 | 新建 `requirements.txt` | 初始 |
+| 3 | 重写 `run_experiments.sh`（Phase→Table 结构化） | 初始 |
+| 4 | 新建 `results/collect_results.py` | 初始 |
+| 5 | 重写 `README.md`（初版） | 初始 |
+| 6 | 添加 `train.py` 文档字符串 | 初始 |
+| 7 | 添加 `utils/dataset.py` 文档字符串 | 初始 |
+| 8 | 更新 `.gitignore` | 初始 |
+| 9 | 数据集入库（4 个新数据集） | 随后 |
+| 10 | `train.py` 论文参数对齐（batch/lr/patience/prior loss） | 随后 |
+| 11 | 新建 `run_paper_exps.sh`（4-Table 严格脚本） | 随后 |
+| 12 | 数据目录 `dataset/` → `data/` | 随后 |
+| 13 | `dataset.py` 支持单变量 `features='S'` | 最新 |
+| 14 | `train.py` label_len 越界保护 | 最新 |
+| 15 | `run_paper_exps.sh` 按 Table 传入 features | 最新 |
+| 16 | `README.md` 一键运行方案 + 7步部署指南 | 最新 |
+| 17 | 仓库重命名 → `Dish-TS-Reproduction` + 公开 + README 学术格式重写 | 最新 |
 
 ---
 
-*最后更新: 2026-06-09*
+*最后更新: 2026-06-10*

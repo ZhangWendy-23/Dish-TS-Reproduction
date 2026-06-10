@@ -1,240 +1,426 @@
-# Dish-TS: A General Paradigm for Alleviating Distribution Shift in Time Series Forecasting
+# Dish-TS-Reproduction
 
-[![AAAI 2023](https://img.shields.io/badge/AAAI-2023-blue)](https://ojs.aaai.org/index.php/AAAI/article/view/25913)
-[![arXiv](https://img.shields.io/badge/arXiv-2302.14829-b31b1b.svg)](https://arxiv.org/abs/2302.14829)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
-
-> Dish-TS ?????????????????? ??? AAAI 2023???
-> ?????? Dual-Conet ?????????????????? intra-space ??? inter-space ??????????????????????????????????????? 20%+???
-
----
-
-## ????????????
-
-???????????????????????????clone ??????????????????
-
-```bash
-git clone git@github.com:ZhangWendy-23/Dish-TS.git
-cd Dish-TS
-pip install -r requirements.txt
-chmod +x run_paper_exps.sh
-nohup ./run_paper_exps.sh all > logs/master.log 2>&1 &
-tail -f logs/master.log
-```
+> **Dish-TS (AAAI 2023) — Paper Reproduction Coursework**
+>
+> Original Paper: [Dish-TS: A General Paradigm for Alleviating Distribution Shift in Time Series Forecasting](https://ojs.aaai.org/index.php/AAAI/article/view/25913)
+>
+> Based on [official Dish-TS code](https://github.com/weifantt/Dish-TS), with all parameters strictly aligned.
+> Dish-TS proposes a Dual-Conet framework to address both intra-space and inter-space distribution shift in time series forecasting, achieving 20%+ average improvement.
 
 ---
 
-## ?????? 3090 ???????????????????????????????????????
+## Table of Contents
 
-### ?????????????????? SSH ??????????????????????????????
+1. [Requirements](#requirements)
+2. [Installation & Quick Start](#installation--quick-start)
+3. [Project Structure](#project-structure)
+4. [Paper Reproduction Guide](#paper-reproduction-guide)
+   - [Experiment Overview (4 Tables)](#experiment-overview-4-tables)
+   - [Table 1: Univariate Forecasting](#table-1-univariate-forecasting)
+   - [Table 2: Multivariate Forecasting](#table-2-multivariate-forecasting)
+   - [Table 3: RevIN vs Dish-TS Comparison](#table-3-revin-vs-dishts-comparison)
+   - [Table 4: Long-horizon Forecasting](#table-4-long-horizon-forecasting)
+   - [Quick Verification](#quick-verification)
+   - [Simplified Experiments](#simplified-experiments)
+   - [Collecting Results](#collecting-results)
+5. [Configuration Reference](#configuration-reference)
+   - [CLI Arguments](#cli-arguments)
+   - [Model Hyperparameters](#model-hyperparameters)
+   - [Data Splits](#data-splits)
+   - [Batch Size Rules](#batch-size-rules)
+6. [Evaluation Metrics](#evaluation-metrics)
+7. [Expected Results](#expected-results)
+8. [Citation](#citation)
+9. [Acknowledgments](#acknowledgments)
+
+---
+
+## Requirements
+
+| Component | Specification |
+|-----------|---------------|
+| **GPU** | NVIDIA RTX 3090 24GB (paper standard) or RTX 3080 Ti 12GB |
+| **RAM** | >= 16 GB |
+| **Disk** | >= 5 GB |
+| **Python** | >= 3.8 |
+| **PyTorch** | >= 1.8.0 |
+| **CUDA** | >= 11.1 |
+
+---
+
+## Installation & Quick Start
+
+Since the repository is public, you can clone directly without SSH keys.
+
+### Option 1: Clone via HTTPS (recommended, no SSH required)
 
 ```bash
-ssh-keygen -t ed25519 -C "your_email@example.com" -f ~/.ssh/id_ed25519_github
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519_github
-cat ~/.ssh/id_ed25519_github.pub   # ??????????????????
-```
-
-?????????????????? GitHub???Settings ??? SSH and GPG keys ??? New SSH key???
-
-?????????
-
-```bash
-ssh -T git@github.com
-# ??????: Hi ZhangWendy-23! You've successfully authenticated...
-```
-
-### ???????????????????????????????????????
-
-```bash
-git clone git@github.com:ZhangWendy-23/Dish-TS.git
-cd Dish-TS
+git clone https://github.com/ZhangWendy-23/Dish-TS-Reproduction.git
+cd Dish-TS-Reproduction
 pip install -r requirements.txt
 ```
 
-### ????????????????????????
+### Option 2: Clone via SSH
 
 ```bash
-nvidia-smi                         # ????????? RTX 3090, 24576 MiB
-ls -lh data/                       # 5 ??? CSV ??????
-python -c "from backbones import Autoformer; from DishTS import DishTS; print('OK')"
+git clone git@github.com:ZhangWendy-23/Dish-TS-Reproduction.git
+cd Dish-TS-Reproduction
+pip install -r requirements.txt
 ```
 
-### ???????????????????????????????????? 10 ?????????
+### Verify Installation
+
+```bash
+nvidia-smi                         # Should show RTX 3090 (24576 MiB) or similar
+ls -lh data/                       # Should list 5 CSV files
+python -c "from backbones import Autoformer; from DishTS import DishTS; print('Installation OK')"
+```
+
+### Run All Paper Experiments (One Command)
 
 ```bash
 chmod +x run_paper_exps.sh
-./run_paper_exps.sh quick
+nohup ./run_paper_exps.sh all > logs/master_all.log 2>&1 &
+tail -f logs/master_all.log
 ```
 
-?????????????????????
+> **Note**: Full reproduction (542 experiments across 4 tables) takes approximately 2-5 days on a single RTX 3090. See the step-by-step guide below for running individual tables.
+
+---
+
+## Project Structure
 
 ```
-DATA=ETTm2  MODEL=Autoformer  NORM=dishts
-  MSE=0.xxxxx  MAE=0.xxxxx  RMSE=0.xxxxx
+Dish-TS-Reproduction/
+├── train.py                     # Main training script (CLI args, paper-aligned)
+├── Model.py                     # Unified model wrapper (forecast backbone + norm model)
+├── DishTS.py                    # Dish-TS core module (Dual-Conet with GELU activation)
+├── REVIN.py                     # RevIN baseline implementation
+├── .gitignore
+├── requirements.txt
+│
+├── run_paper_exps.sh            # ★ Paper Table 1-4 one-click runner (recommended)
+├── run_simplified_exps.sh       # Simplified 18-experiment subset (~1-3 hours)
+├── run_experiments.sh           # Legacy experiment script (preserved)
+├── run_final_exps.sh            # Legacy experiment script (preserved)
+│
+├── backbones/                   # Forecasting backbone models
+│   ├── __init__.py
+│   ├── Autoformer.py            # Autoformer (auto-correlation mechanism)
+│   ├── Informer.py              # Informer (prob-sparse self-attention)
+│   ├── Transformer.py           # Vanilla Transformer
+│   └── layers/                  # Reusable neural network components
+│       ├── __init__.py
+│       ├── Embed.py             # Data/temporal/positional embeddings
+│       ├── Autoformer_EncDec.py # Autoformer-specific encoder/decoder with series decomposition
+│       ├── Transformer_EncDec.py# Standard Transformer encoder/decoder
+│       ├── AutoCorrelation.py   # Auto-correlation attention mechanism
+│       ├── SelfAttention_Family.py # FullAttention + ProbAttention
+│       ├── masking.py           # Causal masking and ProbMask
+│       └── utils.py             # Utility functions
+│
+├── utils/                       # Utility modules
+│   ├── __init__.py              # Random seed configuration
+│   ├── dataset.py               # Data loader (M/S mode, 6:2:2 or 7:1:2 split)
+│   ├── earlystop.py             # Early stopping mechanism
+│   └── metric.py                # MSE/MAE/RMSE/MAPE/MSPE metrics
+│
+├── data/                        # 5 benchmark datasets (tracked in version control)
+│   ├── ETTm2.csv  (~9.3 MB)    # 15-min level, 7 features, ~69,680 timestamps
+│   ├── ETTh1.csv  (~2.5 MB)    # Hourly, 7 features, ~17,420 timestamps
+│   ├── ECL.csv    (~92 MB)     # Hourly, 321 features, ~26,304 timestamps
+│   ├── WTH.csv    (~7.0 MB)    # 10-min level, 21 features, ~52,696 timestamps
+│   └── ILI.csv    (~67 KB)     # Weekly, 7 features, ~966 timestamps
+│
+├── results/                     # Result collection and analysis tools
+│   ├── collect_results.py       # Parse logs -> CSV + LaTeX tables + plots
+│   └── parse_paper.py           # Paper parameter extraction reference
+│
+├── logs/                        # Experiment logs (tracked for reproducibility)
+│   ├── simplified/              # Simplified 18-experiment results
+│   └── backup/                  # Historical backup
+│
+├── README.md                    # This file
+└── IMPROVEMENTS.md              # Complete modification log (16 items)
 ```
 
-### ??????????????????????????????
+---
 
-| ?????? | ?????? | ?????? | ????????? | ???????????? |
-|------|------|------|--------|----------|
-| 1 | ./run_paper_exps.sh table3 | RevIN vs Dish-TS | 72 | 4-6 ?????? |
-| 2 | ./run_paper_exps.sh table2 | ??????????????? | 225 | 18-24 ?????? |
-| 3 | ./run_paper_exps.sh table1 | ??????????????? | 225 | 12-20 ?????? |
-| 4 | ./run_paper_exps.sh table4 | ??????????????? | 20 | 5-8 ?????? |
+## Paper Reproduction Guide
 
-????????????????????? SSH ???????????????
+### Experiment Overview (4 Tables)
+
+| Table | Description | seq_len | pred_len | Datasets | Models | Norms | Seeds | Total Exp. |
+|-------|-------------|---------|----------|----------|--------|-------|-------|-------------|
+| **1** | Univariate forecasting | = pred_len | {24, 48, 96, 168, 336} | All 5 | 3 | 3 | 1 | 225 |
+| **2** | Multivariate forecasting | 96 | {24, 48, 96, 168, 336} | All 5 | 3 | 3 | 1 | 225 |
+| **3** | RevIN vs. Dish-TS | 96 | {24, 168, 336} | 4 (excl. ILI) | Autoformer | 2 | 3 | 72 |
+| **4** | Long-horizon forecasting | 96 | {336, 420, 540, 600, 720} | ECL, ETTh1 | Autoformer | 2 | 1 | 20 |
+
+### Table 1: Univariate Forecasting
+
+Evaluates Dish-TS in the univariate setting (`--features S`, only the last feature column). The input length equals the prediction length.
+
+**Parameters:**
+
+| Parameter | Value |
+|-----------|-------|
+| seq_len | 24, 48, 96, 168, 336 (= pred_len) |
+| pred_len | 24, 48, 96, 168, 336 |
+| features | `S` (univariate) |
+| Models | Autoformer, Informer, Transformer |
+| Normalizations | none, revin, dishts |
+| Datasets | ECL, ETTh1, ETTm2, WTH, ILI |
+| seed | 2023 |
+
+**Run:**
+
+```bash
+chmod +x run_paper_exps.sh
+nohup ./run_paper_exps.sh table1 > logs/table1_master.log 2>&1 &
+```
+
+### Table 2: Multivariate Forecasting
+
+The core experiment table in the paper. Uses fixed `seq_len=96` and `--features M` (all feature columns) across 5 datasets.
+
+**Parameters:**
+
+| Parameter | Value |
+|-----------|-------|
+| seq_len | 96 |
+| pred_len | 24, 48, 96, 168, 336 |
+| features | `M` (multivariate) |
+| Models | Autoformer, Informer, Transformer |
+| Normalizations | none, revin, dishts |
+| Datasets | ECL, ETTh1, ETTm2, WTH, ILI |
+| seed | 2023 |
+
+**Run:**
+
+```bash
+nohup ./run_paper_exps.sh table2 > logs/table2_master.log 2>&1 &
+```
+
+### Table 3: RevIN vs. Dish-TS Comparison
+
+Direct comparison between RevIN and Dish-TS using Autoformer as the backbone. Results are averaged over 3 random seeds (2023, 2024, 2025) and reported as mean ± standard deviation.
+
+**Parameters:**
+
+| Parameter | Value |
+|-----------|-------|
+| seq_len | 96 |
+| pred_len | 24, 168, 336 |
+| features | `M` |
+| Models | Autoformer (only) |
+| Normalizations | revin, dishts |
+| Datasets | ECL, ETTh1, ETTm2, WTH |
+| seeds | 2023, 2024, 2025 |
+
+**Run:**
 
 ```bash
 nohup ./run_paper_exps.sh table3 > logs/table3_master.log 2>&1 &
-nohup ./run_paper_exps.sh table2 > logs/table2_master.log 2>&1 &
-# ?????????????????????
-nohup ./run_paper_exps.sh all > logs/master_all.log 2>&1 &
 ```
 
-### ????????????????????????
+### Table 4: Long-horizon Forecasting
+
+Tests the extrapolation capability by gradually increasing prediction length.
+
+**Parameters:**
+
+| Parameter | Value |
+|-----------|-------|
+| seq_len | 96 |
+| pred_len | 336, 420, 540, 600, 720 |
+| features | `M` |
+| Models | Autoformer |
+| Normalizations | none, dishts |
+| Datasets | ECL, ETTh1 |
+| seed | 2023 |
+
+> **Note**: The original paper uses N-BEATS as backbone for Table 4. This repository uses Autoformer as a substitute.
+
+**Run:**
 
 ```bash
-ps aux | grep "train.py" | grep -v grep    # ????????????????????????
-tail -50 logs/table3_master.log             # ????????????
-nvidia-smi                                   # GPU ?????????
-./run_paper_exps.sh summarize               # ????????????????????????
+nohup ./run_paper_exps.sh table4 > logs/table4_master.log 2>&1 &
 ```
 
-### ????????????????????????
+### Quick Verification
+
+Run a smoke test (~10 minutes) to verify the environment is correctly configured before launching full experiments:
 
 ```bash
-./run_paper_exps.sh summarize    # ?????? results/paper_summary.csv
-python results/collect_results.py  # ?????? LaTeX ??? + ?????????
+./run_paper_exps.sh quick
 ```
 
----
+This runs 6 experiments on ETTm2 with Autoformer across 3 normalization methods and 2 prediction lengths (24, 96).
 
-## ??????????????????18 ??????????????? 1-3 ?????????
+### Simplified Experiments
+
+For limited time or compute resources, a simplified 18-experiment subset provides the main findings in 1-3 hours:
 
 ```bash
 chmod +x run_simplified_exps.sh
 nohup ./run_simplified_exps.sh > logs/simplified_master.log 2>&1 &
 ```
 
-?????????ETTm2 x {Autoformer, Informer} x {none, revin, dishts} x {24, 96, 336}
+**Matrix**: ETTm2 x {Autoformer, Informer} x {none, revin, dishts} x {24, 96, 336}
+
+### Collecting Results
+
+After experiments complete (or at any point to check progress):
+
+```bash
+# Generate result summary
+./run_paper_exps.sh summarize
+
+# Generate LaTeX tables and comparison plots
+python results/collect_results.py
+```
+
+Output files:
+
+| File | Description |
+|------|-------------|
+| `results/paper_summary.csv` | Raw results for all completed experiments |
+| `results/summary_aggregated.csv` | Multi-seed mean ± standard deviation |
+| `results/table2_multivariate.tex` | LaTeX table for Table 2 |
+| `results/table3_revin_vs_dishts.tex` | LaTeX table for Table 3 |
+| `results/*.png` | MSE vs. prediction length comparison plots |
+
+### Monitoring Progress
+
+```bash
+# Currently running experiments
+ps aux | grep "train.py" | grep -v grep
+
+# Latest log output
+tail -50 logs/table3_master.log
+
+# GPU utilization
+nvidia-smi
+
+# Summarize completed results at any time
+./run_paper_exps.sh summarize
+```
 
 ---
 
-## ????????????
+## Configuration Reference
 
-```
-Dish-TS/
-????????? train.py            # ???????????????
-????????? Model.py            # ??????????????????
-????????? DishTS.py           # Dish-TS ????????????
-????????? REVIN.py            # RevIN ??????
-????????? .gitignore
-????????? requirements.txt
-????????? run_paper_exps.sh   # ?????? Table 1-4 ????????????????????????
-????????? run_simplified_exps.sh
-????????? backbones/          # ????????????
-???   ????????? Autoformer.py / Informer.py / Transformer.py
-???   ????????? layers/         # Enc/Dec/Attention/Embed
-????????? utils/              # dataset / earlystop / metric
-????????? data/               # 5 ???????????????????????????????????????
-????????? results/            # ??????????????????
-????????? logs/               # ????????????
-????????? IMPROVEMENTS.md     # ??????????????????
-```
+### CLI Arguments
 
----
+| Argument | Type | Default | Description |
+|----------|------|---------|-------------|
+| `--data` | str | `ETTm2` | Dataset: `ETTm2`, `ETTh1`, `ECL`, `WTH`, `ILI` |
+| `--model` | str | `Transformer` | Forecast model: `Autoformer`, `Informer`, `Transformer` |
+| `--norm` | str | `none` | Normalization: `none`, `revin`, `dishts` |
+| `--features` | str | `M` | Feature mode: `M` (multivariate), `S` (univariate, Table 1) |
+| `--seq_len` | int | `96` | Input/history window length |
+| `--label_len` | int | `0` | Decoder input length. `0` = auto-compute as `max(48, pred_len//2)`, capped at seq_len |
+| `--pred_len` | int | `96` | Prediction/horizon window length |
+| `--batch_size` | int | `0` | `0` = auto-select per paper: Informer=256, Autoformer/Transformer=128; ECL=64 regardless |
+| `--lr` | float | `1e-3` | Learning rate (paper search range: [1e-4, 1e-3]) |
+| `--patience` | int | `7` | Early stopping patience epochs |
+| `--seed` | int | `2023` | Random seed (paper uses 3 seeds for Table 3: 2023/2024/2025) |
+| `--alpha` | float | `0.5` | Dish-TS prior knowledge guidance weight (paper search: 0 to 1) |
+| `--dish_init` | str | `standard` | DishTS initialization: `standard` (GELU), `avg`, `uniform` |
+| `--affine` | int | `1` | RevIN affine transformation: `1` = enabled, `0` = disabled |
+| `--gpu` | int | `0` | GPU device ID |
 
-## ???????????????
+### Model Hyperparameters
 
-| ?????? | ?????? | ????????? | ?????? |
-|------|------|--------|------|
-| --data | str | ETTm2 | ETTm2/ETTh1/ECL/WTH/ILI |
-| --model | str | Transformer | Autoformer/Informer/Transformer |
-| --norm | str | none | none/revin/dishts |
-| --features | str | M | M(?????????)/S(?????????) |
-| --seq_len | int | 96 | ???????????? |
-| --pred_len | int | 96 | ???????????? |
-| --batch_size | int | 0 | 0=??????(?????????) |
-| --lr | float | 1e-3 | ????????? |
-| --patience | int | 7 | ???????????? |
-| --seed | int | 2023 | ???????????? |
-| --alpha | float | 0.5 | prior loss ?????? |
-| --gpu | int | 0 | GPU ID |
+Hard-coded in `train.py`, identical to the original paper:
 
-## ??????????????????train.py ????????????
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `d_model` | 512 | Hidden dimension |
+| `n_heads` | 8 | Number of attention heads |
+| `d_ff` | 2048 | Feed-forward network dimension |
+| `e_layers` | 2 | Number of encoder layers |
+| `d_layers` | 1 | Number of decoder layers |
+| `dropout` | 0.05 | Dropout rate |
+| `activation` | `gelu` | Activation function |
+| `embed_type` | 3 | Embedding type (no temporal embedding) |
+| `moving_avg` | 25 | Autoformer moving average kernel size |
+| `factor` | 3 | Informer prob-sparse attention factor |
+| `distil` | True | Informer distillation |
 
-| ?????? | ??? | ?????? | ??? |
-|------|-----|------|-----|
-| d_model | 512 | n_heads | 8 |
-| d_ff | 2048 | e_layers | 2 |
-| d_layers | 1 | dropout | 0.05 |
-| activation | gelu | moving_avg | 25 |
+### Data Splits
 
-## ????????????
+Automatically selected based on dataset name, following the original paper:
 
-| ????????? | ??????:??????:?????? |
-|--------|--------------|
-| ETTm2/ETTh1/ILI | 6:2:2 |
-| ECL/WTH | 7:1:2 |
+| Datasets | Train | Validation | Test |
+|----------|-------|------------|------|
+| ETTm2, ETTh1, ILI | 60% | 20% | 20% |
+| ECL, WTH | 70% | 10% | 20% |
 
-## batch_size???0=????????????????????????
+All experiments are conducted on raw data without global normalization, consistent with the paper setting.
 
-| ?????? | ?????? | ECL????????? |
-|------|------|----------|
+### Batch Size Rules
+
+When `--batch_size 0` is specified (auto-selection):
+
+| Model | Default Batch Size | ECL Dataset |
+|-------|-------------------|-------------|
 | Informer | 256 | 64 |
 | Autoformer | 128 | 64 |
 | Transformer | 128 | 64 |
 
----
-
-## 4 ??? Table ????????????
-
-| Table | seq_len | pred_len | ?????? | Norms | Seeds | ????????? |
-|-------|---------|----------|------|-------|-------|--------|
-| 1 ????????? | =pred_len | 24~336 | 3 | 3 | 1 | 225 |
-| 2 ????????? | 96 | 24~336 | 3 | 3 | 1 | 225 |
-| 3 RevIN?????? | 96 | 24,168,336 | Autoformer | revin,dishts | 3 | 72 |
-| 4 ????????? | 96 | 336~720 | Autoformer | none,dishts | 1 | 20 |
-
-```bash
-./run_paper_exps.sh table1     # ?????????
-./run_paper_exps.sh table2     # ?????????
-./run_paper_exps.sh table3     # RevIN ??????
-./run_paper_exps.sh table4     # ?????????
-./run_paper_exps.sh all        # ??????
-./run_paper_exps.sh quick      # ????????????
-./run_paper_exps.sh summarize  # ??????
-```
+Additionally, for `pred_len > 168`, batch size is automatically reduced to 64 to avoid CUDA out-of-memory errors.
 
 ---
 
-## ????????????
+## Evaluation Metrics
 
-MSE/MAE/RMSE/MAPE ??? ?????????????????????
+All metrics are computed on the original (unnormalized) scale.
 
----
-
-## ????????????
-
-1. ?????? quick ???????????????~10 ?????????
-2. ????????? table3???????????????4-6 ?????????
-3. ?????? table2???18-24 ?????????
-4. ????????? table1 + table4
-5. ??? nohup ????????????
-6. ?????? summarize????????????????????????
-7. ????????????????????????????????????
+| Metric | Formula | Range | Lower is Better? |
+|--------|---------|-------|------------------|
+| **MSE** | mean((y\_pred - y\_true)^2) | [0, +inf) | Yes |
+| **MAE** | mean(\|y\_pred - y\_true\|) | [0, +inf) | Yes |
+| **RMSE** | sqrt(MSE) | [0, +inf) | Yes |
+| **MAPE** | mean(\|(y\_pred - y\_true) / y\_true\|) | [0, +inf) | Yes |
+| **MSPE** | mean(((y\_pred - y\_true) / y\_true)^2) | [0, +inf) | Yes |
 
 ---
 
-## ??????
+## Expected Results
+
+The paper reports the following average improvements of Dish-TS over the baseline (no normalization):
+
+- **Univariate forecasting**: **28.6%** average MSE reduction
+- **Multivariate forecasting**: **21.9%** average MSE reduction
+
+Reproduction success criterion: Dish-TS (`--norm dishts`) should achieve significantly lower MSE than both `none` (raw) and `revin` (RevIN baseline), especially at longer prediction horizons (pred_len >= 96).
+
+---
+
+## Citation
+
+If you use this code or the Dish-TS method in your research, please cite the original paper:
 
 ```bibtex
 @inproceedings{fan2023dish,
-  title={Dish-TS: A General Paradigm for Alleviating Distribution Shift
-         in Time Series Forecasting},
-  author={Fan, Wei and others},
-  booktitle={AAAI},
-  year={2023}
+  title     = {Dish-{TS}: A General Paradigm for Alleviating Distribution Shift
+               in Time Series Forecasting},
+  author    = {Fan, Wei and Wang, Pengyang and Wang, Dongkun and
+               Wang, Dongjie and Zhou, Yuanchun and Fu, Yanjie},
+  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume    = {37},
+  number    = {6},
+  pages     = {7522--7529},
+  year      = {2023}
 }
 ```
+
+---
+
+## Acknowledgments
+
+This reproduction is based on the official [Dish-TS repository](https://github.com/weifantt/Dish-TS). We thank the authors of [Autoformer](https://github.com/thuml/Autoformer), [Informer](https://github.com/zhouhaoyi/Informer2020), and [RevIN](https://github.com/ts-kim/RevIN) for open-sourcing their code and datasets.
+
+For a detailed record of all modifications made in this reproduction, see [IMPROVEMENTS.md](IMPROVEMENTS.md).
