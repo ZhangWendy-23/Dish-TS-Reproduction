@@ -1,0 +1,21 @@
+epoch:0, train_loss:17.25524, val_loss:13.55040
+epoch:1, train_loss:15.56367, val_loss:13.90144
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:14.95767, val_loss:13.06133
+epoch:3, train_loss:14.42596, val_loss:13.44123
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:14.00823, val_loss:13.92621
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:13.49311, val_loss:13.95731
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:13.16236, val_loss:14.19108
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:12.86258, val_loss:13.25852
+EarlyStopping counter: 5 out of 7 with 7
+epoch:8, train_loss:12.39993, val_loss:23.05680
+EarlyStopping counter: 6 out of 7 with 8
+epoch:9, train_loss:12.54558, val_loss:15.72682
+EarlyStopping counter: 7 out of 7 with 9
+Early stopping with best_score:13.061331748962402
+       0           1      2     3   4   5         6        7        8
+0  ETTm2  Autoformer  revin  2023  96  96  11.80113  2.19804  3.43528

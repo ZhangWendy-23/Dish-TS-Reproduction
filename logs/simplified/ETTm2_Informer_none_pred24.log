@@ -1,0 +1,18 @@
+epoch:0, train_loss:142.53532, val_loss:112.53918
+epoch:1, train_loss:34.94966, val_loss:167.69749
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:28.51287, val_loss:164.54849
+EarlyStopping counter: 2 out of 7 with 2
+epoch:3, train_loss:23.39619, val_loss:154.76198
+EarlyStopping counter: 3 out of 7 with 3
+epoch:4, train_loss:21.48968, val_loss:157.81837
+EarlyStopping counter: 4 out of 7 with 4
+epoch:5, train_loss:18.81927, val_loss:137.14488
+EarlyStopping counter: 5 out of 7 with 5
+epoch:6, train_loss:17.65299, val_loss:135.39005
+EarlyStopping counter: 6 out of 7 with 6
+epoch:7, train_loss:16.49669, val_loss:168.34317
+EarlyStopping counter: 7 out of 7 with 7
+Early stopping with best_score:112.5391845703125
+       0         1     2     3   4   5          6        7        8
+0  ETTm2  Informer  none  2023  96  24  85.222313  6.78776  9.23159

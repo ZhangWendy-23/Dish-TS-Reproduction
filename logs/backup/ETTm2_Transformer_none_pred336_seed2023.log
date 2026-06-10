@@ -1,0 +1,24 @@
+epoch:0, train_loss:52.75093, val_loss:56.63536
+epoch:1, train_loss:20.40605, val_loss:45.68243
+epoch:2, train_loss:18.92499, val_loss:66.01013
+EarlyStopping counter: 1 out of 5 with 2
+epoch:3, train_loss:17.92987, val_loss:60.32762
+EarlyStopping counter: 2 out of 5 with 3
+epoch:4, train_loss:17.00654, val_loss:54.48691
+EarlyStopping counter: 3 out of 5 with 4
+epoch:5, train_loss:16.49300, val_loss:53.94842
+EarlyStopping counter: 4 out of 5 with 5
+epoch:6, train_loss:15.90342, val_loss:44.31685
+epoch:7, train_loss:15.32570, val_loss:49.77609
+EarlyStopping counter: 1 out of 5 with 7
+epoch:8, train_loss:14.77080, val_loss:54.99563
+EarlyStopping counter: 2 out of 5 with 8
+epoch:9, train_loss:14.18901, val_loss:52.85006
+EarlyStopping counter: 3 out of 5 with 9
+epoch:10, train_loss:13.53641, val_loss:57.72321
+EarlyStopping counter: 4 out of 5 with 10
+epoch:11, train_loss:13.02410, val_loss:63.95529
+EarlyStopping counter: 5 out of 5 with 11
+Early stopping with best_score:44.31685220385061
+       0            1     2     3   4    5         6        7        8
+0  ETTm2  Transformer  none  2023  96  336  41.30072  4.06135  6.42656

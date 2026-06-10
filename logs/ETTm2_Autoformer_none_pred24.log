@@ -1,0 +1,41 @@
+epoch:0, train_loss:11.53578, val_loss:10.08183
+epoch:1, train_loss:10.90721, val_loss:9.56636
+epoch:2, train_loss:10.42797, val_loss:9.13765
+epoch:3, train_loss:10.26523, val_loss:9.15051
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:10.22334, val_loss:10.33686
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:10.39953, val_loss:9.40453
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:10.27183, val_loss:8.91067
+epoch:7, train_loss:75.88611, val_loss:9.72280
+EarlyStopping counter: 1 out of 7 with 7
+epoch:8, train_loss:11.16359, val_loss:9.18852
+EarlyStopping counter: 2 out of 7 with 8
+epoch:9, train_loss:10.75436, val_loss:9.04734
+EarlyStopping counter: 3 out of 7 with 9
+epoch:10, train_loss:10.51356, val_loss:8.85742
+epoch:11, train_loss:10.39649, val_loss:8.82808
+epoch:12, train_loss:10.29024, val_loss:8.76475
+epoch:13, train_loss:10.15814, val_loss:8.82590
+EarlyStopping counter: 1 out of 7 with 13
+epoch:14, train_loss:10.05964, val_loss:8.88453
+EarlyStopping counter: 2 out of 7 with 14
+epoch:15, train_loss:9.99163, val_loss:8.63599
+epoch:16, train_loss:9.91573, val_loss:8.75153
+EarlyStopping counter: 1 out of 7 with 16
+epoch:17, train_loss:9.84604, val_loss:8.89381
+EarlyStopping counter: 2 out of 7 with 17
+epoch:18, train_loss:9.75435, val_loss:9.35033
+EarlyStopping counter: 3 out of 7 with 18
+epoch:19, train_loss:9.70010, val_loss:9.06431
+EarlyStopping counter: 4 out of 7 with 19
+epoch:20, train_loss:9.74207, val_loss:8.74054
+EarlyStopping counter: 5 out of 7 with 20
+epoch:21, train_loss:9.72951, val_loss:8.82020
+EarlyStopping counter: 6 out of 7 with 21
+epoch:22, train_loss:9.62345, val_loss:8.78580
+EarlyStopping counter: 7 out of 7 with 22
+Early stopping with best_score:8.63599388025425
+       0           1     2     3   4   5        6        7        8
+0  ETTm2  Autoformer  none  2023  96  24  8.15056  1.85509  2.85492

@@ -1,0 +1,14 @@
+epoch:0, train_loss:56.27539, val_loss:70.28297
+epoch:1, train_loss:23.41914, val_loss:127.97598
+EarlyStopping counter: 1 out of 5 with 1
+epoch:2, train_loss:21.67635, val_loss:139.10328
+EarlyStopping counter: 2 out of 5 with 2
+epoch:3, train_loss:20.47341, val_loss:78.54582
+EarlyStopping counter: 3 out of 5 with 3
+epoch:4, train_loss:19.44711, val_loss:79.22537
+EarlyStopping counter: 4 out of 5 with 4
+epoch:5, train_loss:18.56340, val_loss:102.30487
+EarlyStopping counter: 5 out of 5 with 5
+Early stopping with best_score:70.2829679705433
+       0            1     2     3   4    5          6        7        8
+0  ETTm2  Transformer  none  2023  96  720  40.939899  4.31693  6.39843

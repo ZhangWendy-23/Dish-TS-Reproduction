@@ -1,0 +1,52 @@
+========================================
+ Dish-TS  -  Simplified Experiments    
+========================================
+ datasets   : ETTm2
+ models     : Autoformer Informer
+ norms      : none revin dishts
+ pred_len   : 24 96 336
+ batch_size : 0 (paper default)
+ alpha      : 0.5
+ patience   : 7
+ seed       : 2023
+ gpu        : 0
+----------------------------------------
+[11:08:12] [1/18] ETTm2/Autoformer/none/pred=24
+  -> 0  ETTm2  Autoformer  none  2023  96  24  8.38431  1.8769  2.89557
+[11:18:14] [2/18] ETTm2/Autoformer/none/pred=96
+  -> 0  ETTm2  Autoformer  none  2023  96  96  11.5732  2.16894  3.40194
+[11:28:52] [3/18] ETTm2/Autoformer/none/pred=336
+  -> 0  ETTm2  Autoformer  none  2023  96  336  17.06077  2.59161  4.13047
+[11:45:29] [4/18] ETTm2/Autoformer/revin/pred=24
+  -> 0  ETTm2  Autoformer  revin  2023  96  24  8.74908  1.91159  2.95788
+[11:56:57] [5/18] ETTm2/Autoformer/revin/pred=96
+  -> 0  ETTm2  Autoformer  revin  2023  96  96  11.80113  2.19804  3.43528
+[12:07:37] [6/18] ETTm2/Autoformer/revin/pred=336
+  -> 0  ETTm2  Autoformer  revin  2023  96  336  17.99226  2.64438  4.24173
+[12:24:19] [7/18] ETTm2/Autoformer/dishts/pred=24
+  -> 0  ETTm2  Autoformer  dishts  2023  96  24  8.00961  1.9961  2.83012
+[12:47:33] [8/18] ETTm2/Autoformer/dishts/pred=96
+  -> 0  ETTm2  Autoformer  dishts  2023  96  96  13.82887  2.60007  3.71872
+[13:00:09] [9/18] ETTm2/Autoformer/dishts/pred=336
+  -> 0  ETTm2  Autoformer  dishts  2023  96  336  22.058929  3.28507  4.69669
+[13:16:58] [10/18] ETTm2/Informer/none/pred=24
+  -> 0  ETTm2  Informer  none  2023  96  24  85.222313  6.78776  9.23159
+[13:21:18] [11/18] ETTm2/Informer/none/pred=96
+  -> 0  ETTm2  Informer  none  2023  96  96  81.874741  6.22442  9.04847
+[13:26:18] [12/18] ETTm2/Informer/none/pred=336
+  -> 0  ETTm2  Informer  none  2023  96  336  41.970661  4.25041  6.47848
+[13:41:54] [13/18] ETTm2/Informer/revin/pred=24
+  -> 0  ETTm2  Informer  revin  2023  96  24  6.28434  1.61304  2.50686
+[13:47:10] [14/18] ETTm2/Informer/revin/pred=96
+  -> 0  ETTm2  Informer  revin  2023  96  96  11.99323  2.18416  3.46312
+[13:52:12] [15/18] ETTm2/Informer/revin/pred=336
+  -> 0  ETTm2  Informer  revin  2023  96  336  18.71483  2.79204  4.32606
+[14:02:17] [16/18] ETTm2/Informer/dishts/pred=24
+  -> 0  ETTm2  Informer  dishts  2023  96  24  8.19305  2.0303  2.86235
+[14:13:37] [17/18] ETTm2/Informer/dishts/pred=96
+  -> 0  ETTm2  Informer  dishts  2023  96  96  12.07304  2.42757  3.47463
+[14:20:04] [18/18] ETTm2/Informer/dishts/pred=336
+  -> 0  ETTm2  Informer  dishts  2023  96  336  20.976419  3.11191  4.58
+========================================
+ All experiments completed at 14:31:13
+========================================

@@ -1,0 +1,111 @@
+========================================
+  Phase 1: ETTm2 Full Comparison
+========================================
+[18:33:16] Transformer + none, pred_len=96
+epoch:0, train_loss:77.03139, val_loss:36.90149
+epoch:1, train_loss:16.37722, val_loss:26.22812
+epoch:2, train_loss:14.38627, val_loss:26.82293
+EarlyStopping counter: 1 out of 5 with 2
+epoch:3, train_loss:13.13296, val_loss:24.38939
+epoch:4, train_loss:12.41512, val_loss:28.92752
+EarlyStopping counter: 1 out of 5 with 4
+epoch:5, train_loss:11.57582, val_loss:23.63137
+epoch:6, train_loss:11.22122, val_loss:23.44060
+epoch:7, train_loss:10.77179, val_loss:19.87370
+epoch:8, train_loss:10.61726, val_loss:20.91384
+EarlyStopping counter: 1 out of 5 with 8
+epoch:9, train_loss:10.25812, val_loss:19.88097
+EarlyStopping counter: 2 out of 5 with 9
+epoch:10, train_loss:9.99940, val_loss:24.07417
+EarlyStopping counter: 3 out of 5 with 10
+epoch:11, train_loss:9.65531, val_loss:21.08295
+EarlyStopping counter: 4 out of 5 with 11
+epoch:12, train_loss:9.47659, val_loss:27.60725
+EarlyStopping counter: 5 out of 5 with 12
+Early stopping with best_score:19.873703920616293
+       0            1     2     3   4   5         6        7        8
+0  ETTm2  Transformer  none  2023  96  96  15.21816  2.55498  3.90105
+[18:40:28] Transformer + none, pred_len=192
+epoch:0, train_loss:56.12058, val_loss:37.22324
+epoch:1, train_loss:17.92876, val_loss:34.88005
+epoch:2, train_loss:16.29540, val_loss:30.16669
+epoch:3, train_loss:15.44423, val_loss:27.37985
+epoch:4, train_loss:14.84225, val_loss:29.77160
+EarlyStopping counter: 1 out of 5 with 4
+epoch:5, train_loss:14.32571, val_loss:30.93245
+EarlyStopping counter: 2 out of 5 with 5
+epoch:6, train_loss:13.62004, val_loss:25.94788
+epoch:7, train_loss:13.24346, val_loss:28.63652
+EarlyStopping counter: 1 out of 5 with 7
+epoch:8, train_loss:12.66040, val_loss:25.97989
+EarlyStopping counter: 2 out of 5 with 8
+epoch:9, train_loss:12.18019, val_loss:27.51130
+EarlyStopping counter: 3 out of 5 with 9
+epoch:10, train_loss:11.87450, val_loss:30.31130
+EarlyStopping counter: 4 out of 5 with 10
+epoch:11, train_loss:11.49658, val_loss:28.67999
+EarlyStopping counter: 5 out of 5 with 11
+Early stopping with best_score:25.947880744934082
+       0            1     2     3   4    5          6        7       8
+0  ETTm2  Transformer  none  2023  96  192  32.891319  3.55744  5.7351
+[18:49:26] Transformer + none, pred_len=336
+epoch:0, train_loss:52.75093, val_loss:56.63536
+epoch:1, train_loss:20.40605, val_loss:45.68243
+epoch:2, train_loss:18.92499, val_loss:66.01013
+EarlyStopping counter: 1 out of 5 with 2
+epoch:3, train_loss:17.92987, val_loss:60.32762
+EarlyStopping counter: 2 out of 5 with 3
+epoch:4, train_loss:17.00654, val_loss:54.48691
+EarlyStopping counter: 3 out of 5 with 4
+epoch:5, train_loss:16.49300, val_loss:53.94842
+EarlyStopping counter: 4 out of 5 with 5
+epoch:6, train_loss:15.90342, val_loss:44.31685
+epoch:7, train_loss:15.32570, val_loss:49.77609
+EarlyStopping counter: 1 out of 5 with 7
+epoch:8, train_loss:14.77080, val_loss:54.99563
+EarlyStopping counter: 2 out of 5 with 8
+epoch:9, train_loss:14.18901, val_loss:52.85006
+EarlyStopping counter: 3 out of 5 with 9
+epoch:10, train_loss:13.53641, val_loss:57.72321
+EarlyStopping counter: 4 out of 5 with 10
+epoch:11, train_loss:13.02410, val_loss:63.95529
+EarlyStopping counter: 5 out of 5 with 11
+Early stopping with best_score:44.31685220385061
+       0            1     2     3   4    5         6        7        8
+0  ETTm2  Transformer  none  2023  96  336  41.30072  4.06135  6.42656
+[19:02:35] Transformer + none, pred_len=720
+epoch:0, train_loss:56.27539, val_loss:70.28297
+epoch:1, train_loss:23.41914, val_loss:127.97598
+EarlyStopping counter: 1 out of 5 with 1
+epoch:2, train_loss:21.67635, val_loss:139.10328
+EarlyStopping counter: 2 out of 5 with 2
+epoch:3, train_loss:20.47341, val_loss:78.54582
+EarlyStopping counter: 3 out of 5 with 3
+epoch:4, train_loss:19.44711, val_loss:79.22537
+EarlyStopping counter: 4 out of 5 with 4
+epoch:5, train_loss:18.56340, val_loss:102.30487
+EarlyStopping counter: 5 out of 5 with 5
+Early stopping with best_score:70.2829679705433
+       0            1     2     3   4    5          6        7        8
+0  ETTm2  Transformer  none  2023  96  720  40.939899  4.31693  6.39843
+[19:18:09] Transformer + revin, pred_len=96
+[19:21:54] Transformer + revin, pred_len=192
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:21.93374, val_loss:23.47081
+epoch:1, train_loss:20.58389, val_loss:23.61282
+EarlyStopping counter: 1 out of 5 with 1
+epoch:2, train_loss:20.17609, val_loss:25.77997
+EarlyStopping counter: 2 out of 5 with 2
+epoch:3, train_loss:19.87052, val_loss:25.51936
+EarlyStopping counter: 3 out of 5 with 3
+epoch:4, train_loss:19.38264, val_loss:24.61134
+EarlyStopping counter: 4 out of 5 with 4
+epoch:5, train_loss:19.08913, val_loss:25.01155
+EarlyStopping counter: 5 out of 5 with 5
+Early stopping with best_score:23.47081204823085
+       0            1      2     3   4    5         6        7        8
+0  ETTm2  Transformer  revin  2023  96  192  16.40308  2.57532  4.05007
+[19:26:37] Transformer + revin, pred_len=336
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass

@@ -1,0 +1,9 @@
+nohup: ignoring input
+========================================
+ 数据集: ETTm2 (核心)
+========================================
+[2026-06-09 22:27:06] 开始: data=ETTm2 model=Autoformer norm=none pred_len=24 -> logs/ETTm2_Autoformer_none_pred24.log
+[2026-06-09 22:43:03] 完成 (exit=0): data=ETTm2 model=Autoformer norm=none pred_len=24
+[2026-06-09 22:43:03] 开始: data=ETTm2 model=Informer norm=none pred_len=24 -> logs/ETTm2_Informer_none_pred24.log
+[2026-06-09 22:48:46] 完成 (exit=0): data=ETTm2 model=Informer norm=none pred_len=24
+[2026-06-09 22:48:46] 开始: data=ETTm2 model=Transformer norm=none pred_len=24 -> logs/ETTm2_Transformer_none_pred24.log

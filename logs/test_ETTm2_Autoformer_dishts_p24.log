@@ -1,0 +1,15 @@
+epoch:0, train_loss:27.62813, val_loss:12.43427
+epoch:1, train_loss:12.42850, val_loss:11.58706
+epoch:2, train_loss:11.42212, val_loss:11.62089
+EarlyStopping counter: 1 out of 3 with 2
+epoch:3, train_loss:10.90373, val_loss:13.12388
+EarlyStopping counter: 2 out of 3 with 3
+epoch:4, train_loss:10.48635, val_loss:12.32211
+EarlyStopping counter: 3 out of 3 with 4
+Early stopping with best_score:11.587056159973145
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=9.292520  MAE=2.165760  RMSE=3.048360  MAPE=7462916.000000  MSPE=2978491100299264.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer dishts  2023       96         48        24         128    0.5 9.29252 2.16576 3.04836 7462916.0 2.978491e+15

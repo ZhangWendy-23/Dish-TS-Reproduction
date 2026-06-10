@@ -1,0 +1,18 @@
+epoch:0, train_loss:28.74891, val_loss:19.57036
+epoch:1, train_loss:27.70544, val_loss:20.81243
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:27.43207, val_loss:20.74679
+EarlyStopping counter: 2 out of 7 with 2
+epoch:3, train_loss:27.09275, val_loss:21.66553
+EarlyStopping counter: 3 out of 7 with 3
+epoch:4, train_loss:26.53822, val_loss:20.98637
+EarlyStopping counter: 4 out of 7 with 4
+epoch:5, train_loss:25.93924, val_loss:23.80625
+EarlyStopping counter: 5 out of 7 with 5
+epoch:6, train_loss:25.10245, val_loss:23.42579
+EarlyStopping counter: 6 out of 7 with 6
+epoch:7, train_loss:24.39447, val_loss:23.58249
+EarlyStopping counter: 7 out of 7 with 7
+Early stopping with best_score:19.570363998413086
+       0           1     2     3   4    5         6        7        8
+0  ETTm2  Autoformer  none  2023  96  336  17.06077  2.59161  4.13047

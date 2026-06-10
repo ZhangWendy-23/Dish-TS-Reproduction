@@ -1,0 +1,16 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:21.93374, val_loss:23.47081
+epoch:1, train_loss:20.58389, val_loss:23.61282
+EarlyStopping counter: 1 out of 5 with 1
+epoch:2, train_loss:20.17609, val_loss:25.77997
+EarlyStopping counter: 2 out of 5 with 2
+epoch:3, train_loss:19.87052, val_loss:25.51936
+EarlyStopping counter: 3 out of 5 with 3
+epoch:4, train_loss:19.38264, val_loss:24.61134
+EarlyStopping counter: 4 out of 5 with 4
+epoch:5, train_loss:19.08913, val_loss:25.01155
+EarlyStopping counter: 5 out of 5 with 5
+Early stopping with best_score:23.47081204823085
+       0            1      2     3   4    5         6        7        8
+0  ETTm2  Transformer  revin  2023  96  192  16.40308  2.57532  4.05007

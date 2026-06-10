@@ -1,0 +1,45 @@
+epoch:0, train_loss:43.29351, val_loss:13.86158
+epoch:1, train_loss:15.04747, val_loss:12.72063
+epoch:2, train_loss:13.35325, val_loss:12.21124
+epoch:3, train_loss:12.47514, val_loss:11.85596
+epoch:4, train_loss:12.11003, val_loss:12.21798
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:11.63280, val_loss:11.54747
+epoch:6, train_loss:11.40529, val_loss:12.00275
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:11.00406, val_loss:10.99482
+epoch:8, train_loss:10.69618, val_loss:10.94401
+epoch:9, train_loss:10.58036, val_loss:10.78769
+epoch:10, train_loss:10.39206, val_loss:10.87143
+EarlyStopping counter: 1 out of 7 with 10
+epoch:11, train_loss:10.21095, val_loss:11.19180
+EarlyStopping counter: 2 out of 7 with 11
+epoch:12, train_loss:10.04665, val_loss:11.17273
+EarlyStopping counter: 3 out of 7 with 12
+epoch:13, train_loss:9.91750, val_loss:11.46894
+EarlyStopping counter: 4 out of 7 with 13
+epoch:14, train_loss:9.85753, val_loss:10.72460
+epoch:15, train_loss:9.77634, val_loss:10.26136
+epoch:16, train_loss:9.81623, val_loss:10.71251
+EarlyStopping counter: 1 out of 7 with 16
+epoch:17, train_loss:10.44846, val_loss:10.46093
+EarlyStopping counter: 2 out of 7 with 17
+epoch:18, train_loss:9.93170, val_loss:10.12183
+epoch:19, train_loss:9.73962, val_loss:9.76364
+epoch:20, train_loss:9.69741, val_loss:10.71840
+EarlyStopping counter: 1 out of 7 with 20
+epoch:21, train_loss:10.95036, val_loss:10.77068
+EarlyStopping counter: 2 out of 7 with 21
+epoch:22, train_loss:10.44207, val_loss:10.40270
+EarlyStopping counter: 3 out of 7 with 22
+epoch:23, train_loss:10.19947, val_loss:10.96789
+EarlyStopping counter: 4 out of 7 with 23
+epoch:24, train_loss:9.95074, val_loss:10.56839
+EarlyStopping counter: 5 out of 7 with 24
+epoch:25, train_loss:9.80382, val_loss:12.42305
+EarlyStopping counter: 6 out of 7 with 25
+epoch:26, train_loss:9.81209, val_loss:10.23919
+EarlyStopping counter: 7 out of 7 with 26
+Early stopping with best_score:9.763636589050293
+       0         1       2     3   4   5        6       7        8
+0  ETTm2  Informer  dishts  2023  96  24  8.19305  2.0303  2.86235

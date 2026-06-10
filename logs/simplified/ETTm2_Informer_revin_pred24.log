@@ -1,0 +1,21 @@
+epoch:0, train_loss:8.66696, val_loss:8.93701
+epoch:1, train_loss:6.15007, val_loss:7.53185
+epoch:2, train_loss:5.45493, val_loss:7.05785
+epoch:3, train_loss:5.04507, val_loss:6.68866
+epoch:4, train_loss:4.89770, val_loss:6.71042
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:4.63754, val_loss:7.61047
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:4.43186, val_loss:7.31285
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:4.43910, val_loss:8.04004
+EarlyStopping counter: 4 out of 7 with 7
+epoch:8, train_loss:4.23269, val_loss:7.43694
+EarlyStopping counter: 5 out of 7 with 8
+epoch:9, train_loss:4.22753, val_loss:7.19042
+EarlyStopping counter: 6 out of 7 with 9
+epoch:10, train_loss:4.23857, val_loss:7.37501
+EarlyStopping counter: 7 out of 7 with 10
+Early stopping with best_score:6.688655853271484
+       0         1      2     3   4   5        6        7        8
+0  ETTm2  Informer  revin  2023  96  24  6.28434  1.61304  2.50686

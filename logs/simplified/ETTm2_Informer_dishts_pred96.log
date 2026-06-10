@@ -1,0 +1,21 @@
+epoch:0, train_loss:44.96218, val_loss:17.25185
+epoch:1, train_loss:19.85269, val_loss:16.92089
+epoch:2, train_loss:18.24448, val_loss:16.07879
+epoch:3, train_loss:16.76360, val_loss:15.20959
+epoch:4, train_loss:16.02047, val_loss:15.81468
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:15.73312, val_loss:18.25762
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:15.34534, val_loss:18.69682
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:14.83390, val_loss:16.43719
+EarlyStopping counter: 4 out of 7 with 7
+epoch:8, train_loss:14.54196, val_loss:18.69594
+EarlyStopping counter: 5 out of 7 with 8
+epoch:9, train_loss:14.97536, val_loss:19.61743
+EarlyStopping counter: 6 out of 7 with 9
+epoch:10, train_loss:13.98561, val_loss:20.30067
+EarlyStopping counter: 7 out of 7 with 10
+Early stopping with best_score:15.2095947265625
+       0         1       2     3   4   5         6        7        8
+0  ETTm2  Informer  dishts  2023  96  96  12.07304  2.42757  3.47463

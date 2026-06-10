@@ -1,4 +1,4 @@
-# Python cache
+# Python cache files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -25,20 +25,13 @@ env/
 .DS_Store
 Thumbs.db
 
-# Model checkpoints
+# Model checkpoints (large, regenerated every run)
 *.pt
 *.pth
 checkpoint/
 
-# NOTE: Dataset CSV files are kept in git for convenience of reproduction
-# (Total ~120MB, all under GitHub 100MB per-file limit)
-
-# Experiment logs (too large, regenerated every run)
-logs/
-results/*.csv
-results/*.pdf
-results/*.png
-
-# Output files
+# Temporary output
 forecast.csv
-*.log
+
+# NOTE: data/*.csv, logs/ and results/*.{csv,pdf,png} are kept in git
+# for project completeness and reproducibility tracking

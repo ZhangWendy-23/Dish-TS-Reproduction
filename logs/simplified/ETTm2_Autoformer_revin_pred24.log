@@ -1,0 +1,29 @@
+epoch:0, train_loss:11.74580, val_loss:11.32403
+epoch:1, train_loss:9.71519, val_loss:10.10299
+epoch:2, train_loss:9.19693, val_loss:9.67683
+epoch:3, train_loss:9.03909, val_loss:10.95421
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:8.81403, val_loss:9.78808
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:8.45034, val_loss:9.73559
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:8.47770, val_loss:10.18808
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:8.53257, val_loss:9.52145
+epoch:8, train_loss:8.19693, val_loss:9.97606
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:8.06387, val_loss:10.48318
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:7.86470, val_loss:10.55597
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:7.64168, val_loss:10.44394
+EarlyStopping counter: 4 out of 7 with 11
+epoch:12, train_loss:7.51728, val_loss:10.11536
+EarlyStopping counter: 5 out of 7 with 12
+epoch:13, train_loss:7.37686, val_loss:10.70821
+EarlyStopping counter: 6 out of 7 with 13
+epoch:14, train_loss:7.42769, val_loss:9.95204
+EarlyStopping counter: 7 out of 7 with 14
+Early stopping with best_score:9.521452903747559
+       0           1      2     3   4   5        6        7        8
+0  ETTm2  Autoformer  revin  2023  96  24  8.74908  1.91159  2.95788
