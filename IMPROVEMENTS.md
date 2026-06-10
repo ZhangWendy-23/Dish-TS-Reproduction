@@ -186,16 +186,79 @@
 
 ---
 
+### 10. `train.py` — 论文参数完全对齐
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 重大修改 |
+| **原因** | 原代码的 batch_size、label_len、alpha 等参数与论文不完全一致，影响实验可复现性 |
+
+**核心对齐点（对照论文 Implementation Details）**：
+
+| 参数 | 论文原文 | 本仓库实现 |
+|------|---------|-----------|
+| **batch_size** | Informer=256, Autoformer=128, Transformer=128, ECL=64 for all | `--batch_size 0` 时自动按上述规则设置；`pred_len>168` 时降为 64 避免 OOM |
+| **label_len** | Transformer 系列通常设为 `max(48, pred_len/2)` | `--label_len 0` 时自动计算 |
+| **optimizer** | Adam | `torch.optim.Adam` ✅ |
+| **loss** | L2 (MSE) | `nn.MSELoss()` ✅ |
+| **lr** | [1e-4, 1e-3] 搜索 | 默认 `1e-3`，可通过 `--lr` 调整 |
+| **alpha (prior loss)** | 搜索 0~1 | 默认 `0.5`，可通过 `--alpha` 调整 |
+| **patience** | 未明确指定，TSF 论文标准=7 | `--patience 7` ✅ |
+| **seed** | 3 次重复取平均 | `--seed 2023/2024/2025`，脚本支持多 seed |
+| **数据划分** | ETT/ILI 6:2:2，其他 7:1:2 | `train.py` 中按 `DATA` 判断比例 ✅ |
+| **硬件** | NVIDIA RTX 3090 24GB | 建议使用 24GB GPU；在 12GB 卡上请将 batch_size 手动设为 64 |
+
+**Prior Knowledge Guidance Loss 实现**：
+
+```python
+# 论文公式 5: Loss = MSE(ŷ, y) + α · (mean(ŷ) - ϕ_h)²
+# 仅当 norm == dishts 且 alpha > 0 时启用
+if args.norm == 'dishts' and args.alpha > 0:
+    phih = unify_model.nm.phih  # HoriConet 推断的 horizon level
+    pred_mean = torch.mean(forecast, dim=1, keepdim=True)
+    prior_loss = torch.mean(torch.pow(pred_mean - phih, 2))
+    loss = loss + args.alpha * prior_loss
+```
+
+---
+
+### 11. 新增 `run_paper_exps.sh` — 按论文 4 个 Table 运行
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 新增文件 |
+| **原因** | 原 `run_experiments.sh` 结构不匹配论文 Table 1-4，新脚本严格按论文 Table 组织 |
+
+与 `run_experiments.sh` 的区别：
+- **Table 1**（单变量）：`seq_len = pred_len` ∈ {24,48,96,168,336}
+- **Table 2**（多变量）：`seq_len=96`, `pred_len` ∈ {24,48,96,168,336}
+- **Table 3**（RevIN vs Dish-TS）：`seq_len=96`, `pred_len` ∈ {24,168,336}, **3 seeds**
+- **Table 4**（长窗口）：`seq_len=96`, `pred_len` ∈ {336,420,540,600,720}
+- 新增 `quick` 模式：10 分钟内跑完核心对比实验，用于快速验证
+- 内置结果汇总：自动从 `logs/` 提取 MSE/MAE
+
+---
+
+### 12. 数据集目录从 `dataset/` 迁移到 `data/`
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 结构调整 |
+| **原因** | `data/` 是 TSF 论文代码的更常见约定（与官方代码一致） |
+
+`train.py` 已同步修改数据路径为 `./data/{DATA}.csv`。`.gitignore` 排除 `data/*.csv`，避免将 GB 级数据集传入仓库，README 明确给出下载命令。
+
+---
+
 ## 修改统计
 
-| 类别 | 新增文件 | 修改文件 | 新增行数 | 删除行数 |
-|------|---------|---------|---------|---------|
-| 核心代码 | 1 (`__init__.py`) | 0 | 0 | 0 |
-| 工具脚本 | 1 (`run_experiments.sh`) | 0 | 179 | 0 |
-| 配置文件 | 1 (`requirements.txt`) | 1 (`.gitignore`) | 10 | 4 |
-| 数据集 | 4 (`ETTh1`, `ECL`, `WTH`, `ILI`) | 0 | 97,390 | 0 |
-| 文档 | 1 (`IMPROVEMENTS.md`) | 3 (`README.md`, `train.py`, `dataset.py`) | ~250 | ~60 |
-| **合计** | **8** | **4** | **~97,829** | **~64** |
+| 类别 | 新增文件 | 修改文件 | 说明 |
+|------|---------|---------|------|
+| 核心代码 | 1 (`backbones/__init__.py`) | 2 (`train.py`, `Model.py`) | 修复导入 + 论文参数对齐 |
+| 工具脚本 | 3 (`run_paper_exps.sh`, `run_simplified_exps.sh`, `results/collect_results.py`) | 1 (`run_experiments.sh`) | 按论文 4 个 Table 自动运行实验 |
+| 配置文件 | 1 (`requirements.txt`) | 1 (`.gitignore`) | 添加依赖列表、排除大文件 |
+| 文档 | 1 (`IMPROVEMENTS.md`) | 1 (`README.md`) | 详细说明每一处改动 |
+| **合计** | **6** | **5** | 共约 500+ 行代码/文档 |
 
 ---
 

@@ -19,14 +19,28 @@ env/
 # IDE
 .vscode/
 .idea/
+.trae/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Checkpoints
-checkpoint.pt/
+# Model checkpoints
+*.pt
+*.pth
+checkpoint/
 
-# Output
-forecast.csv
+# Large dataset files (get download instructions from README)
+# These are provided as direct downloads, not in git
+data/*.csv
+dataset/*.csv
+
+# Experiment logs & results (too large for git)
 logs/
+results/*.csv
+results/*.pdf
+results/*.png
+
+# Output files
+forecast.csv
+*.log

@@ -57,6 +57,7 @@ run_one() {
         --pred_len "$pred_len" \
         --seq_len "$seq_len" \
         --seed "$seed" \
+        --batch_size 0 \
         --gpu "$GPU" \
         $extra 2>&1 | tee "$LOG"
 }

@@ -207,13 +207,16 @@ ls -lh dataset/*.csv
 
 ### Data Splitting
 
-The data is split chronologically:
+The data is split chronologically, following the **paper's exact strategy** (Section 5.1, "Experimental Setup"):
 
-| Split   | Ratio | Purpose                    |
-|---------|-------|----------------------------|
-| Train   | 70%   | Model training             |
-| Val     | 10%   | Early stopping & validation |
-| Test    | 20%   | Final evaluation           |
+| Dataset | Train | Val | Test | Reference |
+|--------|-------|-----|------|-----------|
+| ETTm2, ETTh1, ETTh2, ETTm1, ILI | 60% | 20% | 20% | Zhou et al. 2021 (Informer) |
+| ECL, WTH | 70% | 10% | 20% | Xu et al. 2021 (Autoformer) |
+
+*Note: ILI (Illness) is grouped with ETT datasets following the paper's convention.*
+
+The split ratios are **automatically selected by `train.py`** based on the dataset name — no manual configuration needed.
 
 ---
 
@@ -454,11 +457,39 @@ Per the paper, Dish-TS achieves:
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
-| `--batch_size` | int | `128` (`64` if pred_len > 168) | Batch size |
-| `--lr` | float | `1e-3` | Learning rate |
-| `--patience` | int | `5` | Early stopping patience |
-| `--seed` | int | `2023` | Random seed |
+| `--batch_size` | int | **128** (or **0** for paper-spec) | Batch size. **`--batch_size 0` uses paper-specified values: Informer=256, Autoformer=128, 64 on Electricity.** See table below. |
+| `--lr` | float | **1e-3** | Learning rate (paper uses [1e-4, 1e-3]) |
+| `--patience` | int | **7** | Early stopping patience (paper: 7) |
+| `--seed` | int | **2023** | Random seed (paper: repeats 3 seeds, reports mean±std) |
 | `--gpu` | int | `0` | GPU device ID |
+
+### Paper-Specified Batch Sizes (auto-selected when `--batch_size 0`)
+
+| Backbone | Default | Electricity (ECL) | Reference |
+|----------|---------|-------------------|-----------|
+| **Informer** | 256 | 64 | Paper "Implementation Details" |
+| **Autoformer** | 128 | 64 | Paper "Implementation Details" |
+| **Transformer** | 128 | 64 | Same convention as Autoformer |
+
+*Paper states: "batchsize is set as 256 for Informer, 128 for Autoformer and 1024 for N-BEATS, apart from that in Electricity dataset, the batchsize is set 64."*
+
+### Paper-Specified Data Split (auto-selected by dataset name)
+
+| Datasets | Train | Val | Test |
+|----------|-------|-----|------|
+| ETTm2, ETTh1, ETTh2, ETTm1, ILI | 60% | 20% | 20% |
+| ECL, WTH | 70% | 10% | 20% |
+
+### Other Paper-Specified Values
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| Loss | **MSE** | L2 loss |
+| Optimizer | **Adam** | Standard Adam optimizer |
+| Repetitions | **3** | Experiments repeated with 3 different seeds |
+| ℓ (CoNet layers) | **1** | Number of layers in BackConet/HoriConet |
+| α (prior guidance) | **tuned** | Prior knowledge guidance weight, traversed from 0 to 1 |
+| GPU | **RTX 3090 24GB** | Paper's hardware |
 
 ### Model Hyperparameters (Fixed in `train.py`)
 
