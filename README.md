@@ -543,3 +543,4 @@ For a detailed record of all modifications made in this reproduction, see [IMPRO
 ## Notes
 
 - **Commit message encoding**: Some early commits display `???` in their messages. This is a known Git encoding artifact caused by Emoji/Unicode characters in early commit messages during initial setup. These are purely cosmetic and do not affect any code, results, or reproducibility.
+- **DataLoader & Python 3.12**: `num_workers` is set to `0` to avoid a known PyTorch `collate` crash on Python 3.12. Single-process loading has negligible impact on RTX 3090 training speed.
