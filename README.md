@@ -1,5 +1,12 @@
 # Dish-TS-Reproduction
 
+[![AAAI 2023](https://img.shields.io/badge/AAAI-2023-blue?style=flat-square)](https://ojs.aaai.org/index.php/AAAI/article/view/25913)
+[![arXiv](https://img.shields.io/badge/arXiv-2302.14829-b31b1b?style=flat-square)](https://arxiv.org/abs/2302.14829)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=flat-square&logo=python)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-1.8%2B-ee4c2c?style=flat-square&logo=pytorch)](https://pytorch.org/)
+[![CUDA](https://img.shields.io/badge/CUDA-11.1%2B-76b900?style=flat-square&logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
 > **Dish-TS (AAAI 2023) — Paper Reproduction Coursework**
 >
 > Original Paper: [Dish-TS: A General Paradigm for Alleviating Distribution Shift in Time Series Forecasting](https://ojs.aaai.org/index.php/AAAI/article/view/25913)
