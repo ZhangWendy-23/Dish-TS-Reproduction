@@ -100,22 +100,15 @@ python -c "from backbones import Autoformer; from DishTS import DishTS; print('I
 >
 > See [Preventing SSH Disconnection](#preventing-ssh-disconnection) below for detailed instructions.
 
-### Run All Paper Experiments (One Command)
+### Run All Paper Experiments
 
 ```bash
-chmod +x run_paper_exps.sh 
-
-# Option A: screen (recommended - reconnect anytime)
-screen -S dishts
+chmod +x run_paper_exps.sh
 ./run_paper_exps.sh all 2>&1 | tee logs/master_all.log
-# Press Ctrl+A then D to detach. Reconnect: screen -r dishts
-
-# Option B: nohup (fire-and-forget, check with tail -f)
-nohup ./run_paper_exps.sh all > logs/master_all.log 2>&1 &
-tail -f logs/master_all.log
 ```
 
-> **Note**: Full reproduction (542 experiments across 4 tables) takes approximately 2-5 days on a single RTX 3090. See the step-by-step guide below for running individual tables.
+Full reproduction (542 experiments) takes ~2-5 days on a single RTX 3090.
+Run individual tables (see below) if you prefer to parallelize or save time.
 
 ---
 
