@@ -402,10 +402,14 @@ kill <PID>
 
 > **Cloud Platform Notes**
 >
-> - **AutoDL**: `screen` defaults to C encoding, causing garbled text and frozen
->   input. Use `screen -U -S dishts` to force UTF-8 mode.
+> - **AutoDL**: `screen` defaults to C encoding, causing garbled Chinese text
+>   and frozen input. Use `screen -U -S dishts` to force UTF-8 mode.
 > - **`tmux` not found?** Run `apt-get install -y tmux -qq`. Most cloud
->   containers do not pre-install it.
+>   containers do not pre-install it. If you see `sessions should be nested
+>   with care`, you are already inside a tmux session - use `nohup` or create
+>   a sub-session with a different name.
+> - `^[[A` appearing when scrolling the mouse wheel is normal terminal artifact
+>   inside tmux; it does not affect running experiments.
 
 ### Monitoring Progress
 
