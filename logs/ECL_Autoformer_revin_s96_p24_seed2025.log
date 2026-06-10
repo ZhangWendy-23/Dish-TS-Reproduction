@@ -1,0 +1,31 @@
+epoch:0, train_loss:24842226.00000, val_loss:3400135.25000
+epoch:1, train_loss:4255089.00000, val_loss:2920875.00000
+epoch:2, train_loss:4499438.00000, val_loss:2844034.00000
+epoch:3, train_loss:3519872.25000, val_loss:2720883.00000
+epoch:4, train_loss:2978804.50000, val_loss:2933904.00000
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:2313814.25000, val_loss:2593704.75000
+epoch:6, train_loss:2000125.25000, val_loss:2707987.00000
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:1761523.00000, val_loss:2410367.50000
+epoch:8, train_loss:1639891.75000, val_loss:2565278.50000
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:4133397.00000, val_loss:2579044.50000
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:2225844.75000, val_loss:2761057.50000
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:3458136.25000, val_loss:2686734.50000
+EarlyStopping counter: 4 out of 7 with 11
+epoch:12, train_loss:2182686.75000, val_loss:2590402.00000
+EarlyStopping counter: 5 out of 7 with 12
+epoch:13, train_loss:1557817.50000, val_loss:2585550.25000
+EarlyStopping counter: 6 out of 7 with 13
+epoch:14, train_loss:1459888.25000, val_loss:2516464.75000
+EarlyStopping counter: 7 out of 7 with 14
+Early stopping with best_score:2410367.5
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=5070745.000000  MAE=263.885864  RMSE=2251.831543  MAPE=136584224.000000  MSPE=236493762504293351424.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2025       96         48        24          64    0.5 5070745.0 263.885864 2251.831543 136584224.0 2.364938e+20

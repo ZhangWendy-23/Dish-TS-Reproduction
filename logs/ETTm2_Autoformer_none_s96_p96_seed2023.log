@@ -1,0 +1,25 @@
+epoch:0, train_loss:16.90288, val_loss:13.27140
+epoch:1, train_loss:16.23977, val_loss:13.54592
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:16.10605, val_loss:13.00582
+epoch:3, train_loss:16.03495, val_loss:13.33758
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:15.90863, val_loss:13.32653
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:15.93463, val_loss:13.69097
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:15.60668, val_loss:13.42316
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:15.29399, val_loss:13.77089
+EarlyStopping counter: 5 out of 7 with 7
+epoch:8, train_loss:14.85227, val_loss:14.24617
+EarlyStopping counter: 6 out of 7 with 8
+epoch:9, train_loss:14.49512, val_loss:15.51315
+EarlyStopping counter: 7 out of 7 with 9
+Early stopping with best_score:13.00582218170166
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=none  SEED=2023  seq_len=96  label_len=48  pred_len=96  batch_size=128  lr=0.001  alpha=0.5
+  MSE=11.654910  MAE=2.176240  RMSE=3.413930  MAPE=9162876.000000  MSPE=4004583483375616.000000
+================================================================================
+ data      model norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer none  2023       96         48        96         128    0.5 11.65491 2.17624 3.41393 9162876.0 4.004583e+15

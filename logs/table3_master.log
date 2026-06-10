@@ -1,0 +1,1068 @@
+
+==================================================================
+  Table 3: RevIN vs Dish-TS (Autoformer, 3 seeds, pred_len ∈ {24,168,336})
+==================================================================
+[1/72]
+[20:27:07] ECL | Autoformer + revin | seq=96 pred=24 | seed=2023 | ft=M
+epoch:0, train_loss:17668338.00000, val_loss:2692448.50000
+epoch:1, train_loss:4735258.50000, val_loss:2864921.25000
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:3690402.25000, val_loss:2797328.75000
+EarlyStopping counter: 2 out of 7 with 2
+epoch:3, train_loss:3269691.75000, val_loss:2374648.25000
+epoch:4, train_loss:3093878.75000, val_loss:2459574.75000
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:3830422.00000, val_loss:2515605.25000
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:2948079.50000, val_loss:2739225.50000
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:2080103.75000, val_loss:2644320.25000
+EarlyStopping counter: 4 out of 7 with 7
+epoch:8, train_loss:1807709.12500, val_loss:2625445.75000
+EarlyStopping counter: 5 out of 7 with 8
+epoch:9, train_loss:1607276.37500, val_loss:2927155.75000
+EarlyStopping counter: 6 out of 7 with 9
+epoch:10, train_loss:1552992.25000, val_loss:2602138.75000
+EarlyStopping counter: 7 out of 7 with 10
+Early stopping with best_score:2374648.25
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2023  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=5263912.500000  MAE=272.932526  RMSE=2294.321777  MAPE=141415184.000000  MSPE=259394812900076945408.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2023       96         48        24          64    0.5 5263912.5 272.932526 2294.321777 141415184.0 2.593948e+20
+  → 用时 5 分 3 秒
+[2/72]
+[20:32:10] ECL | Autoformer + revin | seq=96 pred=24 | seed=2024 | ft=M
+epoch:0, train_loss:29339514.00000, val_loss:2574927.25000
+epoch:1, train_loss:4349892.00000, val_loss:2806076.75000
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:3753076.00000, val_loss:2428159.75000
+epoch:3, train_loss:3308667.25000, val_loss:2642487.75000
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:3065521.75000, val_loss:2689788.75000
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:2441049.00000, val_loss:2566792.75000
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:2164639.75000, val_loss:2257616.25000
+epoch:7, train_loss:1958893.87500, val_loss:2236424.50000
+epoch:8, train_loss:1772558.75000, val_loss:3495077.75000
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:1672130.12500, val_loss:2314479.50000
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:1642837.00000, val_loss:2424345.50000
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:1592340.37500, val_loss:2021586.00000
+epoch:12, train_loss:1421211.87500, val_loss:2085937.25000
+EarlyStopping counter: 1 out of 7 with 12
+epoch:13, train_loss:1345918.12500, val_loss:2025596.62500
+EarlyStopping counter: 2 out of 7 with 13
+epoch:14, train_loss:1353290.50000, val_loss:2080184.62500
+EarlyStopping counter: 3 out of 7 with 14
+epoch:15, train_loss:1218949.00000, val_loss:1942344.00000
+epoch:16, train_loss:1102504.50000, val_loss:1987077.62500
+EarlyStopping counter: 1 out of 7 with 16
+epoch:17, train_loss:1110078.50000, val_loss:2150124.75000
+EarlyStopping counter: 2 out of 7 with 17
+epoch:18, train_loss:1050948.12500, val_loss:2414697.50000
+EarlyStopping counter: 3 out of 7 with 18
+epoch:19, train_loss:1040733.75000, val_loss:2327888.00000
+EarlyStopping counter: 4 out of 7 with 19
+epoch:20, train_loss:1020264.06250, val_loss:2259023.00000
+EarlyStopping counter: 5 out of 7 with 20
+epoch:21, train_loss:1023540.68750, val_loss:2150372.75000
+EarlyStopping counter: 6 out of 7 with 21
+epoch:22, train_loss:1034240.87500, val_loss:2560120.25000
+EarlyStopping counter: 7 out of 7 with 22
+Early stopping with best_score:1942344.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=4002992.250000  MAE=248.597397  RMSE=2000.748047  MAPE=130317856.000000  MSPE=216594836249175392256.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha        MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2024       96         48        24          64    0.5 4002992.25 248.597397 2000.748047 130317856.0 2.165948e+20
+  → 用时 9 分 4 秒
+[3/72]
+[20:41:14] ECL | Autoformer + revin | seq=96 pred=24 | seed=2025 | ft=M
+epoch:0, train_loss:24842226.00000, val_loss:3400135.25000
+epoch:1, train_loss:4255089.00000, val_loss:2920875.00000
+epoch:2, train_loss:4499438.00000, val_loss:2844034.00000
+epoch:3, train_loss:3519872.25000, val_loss:2720883.00000
+epoch:4, train_loss:2978804.50000, val_loss:2933904.00000
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:2313814.25000, val_loss:2593704.75000
+epoch:6, train_loss:2000125.25000, val_loss:2707987.00000
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:1761523.00000, val_loss:2410367.50000
+epoch:8, train_loss:1639891.75000, val_loss:2565278.50000
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:4133397.00000, val_loss:2579044.50000
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:2225844.75000, val_loss:2761057.50000
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:3458136.25000, val_loss:2686734.50000
+EarlyStopping counter: 4 out of 7 with 11
+epoch:12, train_loss:2182686.75000, val_loss:2590402.00000
+EarlyStopping counter: 5 out of 7 with 12
+epoch:13, train_loss:1557817.50000, val_loss:2585550.25000
+EarlyStopping counter: 6 out of 7 with 13
+epoch:14, train_loss:1459888.25000, val_loss:2516464.75000
+EarlyStopping counter: 7 out of 7 with 14
+Early stopping with best_score:2410367.5
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=5070745.000000  MAE=263.885864  RMSE=2251.831543  MAPE=136584224.000000  MSPE=236493762504293351424.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2025       96         48        24          64    0.5 5070745.0 263.885864 2251.831543 136584224.0 2.364938e+20
+  → 用时 6 分 22 秒
+[4/72]
+[20:47:36] ECL | Autoformer + dishts | seq=96 pred=24 | seed=2023 | ft=M
+epoch:0, train_loss:37072072.00000, val_loss:2783012.25000
+epoch:1, train_loss:4149333.50000, val_loss:2638754.75000
+epoch:2, train_loss:3711593.25000, val_loss:2401078.75000
+epoch:3, train_loss:3312480.00000, val_loss:2456006.50000
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:3123413.00000, val_loss:2550856.00000
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:2859819.50000, val_loss:2741695.25000
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:2611682.50000, val_loss:3090887.50000
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:2515877.75000, val_loss:2557709.75000
+EarlyStopping counter: 5 out of 7 with 7
+epoch:8, train_loss:2248423.25000, val_loss:2411548.25000
+EarlyStopping counter: 6 out of 7 with 8
+epoch:9, train_loss:2152405.50000, val_loss:2422908.00000
+EarlyStopping counter: 7 out of 7 with 9
+Early stopping with best_score:2401078.75
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=4153340.500000  MAE=258.309967  RMSE=2037.974609  MAPE=133826512.000000  MSPE=232061886219425939456.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2023       96         48        24          64    0.5 4153340.5 258.309967 2037.974609 133826512.0 2.320619e+20
+  → 用时 4 分 46 秒
+[5/72]
+[20:52:22] ECL | Autoformer + dishts | seq=96 pred=24 | seed=2024 | ft=M
+epoch:0, train_loss:32899268.00000, val_loss:2672190.75000
+epoch:1, train_loss:4466141.00000, val_loss:2978369.75000
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:3519290.75000, val_loss:2334287.25000
+epoch:3, train_loss:3160789.25000, val_loss:2363477.75000
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:2889293.00000, val_loss:2639636.00000
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:2651650.00000, val_loss:2370007.75000
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:2511240.75000, val_loss:2666277.25000
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:2418539.75000, val_loss:2455537.75000
+EarlyStopping counter: 5 out of 7 with 7
+epoch:8, train_loss:2299873.00000, val_loss:2250273.25000
+epoch:9, train_loss:2153566.50000, val_loss:2277763.75000
+EarlyStopping counter: 1 out of 7 with 9
+epoch:10, train_loss:1925722.12500, val_loss:2254050.75000
+EarlyStopping counter: 2 out of 7 with 10
+epoch:11, train_loss:1873901.12500, val_loss:2332040.00000
+EarlyStopping counter: 3 out of 7 with 11
+epoch:12, train_loss:1783663.00000, val_loss:2266741.00000
+EarlyStopping counter: 4 out of 7 with 12
+epoch:13, train_loss:1804048.75000, val_loss:2183283.75000
+epoch:14, train_loss:1720216.75000, val_loss:2535625.75000
+EarlyStopping counter: 1 out of 7 with 14
+epoch:15, train_loss:1569485.62500, val_loss:2404601.75000
+EarlyStopping counter: 2 out of 7 with 15
+epoch:16, train_loss:1560339.12500, val_loss:2363821.50000
+EarlyStopping counter: 3 out of 7 with 16
+epoch:17, train_loss:1539104.00000, val_loss:2470949.50000
+EarlyStopping counter: 4 out of 7 with 17
+epoch:18, train_loss:1498665.75000, val_loss:2238913.75000
+EarlyStopping counter: 5 out of 7 with 18
+epoch:19, train_loss:1452036.12500, val_loss:2406196.00000
+EarlyStopping counter: 6 out of 7 with 19
+epoch:20, train_loss:1426858.12500, val_loss:2440698.75000
+EarlyStopping counter: 7 out of 7 with 20
+Early stopping with best_score:2183283.75
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=4099333.750000  MAE=251.274475  RMSE=2024.681152  MAPE=125738640.000000  MSPE=207674243326331060224.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha        MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2024       96         48        24          64    0.5 4099333.75 251.274475 2024.681152 125738640.0 2.076742e+20
+  → 用时 8 分 32 秒
+[6/72]
+[21:00:54] ECL | Autoformer + dishts | seq=96 pred=24 | seed=2025 | ft=M
+epoch:0, train_loss:40521084.00000, val_loss:2492123.00000
+epoch:1, train_loss:4361847.00000, val_loss:2374774.00000
+epoch:2, train_loss:3838200.75000, val_loss:2289400.75000
+epoch:3, train_loss:3497905.50000, val_loss:2211227.75000
+epoch:4, train_loss:3222448.25000, val_loss:2449054.50000
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:3021940.25000, val_loss:2281668.50000
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:2814642.50000, val_loss:2295278.75000
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:2763127.25000, val_loss:2105905.50000
+epoch:8, train_loss:2631352.25000, val_loss:2469867.00000
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:2493391.00000, val_loss:2171556.25000
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:2472428.25000, val_loss:2315761.75000
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:2185626.50000, val_loss:2158749.75000
+EarlyStopping counter: 4 out of 7 with 11
+epoch:12, train_loss:2153598.75000, val_loss:2075980.37500
+epoch:13, train_loss:1996466.37500, val_loss:2005439.25000
+epoch:14, train_loss:1975422.00000, val_loss:2122718.50000
+EarlyStopping counter: 1 out of 7 with 14
+epoch:15, train_loss:1780728.87500, val_loss:2155739.50000
+EarlyStopping counter: 2 out of 7 with 15
+epoch:16, train_loss:1744032.62500, val_loss:2225775.75000
+EarlyStopping counter: 3 out of 7 with 16
+epoch:17, train_loss:1641820.12500, val_loss:2330122.50000
+EarlyStopping counter: 4 out of 7 with 17
+epoch:18, train_loss:1666582.00000, val_loss:2341442.25000
+EarlyStopping counter: 5 out of 7 with 18
+epoch:19, train_loss:1540367.75000, val_loss:2113203.50000
+EarlyStopping counter: 6 out of 7 with 19
+epoch:20, train_loss:1512477.62500, val_loss:2205382.25000
+EarlyStopping counter: 7 out of 7 with 20
+Early stopping with best_score:2005439.25
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=4471003.000000  MAE=256.525604  RMSE=2114.474609  MAPE=124332688.000000  MSPE=183397220099083468800.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2025       96         48        24          64    0.5 4471003.0 256.525604 2114.474609 124332688.0 1.833972e+20
+  → 用时 8 分 32 秒
+[7/72]
+[21:09:26] ECL | Autoformer + revin | seq=96 pred=168 | seed=2023 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:38614628.00000, val_loss:20248606.00000
+epoch:1, train_loss:34520688.00000, val_loss:17182958.00000
+epoch:2, train_loss:34850228.00000, val_loss:15871872.00000
+epoch:3, train_loss:27166774.00000, val_loss:11703934.00000
+epoch:4, train_loss:23907938.00000, val_loss:11421773.00000
+epoch:5, train_loss:27099594.00000, val_loss:18144854.00000
+EarlyStopping counter: 1 out of 7 with 5
+epoch:6, train_loss:363128225792.00000, val_loss:207785728.00000
+EarlyStopping counter: 2 out of 7 with 6
+epoch:7, train_loss:586964096.00000, val_loss:99599768.00000
+EarlyStopping counter: 3 out of 7 with 7
+epoch:8, train_loss:428383008.00000, val_loss:54581520.00000
+EarlyStopping counter: 4 out of 7 with 8
+epoch:9, train_loss:337433984.00000, val_loss:47846600.00000
+EarlyStopping counter: 5 out of 7 with 9
+epoch:10, train_loss:280083136.00000, val_loss:59393780.00000
+EarlyStopping counter: 6 out of 7 with 10
+epoch:11, train_loss:234321664.00000, val_loss:39885972.00000
+EarlyStopping counter: 7 out of 7 with 11
+Early stopping with best_score:11421773.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=31348436.000000  MAE=557.919983  RMSE=5598.966797  MAPE=156260032.000000  MSPE=276469542384182493184.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha        MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2023       96         84       168          64    0.5 31348436.0 557.919983 5598.966797 156260032.0 2.764695e+20
+  → 用时 9 分 42 秒
+[8/72]
+[21:19:08] ECL | Autoformer + revin | seq=96 pred=168 | seed=2024 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:46155020.00000, val_loss:18387094.00000
+epoch:1, train_loss:36568200.00000, val_loss:16156257.00000
+epoch:2, train_loss:32448204.00000, val_loss:15675946.00000
+epoch:3, train_loss:31108394.00000, val_loss:14634837.00000
+epoch:4, train_loss:2816092928.00000, val_loss:21135474.00000
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:44343716.00000, val_loss:19640586.00000
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:41741764.00000, val_loss:18800804.00000
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:39865272.00000, val_loss:18040970.00000
+EarlyStopping counter: 4 out of 7 with 7
+epoch:8, train_loss:39175992.00000, val_loss:18101014.00000
+EarlyStopping counter: 5 out of 7 with 8
+epoch:9, train_loss:39214676.00000, val_loss:17601164.00000
+EarlyStopping counter: 6 out of 7 with 9
+epoch:10, train_loss:37852828.00000, val_loss:17478560.00000
+EarlyStopping counter: 7 out of 7 with 10
+Early stopping with best_score:14634837.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=43792432.000000  MAE=674.235657  RMSE=6617.585449  MAPE=160857184.000000  MSPE=270330678695239352320.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha        MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2024       96         84       168          64    0.5 43792432.0 674.235657 6617.585449 160857184.0 2.703307e+20
+  → 用时 9 分 0 秒
+[9/72]
+[21:28:08] ECL | Autoformer + revin | seq=96 pred=168 | seed=2025 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:44889216.00000, val_loss:17084348.00000
+epoch:1, train_loss:34931124.00000, val_loss:17469686.00000
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:33625312.00000, val_loss:14909862.00000
+epoch:3, train_loss:30539634.00000, val_loss:15001862.00000
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:30041768.00000, val_loss:14498199.00000
+epoch:5, train_loss:29154038.00000, val_loss:14083992.00000
+epoch:6, train_loss:28668334.00000, val_loss:14443731.00000
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:28475686.00000, val_loss:14871414.00000
+EarlyStopping counter: 2 out of 7 with 7
+epoch:8, train_loss:28095454.00000, val_loss:13862155.00000
+epoch:9, train_loss:27842728.00000, val_loss:14428891.00000
+EarlyStopping counter: 1 out of 7 with 9
+epoch:10, train_loss:27829582.00000, val_loss:14302840.00000
+EarlyStopping counter: 2 out of 7 with 10
+epoch:11, train_loss:298529161216.00000, val_loss:102515400.00000
+EarlyStopping counter: 3 out of 7 with 11
+epoch:12, train_loss:334967584.00000, val_loss:46121724.00000
+EarlyStopping counter: 4 out of 7 with 12
+epoch:13, train_loss:257393728.00000, val_loss:36460192.00000
+EarlyStopping counter: 5 out of 7 with 13
+epoch:14, train_loss:219011392.00000, val_loss:31718124.00000
+EarlyStopping counter: 6 out of 7 with 14
+epoch:15, train_loss:193258336.00000, val_loss:28708200.00000
+EarlyStopping counter: 7 out of 7 with 15
+Early stopping with best_score:13862155.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2025  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=41006136.000000  MAE=643.043701  RMSE=6403.603027  MAPE=160565248.000000  MSPE=280794915574737010688.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha        MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2025       96         84       168          64    0.5 41006136.0 643.043701 6403.603027 160565248.0 2.807949e+20
+  → 用时 12 分 6 秒
+[10/72]
+[21:40:14] ECL | Autoformer + dishts | seq=96 pred=168 | seed=2023 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:33124618.00000, val_loss:9283099.00000
+epoch:1, train_loss:8385543.00000, val_loss:4573980.00000
+epoch:2, train_loss:6793909.00000, val_loss:4150967.50000
+epoch:3, train_loss:6453203.00000, val_loss:3635847.00000
+epoch:4, train_loss:5890847.50000, val_loss:4041192.75000
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:5993318.50000, val_loss:3896771.50000
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:5631206.00000, val_loss:4612190.00000
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:5347407.00000, val_loss:4503186.50000
+EarlyStopping counter: 4 out of 7 with 7
+epoch:8, train_loss:5001182.00000, val_loss:4086796.25000
+EarlyStopping counter: 5 out of 7 with 8
+epoch:9, train_loss:4717435.50000, val_loss:3771124.50000
+EarlyStopping counter: 6 out of 7 with 9
+epoch:10, train_loss:8975179.00000, val_loss:5404543.00000
+EarlyStopping counter: 7 out of 7 with 10
+Early stopping with best_score:3635847.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=8692665.000000  MAE=327.513062  RMSE=2948.332520  MAPE=136962720.000000  MSPE=268990629107678052352.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE       RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2023       96         84       168          64    0.5 8692665.0 327.513062 2948.33252 136962720.0 2.689906e+20
+  → 用时 9 分 6 秒
+[11/72]
+[21:49:20] ECL | Autoformer + dishts | seq=96 pred=168 | seed=2024 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:45739148.00000, val_loss:12685712.00000
+epoch:1, train_loss:14697620.00000, val_loss:3799942.50000
+epoch:2, train_loss:7442711.00000, val_loss:3586590.25000
+epoch:3, train_loss:6614724.00000, val_loss:3845284.75000
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:6247008.00000, val_loss:3492110.00000
+epoch:5, train_loss:5967863.50000, val_loss:3550775.25000
+EarlyStopping counter: 1 out of 7 with 5
+epoch:6, train_loss:5789787.50000, val_loss:3674858.00000
+EarlyStopping counter: 2 out of 7 with 6
+epoch:7, train_loss:5565638.00000, val_loss:3530230.50000
+EarlyStopping counter: 3 out of 7 with 7
+epoch:8, train_loss:5535123.00000, val_loss:3668579.00000
+EarlyStopping counter: 4 out of 7 with 8
+epoch:9, train_loss:6020369.00000, val_loss:3404337.50000
+epoch:10, train_loss:5619128.00000, val_loss:3480125.75000
+EarlyStopping counter: 1 out of 7 with 10
+epoch:11, train_loss:5363377.50000, val_loss:3502070.50000
+EarlyStopping counter: 2 out of 7 with 11
+epoch:12, train_loss:5184062.00000, val_loss:3706429.00000
+EarlyStopping counter: 3 out of 7 with 12
+epoch:13, train_loss:5074922.00000, val_loss:3651682.75000
+EarlyStopping counter: 4 out of 7 with 13
+epoch:14, train_loss:5025789.00000, val_loss:3688128.50000
+EarlyStopping counter: 5 out of 7 with 14
+epoch:15, train_loss:4899062.50000, val_loss:3801940.00000
+EarlyStopping counter: 6 out of 7 with 15
+epoch:16, train_loss:5107013.00000, val_loss:3517904.25000
+EarlyStopping counter: 7 out of 7 with 16
+Early stopping with best_score:3404337.5
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=8556913.000000  MAE=329.056213  RMSE=2925.220215  MAPE=153512256.000000  MSPE=284573347701170634752.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2024       96         84       168          64    0.5 8556913.0 329.056213 2925.220215 153512256.0 2.845733e+20
+  → 用时 12 分 46 秒
+[12/72]
+[22:02:06] ECL | Autoformer + dishts | seq=96 pred=168 | seed=2025 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:25707478.00000, val_loss:3844759.50000
+epoch:1, train_loss:6089661.50000, val_loss:3816260.75000
+epoch:2, train_loss:20764112.00000, val_loss:18561042.00000
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:37008840.00000, val_loss:17025874.00000
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:34637340.00000, val_loss:15864855.00000
+EarlyStopping counter: 3 out of 7 with 4
+epoch:5, train_loss:32959214.00000, val_loss:15357319.00000
+EarlyStopping counter: 4 out of 7 with 5
+epoch:6, train_loss:32010686.00000, val_loss:15179346.00000
+EarlyStopping counter: 5 out of 7 with 6
+epoch:7, train_loss:31469168.00000, val_loss:15653158.00000
+EarlyStopping counter: 6 out of 7 with 7
+epoch:8, train_loss:31086120.00000, val_loss:14943867.00000
+EarlyStopping counter: 7 out of 7 with 8
+Early stopping with best_score:3816260.75
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2025  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=8064851.000000  MAE=312.819702  RMSE=2839.868164  MAPE=151085168.000000  MSPE=271432143055666282496.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2025       96         84       168          64    0.5 8064851.0 312.819702 2839.868164 151085168.0 2.714321e+20
+  → 用时 7 分 50 秒
+[13/72]
+[22:09:56] ECL | Autoformer + revin | seq=96 pred=336 | seed=2023 | ft=M
+[INFO] label_len capped to 168 (seq_len=96 too short for 48)
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 175, in <module>
+    for batch in train_loader:
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/_utils.py", line 705, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 2.
+Original Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/worker.py", line 308, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
+    return self.collate_fn(data)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 316, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 173, in collate
+    return [collate(samples, collate_fn_map=collate_fn_map) for samples in transposed]  # Backwards compatibility.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 222, in collate_numpy_array_fn
+    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 212, in collate_tensor_fn
+    out = elem.new(storage).resize_(len(batch), *list(elem.size()))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Trying to resize storage that is not resizable
+
+  → 用时 0 分 31 秒
+[14/72]
+[22:10:27] ECL | Autoformer + revin | seq=96 pred=336 | seed=2024 | ft=M
+[INFO] label_len capped to 168 (seq_len=96 too short for 48)
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 175, in <module>
+    for batch in train_loader:
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/_utils.py", line 705, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/worker.py", line 308, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
+    return self.collate_fn(data)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 316, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 173, in collate
+    return [collate(samples, collate_fn_map=collate_fn_map) for samples in transposed]  # Backwards compatibility.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 222, in collate_numpy_array_fn
+    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 212, in collate_tensor_fn
+    out = elem.new(storage).resize_(len(batch), *list(elem.size()))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Trying to resize storage that is not resizable
+
+  → 用时 0 分 28 秒
+[15/72]
+[22:10:55] ECL | Autoformer + revin | seq=96 pred=336 | seed=2025 | ft=M
+[INFO] label_len capped to 168 (seq_len=96 too short for 48)
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 175, in <module>
+    for batch in train_loader:
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1346, in _next_data
+    return self._process_data(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/_utils.py", line 705, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/worker.py", line 308, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
+    return self.collate_fn(data)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 316, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 173, in collate
+    return [collate(samples, collate_fn_map=collate_fn_map) for samples in transposed]  # Backwards compatibility.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 222, in collate_numpy_array_fn
+    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 212, in collate_tensor_fn
+    out = elem.new(storage).resize_(len(batch), *list(elem.size()))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Trying to resize storage that is not resizable
+
+  → 用时 0 分 28 秒
+[16/72]
+[22:11:23] ECL | Autoformer + dishts | seq=96 pred=336 | seed=2023 | ft=M
+[INFO] label_len capped to 168 (seq_len=96 too short for 48)
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 175, in <module>
+    for batch in train_loader:
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1326, in _next_data
+    return self._process_data(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/_utils.py", line 705, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/worker.py", line 308, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
+    return self.collate_fn(data)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 316, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 173, in collate
+    return [collate(samples, collate_fn_map=collate_fn_map) for samples in transposed]  # Backwards compatibility.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 222, in collate_numpy_array_fn
+    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 212, in collate_tensor_fn
+    out = elem.new(storage).resize_(len(batch), *list(elem.size()))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Trying to resize storage that is not resizable
+
+  → 用时 0 分 30 秒
+[17/72]
+[22:11:53] ECL | Autoformer + dishts | seq=96 pred=336 | seed=2024 | ft=M
+[INFO] label_len capped to 168 (seq_len=96 too short for 48)
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 175, in <module>
+    for batch in train_loader:
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1326, in _next_data
+    return self._process_data(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/_utils.py", line 705, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 2.
+Original Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/worker.py", line 308, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
+    return self.collate_fn(data)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 316, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 173, in collate
+    return [collate(samples, collate_fn_map=collate_fn_map) for samples in transposed]  # Backwards compatibility.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 222, in collate_numpy_array_fn
+    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 212, in collate_tensor_fn
+    out = elem.new(storage).resize_(len(batch), *list(elem.size()))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Trying to resize storage that is not resizable
+
+  → 用时 0 分 31 秒
+[18/72]
+[22:12:24] ECL | Autoformer + dishts | seq=96 pred=336 | seed=2025 | ft=M
+[INFO] label_len capped to 168 (seq_len=96 too short for 48)
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 175, in <module>
+    for batch in train_loader:
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1326, in _next_data
+    return self._process_data(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1372, in _process_data
+    data.reraise()
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/_utils.py", line 705, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 3.
+Original Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/worker.py", line 308, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
+    return self.collate_fn(data)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 316, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 173, in collate
+    return [collate(samples, collate_fn_map=collate_fn_map) for samples in transposed]  # Backwards compatibility.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 222, in collate_numpy_array_fn
+    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 212, in collate_tensor_fn
+    out = elem.new(storage).resize_(len(batch), *list(elem.size()))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Trying to resize storage that is not resizable
+
+  → 用时 0 分 30 秒
+[19/72]
+[22:12:54] ETTh1 | Autoformer + revin | seq=96 pred=24 | seed=2023 | ft=M
+epoch:0, train_loss:9.31268, val_loss:7.64805
+epoch:1, train_loss:5.77533, val_loss:7.17834
+epoch:2, train_loss:5.46617, val_loss:7.41868
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:5.27426, val_loss:7.28201
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:5.03634, val_loss:7.52246
+EarlyStopping counter: 3 out of 7 with 4
+epoch:5, train_loss:4.97792, val_loss:7.12735
+epoch:6, train_loss:4.45250, val_loss:7.92256
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:4.25280, val_loss:7.00608
+epoch:8, train_loss:3.95360, val_loss:7.18160
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:3.87312, val_loss:7.33655
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:4.04053, val_loss:7.83633
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:4.71900, val_loss:7.35194
+EarlyStopping counter: 4 out of 7 with 11
+epoch:12, train_loss:4.55887, val_loss:8.01402
+EarlyStopping counter: 5 out of 7 with 12
+epoch:13, train_loss:4.35762, val_loss:7.80543
+EarlyStopping counter: 6 out of 7 with 13
+epoch:14, train_loss:4.25160, val_loss:7.65280
+EarlyStopping counter: 7 out of 7 with 14
+Early stopping with best_score:7.006076335906982
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=revin  SEED=2023  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=11.510600  MAE=1.842730  RMSE=3.392730  MAPE=656033.875000  MSPE=265195322605568.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE       MAPE         MSPE
+ETTh1 Autoformer revin  2023       96         48        24         128    0.5 11.5106 1.84273 3.39273 656033.875 2.651953e+14
+  → 用时 3 分 39 秒
+[20/72]
+[22:16:33] ETTh1 | Autoformer + revin | seq=96 pred=24 | seed=2024 | ft=M
+epoch:0, train_loss:9.65510, val_loss:7.26645
+epoch:1, train_loss:5.59499, val_loss:6.94919
+epoch:2, train_loss:5.22507, val_loss:7.08177
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:5.18979, val_loss:6.97393
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:4.79336, val_loss:7.50049
+EarlyStopping counter: 3 out of 7 with 4
+epoch:5, train_loss:5.27872, val_loss:6.89303
+epoch:6, train_loss:4.79326, val_loss:7.91368
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:4.51016, val_loss:7.12048
+EarlyStopping counter: 2 out of 7 with 7
+epoch:8, train_loss:4.32044, val_loss:7.40826
+EarlyStopping counter: 3 out of 7 with 8
+epoch:9, train_loss:4.17330, val_loss:7.47265
+EarlyStopping counter: 4 out of 7 with 9
+epoch:10, train_loss:3.89033, val_loss:8.31337
+EarlyStopping counter: 5 out of 7 with 10
+epoch:11, train_loss:3.72992, val_loss:7.75191
+EarlyStopping counter: 6 out of 7 with 11
+epoch:12, train_loss:3.62110, val_loss:7.96300
+EarlyStopping counter: 7 out of 7 with 12
+Early stopping with best_score:6.893029689788818
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=10.362920  MAE=1.815120  RMSE=3.219150  MAPE=624288.500000  MSPE=261494755295232.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE     MAPE         MSPE
+ETTh1 Autoformer revin  2024       96         48        24         128    0.5 10.36292 1.81512 3.21915 624288.5 2.614948e+14
+  → 用时 3 分 18 秒
+[21/72]
+[22:19:51] ETTh1 | Autoformer + revin | seq=96 pred=24 | seed=2025 | ft=M
+epoch:0, train_loss:10.66247, val_loss:8.11351
+epoch:1, train_loss:5.80409, val_loss:7.91328
+epoch:2, train_loss:5.53410, val_loss:7.35338
+epoch:3, train_loss:5.12316, val_loss:8.58715
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:4.82638, val_loss:7.54053
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:4.60704, val_loss:9.12506
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:4.41179, val_loss:9.83107
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:4.15362, val_loss:8.22812
+EarlyStopping counter: 5 out of 7 with 7
+epoch:8, train_loss:3.96525, val_loss:8.64633
+EarlyStopping counter: 6 out of 7 with 8
+epoch:9, train_loss:3.86370, val_loss:9.39591
+EarlyStopping counter: 7 out of 7 with 9
+Early stopping with best_score:7.353381633758545
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=revin  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=12.869180  MAE=2.007250  RMSE=3.587360  MAPE=742795.437500  MSPE=334890914545664.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE        MAPE         MSPE
+ETTh1 Autoformer revin  2025       96         48        24         128    0.5 12.86918 2.00725 3.58736 742795.4375 3.348909e+14
+  → 用时 2 分 48 秒
+[22/72]
+[22:22:39] ETTh1 | Autoformer + dishts | seq=96 pred=24 | seed=2023 | ft=M
+epoch:0, train_loss:14.43388, val_loss:8.63387
+epoch:1, train_loss:6.27788, val_loss:8.11924
+epoch:2, train_loss:5.95886, val_loss:8.01417
+epoch:3, train_loss:5.60481, val_loss:7.29198
+epoch:4, train_loss:5.25310, val_loss:7.52829
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:4.93636, val_loss:7.17635
+epoch:6, train_loss:4.68983, val_loss:7.04244
+epoch:7, train_loss:4.47170, val_loss:7.18491
+EarlyStopping counter: 1 out of 7 with 7
+epoch:8, train_loss:4.20088, val_loss:7.16017
+EarlyStopping counter: 2 out of 7 with 8
+epoch:9, train_loss:4.09530, val_loss:7.42897
+EarlyStopping counter: 3 out of 7 with 9
+epoch:10, train_loss:3.92250, val_loss:7.10789
+EarlyStopping counter: 4 out of 7 with 10
+epoch:11, train_loss:3.77827, val_loss:7.12209
+EarlyStopping counter: 5 out of 7 with 11
+epoch:12, train_loss:3.67223, val_loss:7.94770
+EarlyStopping counter: 6 out of 7 with 12
+epoch:13, train_loss:3.51190, val_loss:7.46760
+EarlyStopping counter: 7 out of 7 with 13
+Early stopping with best_score:7.042436599731445
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=11.634460  MAE=1.817070  RMSE=3.410930  MAPE=662892.750000  MSPE=313687298539520.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE      MAPE         MSPE
+ETTh1 Autoformer dishts  2023       96         48        24         128    0.5 11.63446 1.81707 3.41093 662892.75 3.136873e+14
+  → 用时 3 分 29 秒
+[23/72]
+[22:26:08] ETTh1 | Autoformer + dishts | seq=96 pred=24 | seed=2024 | ft=M
+epoch:0, train_loss:15.32114, val_loss:8.47176
+epoch:1, train_loss:5.89213, val_loss:7.38065
+epoch:2, train_loss:5.34279, val_loss:8.03293
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:5.03662, val_loss:7.57336
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:4.85165, val_loss:7.70816
+EarlyStopping counter: 3 out of 7 with 4
+epoch:5, train_loss:4.63712, val_loss:8.93775
+EarlyStopping counter: 4 out of 7 with 5
+epoch:6, train_loss:4.45898, val_loss:7.73656
+EarlyStopping counter: 5 out of 7 with 6
+epoch:7, train_loss:4.32064, val_loss:8.29929
+EarlyStopping counter: 6 out of 7 with 7
+epoch:8, train_loss:4.21195, val_loss:9.74896
+EarlyStopping counter: 7 out of 7 with 8
+Early stopping with best_score:7.380651950836182
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=10.227580  MAE=1.785290  RMSE=3.198060  MAPE=724205.375000  MSPE=386994874089472.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE       MAPE         MSPE
+ETTh1 Autoformer dishts  2024       96         48        24         128    0.5 10.22758 1.78529 3.19806 724205.375 3.869949e+14
+  → 用时 2 分 38 秒
+[24/72]
+[22:28:46] ETTh1 | Autoformer + dishts | seq=96 pred=24 | seed=2025 | ft=M
+epoch:0, train_loss:14.36365, val_loss:7.80796
+epoch:1, train_loss:5.57982, val_loss:7.73791
+epoch:2, train_loss:4.96993, val_loss:8.78640
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:4.47401, val_loss:10.68846
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:4.21023, val_loss:8.46057
+EarlyStopping counter: 3 out of 7 with 4
+epoch:5, train_loss:3.95018, val_loss:8.76217
+EarlyStopping counter: 4 out of 7 with 5
+epoch:6, train_loss:3.64085, val_loss:8.70463
+EarlyStopping counter: 5 out of 7 with 6
+epoch:7, train_loss:3.46919, val_loss:8.80243
+EarlyStopping counter: 6 out of 7 with 7
+epoch:8, train_loss:3.26288, val_loss:9.03271
+EarlyStopping counter: 7 out of 7 with 8
+Early stopping with best_score:7.737908840179443
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=dishts  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=12.480810  MAE=1.957160  RMSE=3.532820  MAPE=764835.687500  MSPE=380732778217472.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE        MAPE         MSPE
+ETTh1 Autoformer dishts  2025       96         48        24         128    0.5 12.48081 1.95716 3.53282 764835.6875 3.807328e+14
+  → 用时 2 分 38 秒
+[25/72]
+[22:31:24] ETTh1 | Autoformer + revin | seq=96 pred=168 | seed=2023 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:13.04827, val_loss:14.64261
+epoch:1, train_loss:11.36665, val_loss:13.97684
+epoch:2, train_loss:10.62822, val_loss:11.94026
+epoch:3, train_loss:9.11202, val_loss:11.41447
+epoch:4, train_loss:8.11866, val_loss:11.75099
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:7.82988, val_loss:10.55836
+epoch:6, train_loss:7.71583, val_loss:9.92973
+epoch:7, train_loss:7.46476, val_loss:10.28928
+EarlyStopping counter: 1 out of 7 with 7
+epoch:8, train_loss:7.40025, val_loss:10.38856
+EarlyStopping counter: 2 out of 7 with 8
+epoch:9, train_loss:7.28725, val_loss:10.51128
+EarlyStopping counter: 3 out of 7 with 9
+epoch:10, train_loss:7.17049, val_loss:10.01199
+EarlyStopping counter: 4 out of 7 with 10
+epoch:11, train_loss:7.06318, val_loss:10.09505
+EarlyStopping counter: 5 out of 7 with 11
+epoch:12, train_loss:6.94471, val_loss:10.11356
+EarlyStopping counter: 6 out of 7 with 12
+epoch:13, train_loss:6.80146, val_loss:10.33458
+EarlyStopping counter: 7 out of 7 with 13
+Early stopping with best_score:9.929730415344238
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=revin  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=13.682920  MAE=2.149590  RMSE=3.699040  MAPE=823677.937500  MSPE=403159587487744.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE        MAPE         MSPE
+ETTh1 Autoformer revin  2023       96         84       168         128    0.5 13.68292 2.14959 3.69904 823677.9375 4.031596e+14
+  → 用时 5 分 37 秒
+[26/72]
+[22:37:01] ETTh1 | Autoformer + revin | seq=96 pred=168 | seed=2024 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:10.56729, val_loss:11.73609
+epoch:1, train_loss:8.07208, val_loss:11.70846
+epoch:2, train_loss:7.82461, val_loss:10.99069
+epoch:3, train_loss:7.57172, val_loss:11.01218
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:7.41913, val_loss:10.59812
+epoch:5, train_loss:7.35197, val_loss:10.24612
+epoch:6, train_loss:7.17353, val_loss:10.42072
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:7.04616, val_loss:10.79799
+EarlyStopping counter: 2 out of 7 with 7
+epoch:8, train_loss:6.90653, val_loss:10.54595
+EarlyStopping counter: 3 out of 7 with 8
+epoch:9, train_loss:6.80826, val_loss:10.68659
+EarlyStopping counter: 4 out of 7 with 9
+epoch:10, train_loss:6.87448, val_loss:10.63343
+EarlyStopping counter: 5 out of 7 with 10
+epoch:11, train_loss:6.73818, val_loss:10.39146
+EarlyStopping counter: 6 out of 7 with 11
+epoch:12, train_loss:6.69571, val_loss:10.64682
+EarlyStopping counter: 7 out of 7 with 12
+Early stopping with best_score:10.246122360229492
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=13.708570  MAE=2.125160  RMSE=3.702510  MAPE=890606.375000  MSPE=454543368257536.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE       MAPE         MSPE
+ETTh1 Autoformer revin  2024       96         84       168         128    0.5 13.70857 2.12516 3.70251 890606.375 4.545434e+14
+  → 用时 5 分 19 秒
+[27/72]
+[22:42:20] ETTh1 | Autoformer + revin | seq=96 pred=168 | seed=2025 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:12.55448, val_loss:14.67173
+epoch:1, train_loss:10.67436, val_loss:12.60516
+epoch:2, train_loss:9.54010, val_loss:12.45263
+epoch:3, train_loss:8.44774, val_loss:13.24956
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:7.88387, val_loss:12.05733
+epoch:5, train_loss:7.61237, val_loss:10.44535
+epoch:6, train_loss:7.31960, val_loss:10.06558
+epoch:7, train_loss:7.24133, val_loss:10.63430
+EarlyStopping counter: 1 out of 7 with 7
+epoch:8, train_loss:7.09450, val_loss:10.46222
+EarlyStopping counter: 2 out of 7 with 8
+epoch:9, train_loss:7.03851, val_loss:10.30275
+EarlyStopping counter: 3 out of 7 with 9
+epoch:10, train_loss:6.86558, val_loss:10.45459
+EarlyStopping counter: 4 out of 7 with 10
+epoch:11, train_loss:6.62322, val_loss:10.23427
+EarlyStopping counter: 5 out of 7 with 11
+epoch:12, train_loss:6.30162, val_loss:10.56163
+EarlyStopping counter: 6 out of 7 with 12
+epoch:13, train_loss:6.01598, val_loss:11.09207
+EarlyStopping counter: 7 out of 7 with 13
+Early stopping with best_score:10.065584182739258
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=revin  SEED=2025  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=13.638450  MAE=2.156050  RMSE=3.693030  MAPE=807440.250000  MSPE=380952626855936.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE      MAPE         MSPE
+ETTh1 Autoformer revin  2025       96         84       168         128    0.5 13.63845 2.15605 3.69303 807440.25 3.809526e+14
+  → 用时 5 分 38 秒
+[28/72]
+[22:47:58] ETTh1 | Autoformer + dishts | seq=96 pred=168 | seed=2023 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:16.64040, val_loss:16.55818
+epoch:1, train_loss:11.60013, val_loss:15.33379
+epoch:2, train_loss:11.34592, val_loss:13.93930
+epoch:3, train_loss:9.95176, val_loss:15.01259
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:9.08419, val_loss:10.79660
+epoch:5, train_loss:7.59445, val_loss:9.58564
+epoch:6, train_loss:7.36915, val_loss:9.61254
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:7.16760, val_loss:9.80896
+EarlyStopping counter: 2 out of 7 with 7
+epoch:8, train_loss:7.09885, val_loss:9.70104
+EarlyStopping counter: 3 out of 7 with 8
+epoch:9, train_loss:6.92598, val_loss:9.95384
+EarlyStopping counter: 4 out of 7 with 9
+epoch:10, train_loss:6.78107, val_loss:9.79722
+EarlyStopping counter: 5 out of 7 with 10
+epoch:11, train_loss:6.63643, val_loss:9.64146
+EarlyStopping counter: 6 out of 7 with 11
+epoch:12, train_loss:6.70608, val_loss:9.94226
+EarlyStopping counter: 7 out of 7 with 12
+Early stopping with best_score:9.585638999938965
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=12.552630  MAE=2.074510  RMSE=3.542970  MAPE=809952.875000  MSPE=402706166448128.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE       MAPE         MSPE
+ETTh1 Autoformer dishts  2023       96         84       168         128    0.5 12.55263 2.07451 3.54297 809952.875 4.027062e+14
+  → 用时 5 分 18 秒
+[29/72]
+[22:53:16] ETTh1 | Autoformer + dishts | seq=96 pred=168 | seed=2024 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:13.57430, val_loss:12.02495
+epoch:1, train_loss:7.72711, val_loss:10.01108
+epoch:2, train_loss:7.28591, val_loss:11.06202
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:7.15553, val_loss:10.51861
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:6.94886, val_loss:10.24824
+EarlyStopping counter: 3 out of 7 with 4
+epoch:5, train_loss:6.76193, val_loss:9.92635
+epoch:6, train_loss:6.61733, val_loss:10.47975
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:6.42807, val_loss:10.14390
+EarlyStopping counter: 2 out of 7 with 7
+epoch:8, train_loss:6.10260, val_loss:9.95464
+EarlyStopping counter: 3 out of 7 with 8
+epoch:9, train_loss:5.79272, val_loss:9.99661
+EarlyStopping counter: 4 out of 7 with 9
+epoch:10, train_loss:5.53497, val_loss:10.88097
+EarlyStopping counter: 5 out of 7 with 10
+epoch:11, train_loss:5.03897, val_loss:11.19051
+EarlyStopping counter: 6 out of 7 with 11
+epoch:12, train_loss:4.76156, val_loss:10.59334
+EarlyStopping counter: 7 out of 7 with 12
+Early stopping with best_score:9.926347732543945
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=13.080050  MAE=2.087500  RMSE=3.616640  MAPE=895217.687500  MSPE=470399313772544.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE    MAE    RMSE        MAPE         MSPE
+ETTh1 Autoformer dishts  2024       96         84       168         128    0.5 13.08005 2.0875 3.61664 895217.6875 4.703993e+14
+  → 用时 5 分 19 秒
+[30/72]
+[22:58:35] ETTh1 | Autoformer + dishts | seq=96 pred=168 | seed=2025 | ft=M
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass

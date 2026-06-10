@@ -1,0 +1,42 @@
+epoch:0, train_loss:40521084.00000, val_loss:2492123.00000
+epoch:1, train_loss:4361847.00000, val_loss:2374774.00000
+epoch:2, train_loss:3838200.75000, val_loss:2289400.75000
+epoch:3, train_loss:3497905.50000, val_loss:2211227.75000
+epoch:4, train_loss:3222448.25000, val_loss:2449054.50000
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:3021940.25000, val_loss:2281668.50000
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:2814642.50000, val_loss:2295278.75000
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:2763127.25000, val_loss:2105905.50000
+epoch:8, train_loss:2631352.25000, val_loss:2469867.00000
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:2493391.00000, val_loss:2171556.25000
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:2472428.25000, val_loss:2315761.75000
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:2185626.50000, val_loss:2158749.75000
+EarlyStopping counter: 4 out of 7 with 11
+epoch:12, train_loss:2153598.75000, val_loss:2075980.37500
+epoch:13, train_loss:1996466.37500, val_loss:2005439.25000
+epoch:14, train_loss:1975422.00000, val_loss:2122718.50000
+EarlyStopping counter: 1 out of 7 with 14
+epoch:15, train_loss:1780728.87500, val_loss:2155739.50000
+EarlyStopping counter: 2 out of 7 with 15
+epoch:16, train_loss:1744032.62500, val_loss:2225775.75000
+EarlyStopping counter: 3 out of 7 with 16
+epoch:17, train_loss:1641820.12500, val_loss:2330122.50000
+EarlyStopping counter: 4 out of 7 with 17
+epoch:18, train_loss:1666582.00000, val_loss:2341442.25000
+EarlyStopping counter: 5 out of 7 with 18
+epoch:19, train_loss:1540367.75000, val_loss:2113203.50000
+EarlyStopping counter: 6 out of 7 with 19
+epoch:20, train_loss:1512477.62500, val_loss:2205382.25000
+EarlyStopping counter: 7 out of 7 with 20
+Early stopping with best_score:2005439.25
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=4471003.000000  MAE=256.525604  RMSE=2114.474609  MAPE=124332688.000000  MSPE=183397220099083468800.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2025       96         48        24          64    0.5 4471003.0 256.525604 2114.474609 124332688.0 1.833972e+20

@@ -1,0 +1,24 @@
+epoch:0, train_loss:37072072.00000, val_loss:2783012.25000
+epoch:1, train_loss:4149333.50000, val_loss:2638754.75000
+epoch:2, train_loss:3711593.25000, val_loss:2401078.75000
+epoch:3, train_loss:3312480.00000, val_loss:2456006.50000
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:3123413.00000, val_loss:2550856.00000
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:2859819.50000, val_loss:2741695.25000
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:2611682.50000, val_loss:3090887.50000
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:2515877.75000, val_loss:2557709.75000
+EarlyStopping counter: 5 out of 7 with 7
+epoch:8, train_loss:2248423.25000, val_loss:2411548.25000
+EarlyStopping counter: 6 out of 7 with 8
+epoch:9, train_loss:2152405.50000, val_loss:2422908.00000
+EarlyStopping counter: 7 out of 7 with 9
+Early stopping with best_score:2401078.75
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=4153340.500000  MAE=258.309967  RMSE=2037.974609  MAPE=133826512.000000  MSPE=232061886219425939456.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2023       96         48        24          64    0.5 4153340.5 258.309967 2037.974609 133826512.0 2.320619e+20

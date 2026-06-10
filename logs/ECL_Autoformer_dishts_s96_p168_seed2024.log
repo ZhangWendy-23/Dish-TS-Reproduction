@@ -1,0 +1,38 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:45739148.00000, val_loss:12685712.00000
+epoch:1, train_loss:14697620.00000, val_loss:3799942.50000
+epoch:2, train_loss:7442711.00000, val_loss:3586590.25000
+epoch:3, train_loss:6614724.00000, val_loss:3845284.75000
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:6247008.00000, val_loss:3492110.00000
+epoch:5, train_loss:5967863.50000, val_loss:3550775.25000
+EarlyStopping counter: 1 out of 7 with 5
+epoch:6, train_loss:5789787.50000, val_loss:3674858.00000
+EarlyStopping counter: 2 out of 7 with 6
+epoch:7, train_loss:5565638.00000, val_loss:3530230.50000
+EarlyStopping counter: 3 out of 7 with 7
+epoch:8, train_loss:5535123.00000, val_loss:3668579.00000
+EarlyStopping counter: 4 out of 7 with 8
+epoch:9, train_loss:6020369.00000, val_loss:3404337.50000
+epoch:10, train_loss:5619128.00000, val_loss:3480125.75000
+EarlyStopping counter: 1 out of 7 with 10
+epoch:11, train_loss:5363377.50000, val_loss:3502070.50000
+EarlyStopping counter: 2 out of 7 with 11
+epoch:12, train_loss:5184062.00000, val_loss:3706429.00000
+EarlyStopping counter: 3 out of 7 with 12
+epoch:13, train_loss:5074922.00000, val_loss:3651682.75000
+EarlyStopping counter: 4 out of 7 with 13
+epoch:14, train_loss:5025789.00000, val_loss:3688128.50000
+EarlyStopping counter: 5 out of 7 with 14
+epoch:15, train_loss:4899062.50000, val_loss:3801940.00000
+EarlyStopping counter: 6 out of 7 with 15
+epoch:16, train_loss:5107013.00000, val_loss:3517904.25000
+EarlyStopping counter: 7 out of 7 with 16
+Early stopping with best_score:3404337.5
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=8556913.000000  MAE=329.056213  RMSE=2925.220215  MAPE=153512256.000000  MSPE=284573347701170634752.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2024       96         84       168          64    0.5 8556913.0 329.056213 2925.220215 153512256.0 2.845733e+20

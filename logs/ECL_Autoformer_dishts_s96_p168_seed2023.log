@@ -1,0 +1,27 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:33124618.00000, val_loss:9283099.00000
+epoch:1, train_loss:8385543.00000, val_loss:4573980.00000
+epoch:2, train_loss:6793909.00000, val_loss:4150967.50000
+epoch:3, train_loss:6453203.00000, val_loss:3635847.00000
+epoch:4, train_loss:5890847.50000, val_loss:4041192.75000
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:5993318.50000, val_loss:3896771.50000
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:5631206.00000, val_loss:4612190.00000
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:5347407.00000, val_loss:4503186.50000
+EarlyStopping counter: 4 out of 7 with 7
+epoch:8, train_loss:5001182.00000, val_loss:4086796.25000
+EarlyStopping counter: 5 out of 7 with 8
+epoch:9, train_loss:4717435.50000, val_loss:3771124.50000
+EarlyStopping counter: 6 out of 7 with 9
+epoch:10, train_loss:8975179.00000, val_loss:5404543.00000
+EarlyStopping counter: 7 out of 7 with 10
+Early stopping with best_score:3635847.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=8692665.000000  MAE=327.513062  RMSE=2948.332520  MAPE=136962720.000000  MSPE=268990629107678052352.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE       RMSE        MAPE         MSPE
+ ECL Autoformer dishts  2023       96         84       168          64    0.5 8692665.0 327.513062 2948.33252 136962720.0 2.689906e+20

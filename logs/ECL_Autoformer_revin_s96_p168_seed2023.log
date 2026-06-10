@@ -1,0 +1,28 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:38614628.00000, val_loss:20248606.00000
+epoch:1, train_loss:34520688.00000, val_loss:17182958.00000
+epoch:2, train_loss:34850228.00000, val_loss:15871872.00000
+epoch:3, train_loss:27166774.00000, val_loss:11703934.00000
+epoch:4, train_loss:23907938.00000, val_loss:11421773.00000
+epoch:5, train_loss:27099594.00000, val_loss:18144854.00000
+EarlyStopping counter: 1 out of 7 with 5
+epoch:6, train_loss:363128225792.00000, val_loss:207785728.00000
+EarlyStopping counter: 2 out of 7 with 6
+epoch:7, train_loss:586964096.00000, val_loss:99599768.00000
+EarlyStopping counter: 3 out of 7 with 7
+epoch:8, train_loss:428383008.00000, val_loss:54581520.00000
+EarlyStopping counter: 4 out of 7 with 8
+epoch:9, train_loss:337433984.00000, val_loss:47846600.00000
+EarlyStopping counter: 5 out of 7 with 9
+epoch:10, train_loss:280083136.00000, val_loss:59393780.00000
+EarlyStopping counter: 6 out of 7 with 10
+epoch:11, train_loss:234321664.00000, val_loss:39885972.00000
+EarlyStopping counter: 7 out of 7 with 11
+Early stopping with best_score:11421773.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=31348436.000000  MAE=557.919983  RMSE=5598.966797  MAPE=156260032.000000  MSPE=276469542384182493184.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha        MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2023       96         84       168          64    0.5 31348436.0 557.919983 5598.966797 156260032.0 2.764695e+20

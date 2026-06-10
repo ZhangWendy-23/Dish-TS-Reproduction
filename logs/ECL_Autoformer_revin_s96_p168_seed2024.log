@@ -1,0 +1,27 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:46155020.00000, val_loss:18387094.00000
+epoch:1, train_loss:36568200.00000, val_loss:16156257.00000
+epoch:2, train_loss:32448204.00000, val_loss:15675946.00000
+epoch:3, train_loss:31108394.00000, val_loss:14634837.00000
+epoch:4, train_loss:2816092928.00000, val_loss:21135474.00000
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:44343716.00000, val_loss:19640586.00000
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:41741764.00000, val_loss:18800804.00000
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:39865272.00000, val_loss:18040970.00000
+EarlyStopping counter: 4 out of 7 with 7
+epoch:8, train_loss:39175992.00000, val_loss:18101014.00000
+EarlyStopping counter: 5 out of 7 with 8
+epoch:9, train_loss:39214676.00000, val_loss:17601164.00000
+EarlyStopping counter: 6 out of 7 with 9
+epoch:10, train_loss:37852828.00000, val_loss:17478560.00000
+EarlyStopping counter: 7 out of 7 with 10
+Early stopping with best_score:14634837.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
+  MSE=43792432.000000  MAE=674.235657  RMSE=6617.585449  MAPE=160857184.000000  MSPE=270330678695239352320.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha        MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2024       96         84       168          64    0.5 43792432.0 674.235657 6617.585449 160857184.0 2.703307e+20

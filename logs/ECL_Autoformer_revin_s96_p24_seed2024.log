@@ -1,0 +1,47 @@
+epoch:0, train_loss:29339514.00000, val_loss:2574927.25000
+epoch:1, train_loss:4349892.00000, val_loss:2806076.75000
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:3753076.00000, val_loss:2428159.75000
+epoch:3, train_loss:3308667.25000, val_loss:2642487.75000
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:3065521.75000, val_loss:2689788.75000
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:2441049.00000, val_loss:2566792.75000
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:2164639.75000, val_loss:2257616.25000
+epoch:7, train_loss:1958893.87500, val_loss:2236424.50000
+epoch:8, train_loss:1772558.75000, val_loss:3495077.75000
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:1672130.12500, val_loss:2314479.50000
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:1642837.00000, val_loss:2424345.50000
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:1592340.37500, val_loss:2021586.00000
+epoch:12, train_loss:1421211.87500, val_loss:2085937.25000
+EarlyStopping counter: 1 out of 7 with 12
+epoch:13, train_loss:1345918.12500, val_loss:2025596.62500
+EarlyStopping counter: 2 out of 7 with 13
+epoch:14, train_loss:1353290.50000, val_loss:2080184.62500
+EarlyStopping counter: 3 out of 7 with 14
+epoch:15, train_loss:1218949.00000, val_loss:1942344.00000
+epoch:16, train_loss:1102504.50000, val_loss:1987077.62500
+EarlyStopping counter: 1 out of 7 with 16
+epoch:17, train_loss:1110078.50000, val_loss:2150124.75000
+EarlyStopping counter: 2 out of 7 with 17
+epoch:18, train_loss:1050948.12500, val_loss:2414697.50000
+EarlyStopping counter: 3 out of 7 with 18
+epoch:19, train_loss:1040733.75000, val_loss:2327888.00000
+EarlyStopping counter: 4 out of 7 with 19
+epoch:20, train_loss:1020264.06250, val_loss:2259023.00000
+EarlyStopping counter: 5 out of 7 with 20
+epoch:21, train_loss:1023540.68750, val_loss:2150372.75000
+EarlyStopping counter: 6 out of 7 with 21
+epoch:22, train_loss:1034240.87500, val_loss:2560120.25000
+EarlyStopping counter: 7 out of 7 with 22
+Early stopping with best_score:1942344.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=64  lr=0.001  alpha=0.5
+  MSE=4002992.250000  MAE=248.597397  RMSE=2000.748047  MAPE=130317856.000000  MSPE=216594836249175392256.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha        MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2024       96         48        24          64    0.5 4002992.25 248.597397 2000.748047 130317856.0 2.165948e+20

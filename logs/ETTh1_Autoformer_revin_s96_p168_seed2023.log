@@ -1,0 +1,31 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:13.04827, val_loss:14.64261
+epoch:1, train_loss:11.36665, val_loss:13.97684
+epoch:2, train_loss:10.62822, val_loss:11.94026
+epoch:3, train_loss:9.11202, val_loss:11.41447
+epoch:4, train_loss:8.11866, val_loss:11.75099
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:7.82988, val_loss:10.55836
+epoch:6, train_loss:7.71583, val_loss:9.92973
+epoch:7, train_loss:7.46476, val_loss:10.28928
+EarlyStopping counter: 1 out of 7 with 7
+epoch:8, train_loss:7.40025, val_loss:10.38856
+EarlyStopping counter: 2 out of 7 with 8
+epoch:9, train_loss:7.28725, val_loss:10.51128
+EarlyStopping counter: 3 out of 7 with 9
+epoch:10, train_loss:7.17049, val_loss:10.01199
+EarlyStopping counter: 4 out of 7 with 10
+epoch:11, train_loss:7.06318, val_loss:10.09505
+EarlyStopping counter: 5 out of 7 with 11
+epoch:12, train_loss:6.94471, val_loss:10.11356
+EarlyStopping counter: 6 out of 7 with 12
+epoch:13, train_loss:6.80146, val_loss:10.33458
+EarlyStopping counter: 7 out of 7 with 13
+Early stopping with best_score:9.929730415344238
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=revin  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=13.682920  MAE=2.149590  RMSE=3.699040  MAPE=823677.937500  MSPE=403159587487744.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE        MAPE         MSPE
+ETTh1 Autoformer revin  2023       96         84       168         128    0.5 13.68292 2.14959 3.69904 823677.9375 4.031596e+14

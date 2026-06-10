@@ -1,0 +1,44 @@
+epoch:0, train_loss:11.60686, val_loss:9.88865
+epoch:1, train_loss:9.34808, val_loss:10.08585
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:9.77955, val_loss:9.73691
+epoch:3, train_loss:8.75584, val_loss:9.11100
+epoch:4, train_loss:7.85855, val_loss:9.08751
+epoch:5, train_loss:7.75221, val_loss:9.10721
+EarlyStopping counter: 1 out of 7 with 5
+epoch:6, train_loss:7.50875, val_loss:8.84338
+epoch:7, train_loss:7.24209, val_loss:8.40706
+epoch:8, train_loss:7.16068, val_loss:8.44067
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:7.14986, val_loss:8.56371
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:7.10345, val_loss:9.34721
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:7.02309, val_loss:8.65791
+EarlyStopping counter: 4 out of 7 with 11
+epoch:12, train_loss:6.71435, val_loss:8.56693
+EarlyStopping counter: 5 out of 7 with 12
+epoch:13, train_loss:6.84895, val_loss:8.80039
+EarlyStopping counter: 6 out of 7 with 13
+epoch:14, train_loss:6.62646, val_loss:8.34790
+epoch:15, train_loss:6.59372, val_loss:8.59256
+EarlyStopping counter: 1 out of 7 with 15
+epoch:16, train_loss:6.43415, val_loss:8.57171
+EarlyStopping counter: 2 out of 7 with 16
+epoch:17, train_loss:9.06807, val_loss:8.47168
+EarlyStopping counter: 3 out of 7 with 17
+epoch:18, train_loss:6.36786, val_loss:8.80494
+EarlyStopping counter: 4 out of 7 with 18
+epoch:19, train_loss:6.21938, val_loss:8.53752
+EarlyStopping counter: 5 out of 7 with 19
+epoch:20, train_loss:6.10715, val_loss:8.50415
+EarlyStopping counter: 6 out of 7 with 20
+epoch:21, train_loss:6.02855, val_loss:8.50108
+EarlyStopping counter: 7 out of 7 with 21
+Early stopping with best_score:8.34789752960205
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=revin  SEED=2023  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=7.753000  MAE=1.838480  RMSE=2.784420  MAPE=8252195.000000  MSPE=3584494342766592.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha   MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer revin  2023       96         48        24         128    0.5 7.753 1.83848 2.78442 8252195.0 3.584494e+15
