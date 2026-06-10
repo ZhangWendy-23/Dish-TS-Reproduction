@@ -91,7 +91,12 @@ device = torch.device(f'cuda:{GPU}' if torch.cuda.is_available() else 'cpu')
 # Special case: Electricity (ECL) → 64 for all models (many series × long sequences)
 # Long horizon (pred_len > 168): reduced to avoid OOM — safely capped at 64 for 12GB GPU
 if args.label_len == 0:
+    # Paper: label_len = max(48, pred_len//2) for standard 96-length lookback
+    # But must not exceed seq_len (e.g., Table 1: seq_len=24, pred_len=24)
     args.label_len = max(48, args.pred_len // 2)
+    if args.label_len > args.seq_len:
+        args.label_len = args.pred_len // 2
+        print(f"[INFO] label_len capped to {args.label_len} (seq_len={args.seq_len} too short for 48)")
 
 if args.batch_size == 0:
     if DATA == 'ECL':
@@ -114,9 +119,9 @@ if DATA in ('ETTm2', 'ETTh1', 'ETTh2', 'ETTm1', 'ILI'):
     val_ratio, test_ratio = 0.2, 0.2
 else:
     val_ratio, test_ratio = 0.1, 0.2
-train_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='train', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio))
-val_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='val', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio))
-test_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='test', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio))
+train_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='train', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features)
+val_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='val', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features)
+test_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='test', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features)
 
 # set forecast dataloader
 # Performance: num_workers>0 enables parallel data loading, pin_memory enables

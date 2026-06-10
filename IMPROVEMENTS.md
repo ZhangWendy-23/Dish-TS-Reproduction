@@ -246,6 +246,51 @@ if args.norm == 'dishts' and args.alpha > 0:
 | **类型** | 结构调整 |
 | **原因** | `data/` 是 TSF 论文代码的更常见约定（与官方代码一致） |
 
+---
+
+### 13. `dataset.py` — 支持单变量（Univariate）模式
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 重大修复 |
+| **原因** | 原代码无论传入什么 `--features` 参数，都使用全部列。论文 Table 1 是单变量（只用最后一列），导致结果错误 |
+
+修改：
+- 新增 `features` 参数（`'M'` 多变量 / `'S'` 单变量）
+- `'S'` 模式：只用 `cols[-1]`（最后一列），`n_series=1`
+- `train.py` 中 Dataset 构造调用同步传入 `features=args.features`
+
+---
+
+### 14. `train.py` — label_len 越界保护
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | Bug 修复 |
+| **原因** | `label_len = max(48, pred_len//2)` 当 `seq_len=24`（Table 1 短序列）时算出 48 > 24，导致数据集索引越界 |
+
+修复：
+```python
+if args.label_len == 0:
+    args.label_len = max(48, args.pred_len // 2)
+    if args.label_len > args.seq_len:         # 安全上限
+        args.label_len = args.pred_len // 2   # 回退逻辑
+```
+
+---
+
+### 15. `run_paper_exps.sh` — 按 Table 传入 features 参数
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | Bug 修复 |
+| **原因** | 脚本未传 `--features` 参数，无法区分单/多变量实验 |
+
+修复：
+- Table 1（单变量）：`--features S`
+- Table 2/3/4（多变量）：`--features M`
+- `run_one()` 函数签名增加第 7 参数 `ft_flag`，默认 `M`
+
 `train.py` 已同步修改数据路径为 `./data/{DATA}.csv`。`.gitignore` 排除 `data/*.csv`，避免将 GB 级数据集传入仓库，README 明确给出下载命令。
 
 ---

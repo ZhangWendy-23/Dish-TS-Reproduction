@@ -41,14 +41,15 @@ LOG_DIR="./logs"
 mkdir -p "$LOG_DIR" results
 
 run_one() {
-    # 参数: data model norm pred_len seq_len [seed] [extra]
+    # 参数: data model norm pred_len seq_len [seed] [features_flag] [extra]
     local data="$1"
     local model="$2"
     local norm="$3"
     local pred_len="$4"
     local seq_len="$5"
     local seed="${6:-2023}"
-    local extra="${7:-}"
+    local ft_flag="${7:-M}"
+    local extra="${8:-}"
 
     local key="${data}_${model}_${norm}_s${seq_len}_p${pred_len}_seed${seed}"
     local LOG="$LOG_DIR/${key}.log"
@@ -59,7 +60,7 @@ run_one() {
         return 0
     fi
 
-    echo "[$(date +'%H:%M:%S')] $data | $model + $norm | seq=$seq_len pred=$pred_len | seed=$seed"
+    echo "[$(date +'%H:%M:%S')] $data | $model + $norm | seq=$seq_len pred=$pred_len | seed=$seed | ft=$ft_flag"
     local t0=$(date +%s)
 
     python train.py \
@@ -69,6 +70,7 @@ run_one() {
         --pred_len "$pred_len" \
         --seq_len "$seq_len" \
         --seed "$seed" \
+        --features "$ft_flag" \
         --batch_size 0 \
         --alpha 0.5 \
         --gpu "$GPU" \
@@ -100,7 +102,7 @@ table1() {
                 for norm in "${norms[@]}"; do
                     count=$((count + 1))
                     echo "[$count/$total]"
-                    run_one "$data" "$model" "$norm" "$pred_len" "$pred_len"
+                    run_one "$data" "$model" "$norm" "$pred_len" "$pred_len" 2023 S
                 done
             done
         done
@@ -129,7 +131,7 @@ table2() {
                 for norm in "${norms[@]}"; do
                     count=$((count + 1))
                     echo "[$count/$total]"
-                    run_one "$data" "$model" "$norm" "$pred_len" 96
+                    run_one "$data" "$model" "$norm" "$pred_len" 96 2023 M
                 done
             done
         done
@@ -158,7 +160,7 @@ table3() {
                 for seed in "${seeds[@]}"; do
                     count=$((count + 1))
                     echo "[$count/$total]"
-                    run_one "$data" Autoformer "$norm" "$pred_len" 96 "$seed"
+                    run_one "$data" Autoformer "$norm" "$pred_len" 96 "$seed" M
                 done
             done
         done
@@ -188,7 +190,7 @@ table4() {
                 for norm in "${norms[@]}"; do
                     count=$((count + 1))
                     echo "[$count/$total]"
-                    run_one "$data" "$model" "$norm" "$pred_len" 96
+                    run_one "$data" "$model" "$norm" "$pred_len" 96 2023 M
                 done
             done
         done
@@ -206,7 +208,7 @@ quick() {
     echo "=================================================================="
     for pred_len in 24 96; do
         for norm in none revin dishts; do
-            run_one ETTm2 Autoformer "$norm" "$pred_len" 96 2023
+            run_one ETTm2 Autoformer "$norm" "$pred_len" 96 2023 M
         done
     done
     summarize
