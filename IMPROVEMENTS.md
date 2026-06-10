@@ -386,6 +386,7 @@ if args.label_len == 0:
 | 17 | 仓库重命名 → `Dish-TS-Reproduction` + 公开 + README 学术格式重写 | 最新 |
 | 18 | 删除 4 个冗余文件（旧版脚本 + parse_paper + progress.csv） | 最新 |
 | 19 | README 添加 SSH 断连防护（screen/tmux 教程 + Warning 对比表） | 最新 |
+| 20 | README 精简：去掉重复参数表，缩短 SSH 教程 | 最新 |
 
 ---
 
