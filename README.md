@@ -29,6 +29,8 @@
    - [Table 4: Long-horizon Forecasting](#table-4-long-horizon-forecasting)
    - [Quick Verification](#quick-verification)
    - [Simplified Experiments](#simplified-experiments)
+   - [Preventing SSH Disconnection](#preventing-ssh-disconnection)
+   - [Monitoring Progress](#monitoring-progress)
    - [Collecting Results](#collecting-results)
 5. [Configuration Reference](#configuration-reference)
    - [CLI Arguments](#cli-arguments)
@@ -84,10 +86,31 @@ ls -lh data/                       # Should list 5 CSV files
 python -c "from backbones import Autoformer; from DishTS import DishTS; print('Installation OK')"
 ```
 
+> **Warning: SSH Disconnection Will Kill Your Experiments**
+>
+> If you run experiments over SSH and your connection drops, all child processes
+> (including training jobs) will be terminated. **Always use one of these methods:**
+>
+> | Method | Survives Disconnect | Reconnect to View Output | Recommendation |
+> |--------|---------------------|--------------------------|----------------|
+> | **`screen`** | Yes | Yes (`screen -r`) | Best |
+> | **`tmux`** | Yes | Yes (`tmux attach`) | Best |
+> | **`nohup`** | Yes | No (use `tail -f log`) | OK for fire-and-forget |
+> | Direct SSH | **No** | — | Never use |
+>
+> See [Preventing SSH Disconnection](#preventing-ssh-disconnection) below for detailed instructions.
+
 ### Run All Paper Experiments (One Command)
 
 ```bash
-chmod +x run_paper_exps.sh
+chmod +x run_paper_exps.sh 
+
+# Option A: screen (recommended - reconnect anytime)
+screen -S dishts
+./run_paper_exps.sh all 2>&1 | tee logs/master_all.log
+# Press Ctrl+A then D to detach. Reconnect: screen -r dishts
+
+# Option B: nohup (fire-and-forget, check with tail -f)
 nohup ./run_paper_exps.sh all > logs/master_all.log 2>&1 &
 tail -f logs/master_all.log
 ```
@@ -305,6 +328,77 @@ Output files:
 | `results/table2_multivariate.tex` | LaTeX table for Table 2 |
 | `results/table3_revin_vs_dishts.tex` | LaTeX table for Table 3 |
 | `results/*.png` | MSE vs. prediction length comparison plots |
+
+### Preventing SSH Disconnection
+
+SSH connection drops are the #1 cause of failed experiments. Here's how to protect
+your runs:
+
+#### Option A: `screen` (Recommended)
+
+```bash
+# 1. Create a named session
+screen -S dishts
+
+# 2. Run your experiment inside the session
+cd Dish-TS-Reproduction
+./run_paper_exps.sh table3 2>&1 | tee logs/table3_master.log
+
+# 3. Detach from the session (keeps it running):
+#    Press Ctrl+A, then press D
+
+# 4. Log out, close laptop, come back later
+
+# 5. Reconnect to the session from any SSH login:
+screen -r dishts
+
+# 6. List all sessions:
+screen -ls
+
+# 7. Kill a session when done:
+screen -S dishts -X quit
+```
+
+#### Option B: `tmux`
+
+```bash
+# 1. Create a named session
+tmux new -s dishts
+
+# 2. Run your experiment inside the session
+cd Dish-TS-Reproduction
+./run_paper_exps.sh table3 2>&1 | tee logs/table3_master.log
+
+# 3. Detach: Press Ctrl+B, then press D
+
+# 4. Reconnect:
+tmux attach -t dishts
+
+# 5. List all sessions:
+tmux ls
+
+# 6. Kill a session:
+tmux kill-session -t dishts
+```
+
+#### Option C: `nohup` + `&`
+
+```bash
+nohup ./run_paper_exps.sh table3 > logs/table3_master.log 2>&1 &
+
+# Check progress:
+tail -f logs/table3_master.log
+
+# Find process ID:
+ps aux | grep "train.py" | grep -v grep
+
+# Kill if needed:
+kill <PID>
+```
+
+> **Why `nohup` alone may not be enough**: even with `nohup`, some cloud
+> environments may kill orphaned processes after SSH disconnection. `screen`
+> or `tmux` is always preferred.
 
 ### Monitoring Progress
 

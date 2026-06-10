@@ -333,6 +333,22 @@ if args.label_len == 0:
 
 ---
 
+### 19. 添加 SSH 断连防护方案（`screen` / `tmux`）
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 增强 |
+| **原因** | SSH 断开会导致实验进程被杀死；`nohup` 无法回连查看实时输出 |
+
+新增 README 章节 `Preventing SSH Disconnection`，包含三种方案：
+- **`screen`**（推荐）：`screen -S dishts` 创建会话，`Ctrl+A D` 分离，`screen -r` 回连
+- **`tmux`**：`tmux new -s dishts`，`Ctrl+B D` 分离，`tmux attach -t` 回连
+- **`nohup` + `&`**：最简方案，但不能回连查看实时输出
+
+同时在 One-Click Run 区域添加醒目的 Warning 框，说明四种方法的对比表。
+
+---
+
 ## 修改统计
 
 | 类别 | 新增文件 | 修改文件 | 删除文件 | 说明 |
@@ -369,6 +385,7 @@ if args.label_len == 0:
 | 16 | `README.md` 一键运行方案 + 7步部署指南 | 最新 |
 | 17 | 仓库重命名 → `Dish-TS-Reproduction` + 公开 + README 学术格式重写 | 最新 |
 | 18 | 删除 4 个冗余文件（旧版脚本 + parse_paper + progress.csv） | 最新 |
+| 19 | README 添加 SSH 断连防护（screen/tmux 教程 + Warning 对比表） | 最新 |
 
 ---
 
