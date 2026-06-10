@@ -316,16 +316,34 @@ if args.label_len == 0:
 
 ---
 
+### 18. 删除冗余文件
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 清理 |
+| **原因** | 精简仓库，移除被替代的旧版脚本和不参与运行的辅助文件 |
+
+删除文件：
+- `run_experiments.sh` — 旧版实验脚本，已被 `run_paper_exps.sh` 完全替代
+- `run_final_exps.sh` — 旧版实验脚本
+- `results/parse_paper.py` — 论文参数提取参考，不参与运行
+- `results/current_progress.csv` — 中间跟踪文件，每次实验重新生成
+
+同步更新：README 目录树、run_simplified_exps.sh 注释引用
+
+---
+
 ## 修改统计
 
-| 类别 | 新增文件 | 修改文件 | 说明 |
-|------|---------|---------|------|
-| 核心代码 | 1 (`backbones/__init__.py`) | 3 (`train.py`, `Model.py`, `utils/dataset.py`) | 修复导入 + 论文参数对齐 + 单变量支持 + label_len 修复 |
-| 工具脚本 | 3 (`run_paper_exps.sh`, `run_simplified_exps.sh`, `results/collect_results.py`) | 2 (`run_experiments.sh`, `run_final_exps.sh`) | 按论文 4 个 Table 自动运行实验 |
-| 配置文件 | 1 (`requirements.txt`) | 1 (`.gitignore`) | 添加依赖列表、精简排除规则 |
-| 数据 | 4 (`ETTh1.csv`, `ECL.csv`, `WTH.csv`, `ILI.csv`) | 0 | 全部 5 个数据集纳入版本控制 |
-| 文档 | 1 (`IMPROVEMENTS.md`) | 1 (`README.md`) | 17 项改动完整记录 + 标准学术 README |
-| **合计** | **10** | **7** | 共约 1000+ 行代码/文档/配置 |
+| 类别 | 新增文件 | 修改文件 | 删除文件 | 说明 |
+|------|---------|---------|---------|------|
+| 核心代码 | 1 | 3 | 0 | 修复导入 + 论文参数对齐 + 单变量 + label_len |
+| 脚本 | 3 | 2 | 2 | run_paper_exps + run_simplified + collect_results；删除旧版 |
+| 配置 | 1 | 1 | 0 | requirements.txt + .gitignore |
+| 数据 | 4 | 0 | 0 | 5 个数据集纳入版本控制 |
+| 文档 | 1 | 1 | 0 | IMPROVEMENTS + README |
+| 清理 | 0 | 0 | 4 | 冗余脚本 + parse_paper + progress.csv |
+| **合计** | **10** | **7** | **6** | 最终仓库简洁、无冗余 |
 
 ---
 
@@ -350,6 +368,7 @@ if args.label_len == 0:
 | 15 | `run_paper_exps.sh` 按 Table 传入 features | 最新 |
 | 16 | `README.md` 一键运行方案 + 7步部署指南 | 最新 |
 | 17 | 仓库重命名 → `Dish-TS-Reproduction` + 公开 + README 学术格式重写 | 最新 |
+| 18 | 删除 4 个冗余文件（旧版脚本 + parse_paper + progress.csv） | 最新 |
 
 ---
 

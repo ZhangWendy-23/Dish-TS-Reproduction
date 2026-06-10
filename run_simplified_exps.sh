@@ -14,7 +14,7 @@
 # Total: 2 models x 3 norms x 3 horizons = 18 experiments
 # Expected runtime: ~1-3 hours on a single RTX 3080 Ti / A100.
 #
-# For FULL paper reproduction (90+ experiments), use run_experiments.sh.
+# For FULL paper reproduction, use run_paper_exps.sh.
 # ============================================================================
 
 set -u

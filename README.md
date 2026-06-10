@@ -109,8 +109,6 @@ Dish-TS-Reproduction/
 │
 ├── run_paper_exps.sh            # ★ Paper Table 1-4 one-click runner (recommended)
 ├── run_simplified_exps.sh       # Simplified 18-experiment subset (~1-3 hours)
-├── run_experiments.sh           # Legacy experiment script (preserved)
-├── run_final_exps.sh            # Legacy experiment script (preserved)
 │
 ├── backbones/                   # Forecasting backbone models
 │   ├── __init__.py
@@ -141,8 +139,7 @@ Dish-TS-Reproduction/
 │   └── ILI.csv    (~67 KB)     # Weekly, 7 features, ~966 timestamps
 │
 ├── results/                     # Result collection and analysis tools
-│   ├── collect_results.py       # Parse logs -> CSV + LaTeX tables + plots
-│   └── parse_paper.py           # Paper parameter extraction reference
+│   └── collect_results.py       # Parse logs -> CSV + LaTeX tables + plots
 │
 ├── logs/                        # Experiment logs (tracked for reproducibility)
 │   ├── simplified/              # Simplified 18-experiment results
