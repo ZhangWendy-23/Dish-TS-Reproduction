@@ -164,6 +164,16 @@ Dish-TS-Reproduction/
 | **3** | RevIN vs. Dish-TS | 96 | {24, 168, 336} | 4 (excl. ILI) | Autoformer | 2 | 3 | 72 |
 | **4** | Long-horizon forecasting | 96 | {336, 420, 540, 600, 720} | ECL, ETTh1 | Autoformer | 2 | 1 | 20 |
 
+**Recommended execution order:**
+
+| Order | Command | Why First | Experiments | Estimated Time |
+|-------|---------|-----------|-------------|----------------|
+| 1 | `./run_paper_exps.sh quick` | Verify environment works | 6 | ~10 min |
+| 2 | `./run_paper_exps.sh table3` | Core result: RevIN vs Dish-TS | 72 | 4-6 hours |
+| 3 | `./run_paper_exps.sh table2` | Main multivariate results | 225 | 18-24 hours |
+| 4 | `./run_paper_exps.sh table1` | Univariate results | 225 | 12-20 hours |
+| 5 | `./run_paper_exps.sh table4` | Long-horizon results | 20 | 5-8 hours |
+
 ### Table 1: Univariate Forecasting
 
 Evaluates Dish-TS in the univariate setting (`--features S`, only the last feature column). The input length equals the prediction length.
