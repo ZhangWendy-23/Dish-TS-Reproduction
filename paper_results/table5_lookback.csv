@@ -1,0 +1,11 @@
+dataset,lookback,backbone_mse,dishts_mse
+Electricity,48,1.3026,1.2862
+Electricity,96,1.3673,0.9682
+Electricity,144,1.2794,0.7309
+Electricity,192,1.2686,0.7156
+Electricity,240,0.9494,0.7605
+ETTh1,48,0.5979,0.5708
+ETTh1,96,0.5745,0.5451
+ETTh1,144,0.5459,0.5202
+ETTh1,192,0.5638,0.5307
+ETTh1,240,0.6309,0.5234

@@ -1,0 +1,11 @@
+dataset,horizon,backbone_mse,dishts_mse
+Electricity,336,1.7429,1.3361
+Electricity,420,1.7859,1.4507
+Electricity,540,1.7720,1.4107
+Electricity,600,1.6140,1.4340
+Electricity,720,1.6023,1.4785
+ETTh1,336,1.0468,0.9699
+ETTh1,420,1.2688,1.0864
+ETTh1,540,1.1696,1.1361
+ETTh1,600,1.3281,1.1852
+ETTh1,720,1.4270,1.1913

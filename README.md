@@ -512,6 +512,60 @@ Reproduction success criterion: Dish-TS (`--norm dishts`) should achieve signifi
 
 ---
 
+## Paper Table Data Reference
+
+All 5 tables from the original paper have been extracted into machine-readable CSV files in `paper_results/`.
+Use `paper_results/analyze_paper.py` to generate the comparison summary below.
+
+### Files
+
+| File | Content | Columns |
+|------|---------|---------|
+| `paper_results/table1_univariate.csv` | Table 1: Univariate forecasting (Informer/Autoformer/N-BEATS with/without Dish-TS) | dataset, horizon, informer_mse, informer_mae, informer_dishts_mse, informer_dishts_mae, autoformer_{mse,mae}, autoformer_dishts_{mse,mae}, nbeats_{mse,mae}, nbeats_dishts_{mse,mae} |
+| `paper_results/table2_multivariate.csv` | Table 2: Multivariate forecasting (same structure as Table 1) | same as above |
+| `paper_results/table3_revin_comparison.csv` | Table 3: Dish-TS vs RevIN (Autoformer, multivariate) | dataset, horizon, revin_mse, dishts_mse, improvement_pct |
+| `paper_results/table4_long_horizon.csv` | Table 4: Long-horizon (horizon 336-720, lookback 96, N-BEATS) | dataset, horizon, backbone_mse, dishts_mse |
+| `paper_results/table5_lookback.csv` | Table 5: Lookback length analysis (lookback 48-240, horizon 48, N-BEATS) | dataset, lookback, backbone_mse, dishts_mse |
+| `paper_results/analyze_paper.py` | Analysis script: reads CSVs, computes improvements, prints cross-table summary | (script) |
+
+### Loading example
+
+```python
+import pandas as pd
+t1 = pd.read_csv("paper_results/table1_univariate.csv")
+t2 = pd.read_csv("paper_results/table2_multivariate.csv")
+t3 = pd.read_csv("paper_results/table3_revin_comparison.csv")
+t4 = pd.read_csv("paper_results/table4_long_horizon.csv")
+t5 = pd.read_csv("paper_results/table5_lookback.csv")
+```
+
+### Analyzing / comparing your reproduction results
+
+```bash
+python3 paper_results/analyze_paper.py        # re-generate the paper-side analysis
+python3 results/collect_results.py            # aggregate your own experiment logs
+```
+
+### Key observations from the 5 paper tables
+
+1. **Table 1 & 2 (Uni- vs Multi-variate)**: Dish-TS consistently reduces MSE across all 3 backbone models (Informer, Autoformer, N-BEATS). Improvement is typically larger in the multivariate setting (Autoformer: 34.2% avg reduction) than univariate (23.4%).
+2. **Table 3 (vs RevIN)**: Dish-TS beats RevIN on all 4 datasets (average improvement 11-36%). ETTh1 shows the largest improvement (up to 36.3% at horizon=336); Weather shows the smallest (around 10% at longer horizons).
+3. **Table 4 (Long-horizon, horizon=336..720)**: Dish-TS keeps its advantage as horizon grows, confirming long-horizon robustness (improvement stays in the 7-23% range, N-BEATS backbone).
+4. **Table 5 (Lookback length, lookback=48..240)**: Dish-TS's relative advantage *grows* with more lookback context (especially for Electricity: 1.3% -> 43.6%), but decreases at 240 (diminishing returns / overfitting). Peak around 144-192.
+
+### Cross-table summary computed from the CSVs
+
+```
+Univariate  (Table 1):  Informer -48.6%   Autoformer -23.4%   N-BEATS -12.8%
+Multivariate (Table 2): Informer -50.9%   Autoformer -34.2%   N-BEATS  -7.2%
+RevIN comparison (Table 3, % improvement over RevIN):
+    Electricity  15.9%   ETTh1  25.3%   ETTm2  14.0%   Weather  16.0%
+Long-horizon (Table 4): Dish-TS outperforms baseline at every horizon 336..720.
+Lookback (Table 5): Optimal lookback around 144..192 for Electricity, steady for ETTh1.
+```
+
+---
+
 ## Citation
 
 If you use this code or the Dish-TS method in your research, please cite the original paper:

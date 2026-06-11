@@ -378,17 +378,40 @@ if args.label_len == 0:
 
 ---
 
+### 22. 新建 `paper_results/` — 论文表格数据提取（CSV + 分析脚本）
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 新增数据/脚本文件集 |
+| **目录** | `paper_results/` |
+| **原因** | 原论文的 5 个核心表格仅以 PDF 形式存在，复现者需要将实验结果与论文数据进行逐表对比；为便于后续程序化对比，将 5 个表格的数据提取为机器可读 CSV 并附分析脚本 |
+
+新增文件清单：
+
+| 文件 | 内容 |
+|------|------|
+| `paper_results/table1_univariate.csv` | Table 1：单变量预测（Informer/Autoformer/N-BEATS + Dish-TS，MSE/MAE） |
+| `paper_results/table2_multivariate.csv` | Table 2：多变量预测（结构同上） |
+| `paper_results/table3_revin_comparison.csv` | Table 3：Dish-TS vs RevIN 对比（Autoformer，多变量，3 个 horizon） |
+| `paper_results/table4_long_horizon.csv` | Table 4：长窗口预测（horizon=336..720，lookback=96，N-BEATS） |
+| `paper_results/table5_lookback.csv` | Table 5：lookback 长度分析（lookback=48..240，horizon=48，N-BEATS） |
+| `paper_results/analyze_paper.py` | 分析脚本：读取以上 5 个 CSV，逐表计算 Dish-TS 相对 baseline 的 MSE 下降百分比，并输出 cross-table summary |
+
+同时在 README 新增 "Paper Table Data Reference" 章节，提供载入示例、关键观察结论及 cross-table 汇总数字（可作为复现达标指标）。
+
+---
+
 ## 修改统计
 
 | 类别 | 新增文件 | 修改文件 | 删除文件 | 说明 |
 |------|---------|---------|---------|------|
 | 核心代码 | 1 | 4 | 0 | 修复导入 + 论文参数对齐 + 单变量 + label_len + num_workers |
-| 脚本 | 3 | 2 | 2 | run_paper_exps + run_simplified + collect_results；删除旧版 |
+| 脚本 | 4 | 2 | 2 | run_paper_exps + run_simplified + collect_results + analyze_paper；删除旧版 |
 | 配置 | 1 | 1 | 0 | requirements.txt + .gitignore |
-| 数据 | 4 | 0 | 0 | 5 个数据集纳入版本控制 |
-| 文档 | 1 | 1 | 0 | IMPROVEMENTS + README |
+| 数据 | 9 | 0 | 0 | 5 个数据集 + 4 个 paper table CSV |
+| 文档 | 1 | 2 | 0 | IMPROVEMENTS + README（新增 Paper Table Data Reference 章节） |
 | 清理 | 0 | 0 | 4 | 冗余脚本 + parse_paper + progress.csv |
-| **合计** | **10** | **8** | **6** | 最终仓库简洁、无冗余 |
+| **合计** | **16** | **9** | **6** | 最终仓库简洁、无冗余 |
 
 ---
 
@@ -417,7 +440,8 @@ if args.label_len == 0:
 | 19 | README 添加 SSH 断连防护（screen/tmux 教程 + Warning 对比表） | 2026-06-10 19:35:47 |
 | 20 | README 平台适配（AutoDL 编码/tmux 安装）+ 去重（screen/nohup 合并） | 2026-06-10 20:54:33 |
 | 21 | `train.py` num_workers=0 修复 Python 3.12 DataLoader 崩溃 + README Notes | 2026-06-10 23:18:42 |
+| 22 | 新建 `paper_results/`（5 个论文表格 CSV + analyze_paper.py）+ README "Paper Table Data Reference" 章节 | 2026-06-11 08:20:00 |
 
 ---
 
-*最后更新: 2026-06-10 23:18:42 CST*
+*最后更新: 2026-06-11 08:20:00 CST*
