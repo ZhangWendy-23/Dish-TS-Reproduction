@@ -1,0 +1,45 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:46377.44141, val_loss:13499.19629
+epoch:1, train_loss:26299.11133, val_loss:10187.58203
+epoch:2, train_loss:23614.16797, val_loss:10567.10742
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:23122.73633, val_loss:10685.58105
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:23204.41602, val_loss:10514.97949
+EarlyStopping counter: 3 out of 7 with 4
+epoch:5, train_loss:21925.20508, val_loss:9910.30469
+epoch:6, train_loss:25610.34961, val_loss:10247.47266
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:21957.74414, val_loss:10774.66992
+EarlyStopping counter: 2 out of 7 with 7
+epoch:8, train_loss:20407.93164, val_loss:10022.99609
+EarlyStopping counter: 3 out of 7 with 8
+epoch:9, train_loss:22782.30664, val_loss:10390.39355
+EarlyStopping counter: 4 out of 7 with 9
+epoch:10, train_loss:20718.10938, val_loss:10063.94922
+EarlyStopping counter: 5 out of 7 with 10
+epoch:11, train_loss:19946.27539, val_loss:10900.69043
+EarlyStopping counter: 6 out of 7 with 11
+epoch:12, train_loss:20103.87305, val_loss:9484.62793
+epoch:13, train_loss:19554.42773, val_loss:9859.45703
+EarlyStopping counter: 1 out of 7 with 13
+epoch:14, train_loss:19341.98633, val_loss:9560.03223
+EarlyStopping counter: 2 out of 7 with 14
+epoch:15, train_loss:30192274.00000, val_loss:10664304.00000
+EarlyStopping counter: 3 out of 7 with 15
+epoch:16, train_loss:3019400.50000, val_loss:36493.47266
+EarlyStopping counter: 4 out of 7 with 16
+epoch:17, train_loss:84315.81250, val_loss:27823.73047
+EarlyStopping counter: 5 out of 7 with 17
+epoch:18, train_loss:71023.75000, val_loss:24132.76562
+EarlyStopping counter: 6 out of 7 with 18
+epoch:19, train_loss:61800.32812, val_loss:22635.39258
+EarlyStopping counter: 7 out of 7 with 19
+Early stopping with best_score:9484.6279296875
+================================================================================
+DATA=WTH  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=3760.942627  MAE=18.394581  RMSE=61.326519  MAPE=612521984.000000  MSPE=9162318904943443968.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha         MSE       MAE      RMSE        MAPE         MSPE
+ WTH Autoformer revin  2024       96         48        24         128    0.5 3760.942627 18.394581 61.326519 612521984.0 9.162319e+18

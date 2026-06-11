@@ -1,0 +1,27 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:37472.98438, val_loss:8095.23193
+epoch:1, train_loss:22538.97070, val_loss:6942.80225
+epoch:2, train_loss:20538.75195, val_loss:6900.06445
+epoch:3, train_loss:20068.81836, val_loss:6540.87988
+epoch:4, train_loss:19089.56641, val_loss:6932.62158
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:18943.66602, val_loss:6568.78955
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:75295912.00000, val_loss:192588.75000
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:4508169.50000, val_loss:55434.41406
+EarlyStopping counter: 4 out of 7 with 7
+epoch:8, train_loss:166474.70312, val_loss:36546.03906
+EarlyStopping counter: 5 out of 7 with 8
+epoch:9, train_loss:119826.80469, val_loss:34646.12500
+EarlyStopping counter: 6 out of 7 with 9
+epoch:10, train_loss:103301.80469, val_loss:28084.00586
+EarlyStopping counter: 7 out of 7 with 10
+Early stopping with best_score:6540.8798828125
+================================================================================
+DATA=WTH  MODEL=Autoformer  NORM=dishts  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=2926.391602  MAE=16.020519  RMSE=54.096142  MAPE=464300000.000000  MSPE=5694120581356584960.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha         MSE       MAE      RMSE        MAPE         MSPE
+ WTH Autoformer dishts  2025       96         48        24         128    0.5 2926.391602 16.020519 54.096142 464300000.0 5.694121e+18

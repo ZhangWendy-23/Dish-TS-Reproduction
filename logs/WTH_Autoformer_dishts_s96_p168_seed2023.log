@@ -1,0 +1,35 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:37997.92969, val_loss:10173.42871
+epoch:1, train_loss:25733.16016, val_loss:8359.76758
+epoch:2, train_loss:23835.60352, val_loss:7311.07129
+epoch:3, train_loss:23704.91992, val_loss:7477.43896
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:23065.08398, val_loss:7594.81104
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:23204.42188, val_loss:7406.21094
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:22726.81641, val_loss:7392.25879
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:22460.06055, val_loss:6900.38037
+epoch:8, train_loss:22655.52148, val_loss:7549.39844
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:22786.02539, val_loss:7505.19238
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:22021.70312, val_loss:7185.35791
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:21884.54297, val_loss:7694.84375
+EarlyStopping counter: 4 out of 7 with 11
+epoch:12, train_loss:466796.15625, val_loss:30946.45703
+EarlyStopping counter: 5 out of 7 with 12
+epoch:13, train_loss:58145.34766, val_loss:21162.46094
+EarlyStopping counter: 6 out of 7 with 13
+epoch:14, train_loss:48859.72656, val_loss:18713.09180
+EarlyStopping counter: 7 out of 7 with 14
+Early stopping with best_score:6900.38037109375
+================================================================================
+DATA=WTH  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=2783.916504  MAE=16.660440  RMSE=52.762840  MAPE=372076576.000000  MSPE=3372146911929696256.000000
+================================================================================
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha         MSE      MAE     RMSE        MAPE         MSPE
+ WTH Autoformer dishts  2023       96         84       168         128    0.5 2783.916504 16.66044 52.76284 372076576.0 3.372147e+18

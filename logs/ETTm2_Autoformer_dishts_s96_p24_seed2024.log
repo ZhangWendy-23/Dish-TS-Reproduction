@@ -1,0 +1,32 @@
+epoch:0, train_loss:24.12129, val_loss:12.89061
+epoch:1, train_loss:12.57302, val_loss:12.01043
+epoch:2, train_loss:11.43170, val_loss:11.53164
+epoch:3, train_loss:10.99240, val_loss:11.22930
+epoch:4, train_loss:10.52260, val_loss:11.22183
+epoch:5, train_loss:10.38200, val_loss:10.85521
+epoch:6, train_loss:10.03160, val_loss:10.69026
+epoch:7, train_loss:9.94926, val_loss:10.79605
+EarlyStopping counter: 1 out of 7 with 7
+epoch:8, train_loss:9.84247, val_loss:10.33072
+epoch:9, train_loss:9.93814, val_loss:10.26699
+epoch:10, train_loss:11.00724, val_loss:12.81417
+EarlyStopping counter: 1 out of 7 with 10
+epoch:11, train_loss:10.90510, val_loss:11.64328
+EarlyStopping counter: 2 out of 7 with 11
+epoch:12, train_loss:10.74360, val_loss:11.42721
+EarlyStopping counter: 3 out of 7 with 12
+epoch:13, train_loss:10.57426, val_loss:11.11979
+EarlyStopping counter: 4 out of 7 with 13
+epoch:14, train_loss:10.45246, val_loss:10.94422
+EarlyStopping counter: 5 out of 7 with 14
+epoch:15, train_loss:10.31969, val_loss:12.03739
+EarlyStopping counter: 6 out of 7 with 15
+epoch:16, train_loss:1584361.25000, val_loss:3957.58325
+EarlyStopping counter: 7 out of 7 with 16
+Early stopping with best_score:10.266990661621094
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=9.306120  MAE=2.188580  RMSE=3.050590  MAPE=6713046.000000  MSPE=2651766227206144.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer dishts  2024       96         48        24         128    0.5 9.30612 2.18858 3.05059 6713046.0 2.651766e+15

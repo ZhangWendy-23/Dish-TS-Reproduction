@@ -1,0 +1,24 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:31.92662, val_loss:19.90727
+epoch:1, train_loss:23.39348, val_loss:20.41430
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:22.47864, val_loss:28.19975
+EarlyStopping counter: 2 out of 7 with 2
+epoch:3, train_loss:22.48136, val_loss:25.68119
+EarlyStopping counter: 3 out of 7 with 3
+epoch:4, train_loss:21.70532, val_loss:30.09631
+EarlyStopping counter: 4 out of 7 with 4
+epoch:5, train_loss:21.39491, val_loss:29.48675
+EarlyStopping counter: 5 out of 7 with 5
+epoch:6, train_loss:21.49883, val_loss:24.22816
+EarlyStopping counter: 6 out of 7 with 6
+epoch:7, train_loss:21.29808, val_loss:36.33852
+EarlyStopping counter: 7 out of 7 with 7
+Early stopping with best_score:19.907268524169922
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2025  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=17.866520  MAE=2.990290  RMSE=4.226880  MAPE=10842874.000000  MSPE=5163816094531584.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE       MAPE         MSPE
+ETTm2 Autoformer dishts  2025       96         84       168         128    0.5 17.86652 2.99029 4.22688 10842874.0 5.163816e+15

@@ -1,0 +1,26 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:46540.35547, val_loss:11542.08594
+epoch:1, train_loss:25963.41602, val_loss:9995.02539
+epoch:2, train_loss:23669.53711, val_loss:9541.80371
+epoch:3, train_loss:122757776.00000, val_loss:18459952.00000
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:16579689.00000, val_loss:95025.80469
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:231580.57812, val_loss:62468.78516
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:147451.65625, val_loss:48890.08203
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:113354.91406, val_loss:34088.33984
+EarlyStopping counter: 5 out of 7 with 7
+epoch:8, train_loss:97479.41406, val_loss:29490.93750
+EarlyStopping counter: 6 out of 7 with 8
+epoch:9, train_loss:83582.16406, val_loss:31033.41602
+EarlyStopping counter: 7 out of 7 with 9
+Early stopping with best_score:9541.8037109375
+================================================================================
+DATA=WTH  MODEL=Autoformer  NORM=revin  SEED=2023  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=3674.206299  MAE=18.226351  RMSE=60.615231  MAPE=576487744.000000  MSPE=8614388830113366016.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha         MSE       MAE      RMSE        MAPE         MSPE
+ WTH Autoformer revin  2023       96         48        24         128    0.5 3674.206299 18.226351 60.615231 576487744.0 8.614389e+18

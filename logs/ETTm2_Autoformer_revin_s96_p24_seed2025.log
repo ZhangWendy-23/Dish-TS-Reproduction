@@ -1,0 +1,26 @@
+epoch:0, train_loss:11.05059, val_loss:9.32824
+epoch:1, train_loss:8.73615, val_loss:8.55734
+epoch:2, train_loss:8.41894, val_loss:8.59294
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:7.97943, val_loss:8.19338
+epoch:4, train_loss:7.72604, val_loss:8.27144
+EarlyStopping counter: 1 out of 7 with 4
+epoch:5, train_loss:7.60180, val_loss:8.25235
+EarlyStopping counter: 2 out of 7 with 5
+epoch:6, train_loss:7.44868, val_loss:8.22497
+EarlyStopping counter: 3 out of 7 with 6
+epoch:7, train_loss:7.36463, val_loss:8.84809
+EarlyStopping counter: 4 out of 7 with 7
+epoch:8, train_loss:7.18556, val_loss:8.73301
+EarlyStopping counter: 5 out of 7 with 8
+epoch:9, train_loss:7.18347, val_loss:8.96849
+EarlyStopping counter: 6 out of 7 with 9
+epoch:10, train_loss:7.09943, val_loss:8.60016
+EarlyStopping counter: 7 out of 7 with 10
+Early stopping with best_score:8.193381309509277
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=revin  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=7.718660  MAE=1.822530  RMSE=2.778250  MAPE=7796481.500000  MSPE=3255411532627968.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer revin  2025       96         48        24         128    0.5 7.71866 1.82253 2.77825 7796481.5 3.255412e+15

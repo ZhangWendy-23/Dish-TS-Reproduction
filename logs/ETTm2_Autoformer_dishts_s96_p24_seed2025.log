@@ -1,0 +1,36 @@
+epoch:0, train_loss:26.14565, val_loss:12.76191
+epoch:1, train_loss:12.60630, val_loss:11.81635
+epoch:2, train_loss:11.59075, val_loss:11.75926
+epoch:3, train_loss:11.08129, val_loss:11.65195
+epoch:4, train_loss:10.65173, val_loss:11.16437
+epoch:5, train_loss:10.40686, val_loss:11.01191
+epoch:6, train_loss:10.12611, val_loss:11.05714
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:9.99704, val_loss:10.84291
+epoch:8, train_loss:9.90724, val_loss:10.73877
+epoch:9, train_loss:9.72370, val_loss:10.76103
+EarlyStopping counter: 1 out of 7 with 9
+epoch:10, train_loss:9.75958, val_loss:11.00316
+EarlyStopping counter: 2 out of 7 with 10
+epoch:11, train_loss:9.67525, val_loss:10.73204
+epoch:12, train_loss:9.50998, val_loss:11.40685
+EarlyStopping counter: 1 out of 7 with 12
+epoch:13, train_loss:9.46048, val_loss:11.07354
+EarlyStopping counter: 2 out of 7 with 13
+epoch:14, train_loss:9.45072, val_loss:11.28025
+EarlyStopping counter: 3 out of 7 with 14
+epoch:15, train_loss:9.69162, val_loss:12.11509
+EarlyStopping counter: 4 out of 7 with 15
+epoch:16, train_loss:9.51593, val_loss:11.37239
+EarlyStopping counter: 5 out of 7 with 16
+epoch:17, train_loss:9.26591, val_loss:10.88499
+EarlyStopping counter: 6 out of 7 with 17
+epoch:18, train_loss:9.34586, val_loss:10.99801
+EarlyStopping counter: 7 out of 7 with 18
+Early stopping with best_score:10.732043266296387
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=8.378410  MAE=2.038890  RMSE=2.894550  MAPE=7500541.000000  MSPE=3261475758014464.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer dishts  2025       96         48        24         128    0.5 8.37841 2.03889 2.89455 7500541.0 3.261476e+15
