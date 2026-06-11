@@ -70,10 +70,15 @@ def build_pipeline(args):
         data_path=f'./data/{DATA}.csv', flag='train',
         size=(args.seq_len, args.label_len, args.pred_len),
         split=(val_ratio, test_ratio), features=args.features)
+    _scaler = getattr(train_dataset, '_scaler', None)
     train_loader = DataLoader(
         train_dataset, shuffle=True,
         batch_size=args.batch_size, num_workers=0, pin_memory=True)
     print(f"[smoke] train_loader len = {len(train_loader)}, n_series = {train_dataset.N}")
+    if _scaler:
+        print(f"[smoke] StandardScaler active — data mean/std per channel:")
+        for i in range(min(3, train_dataset.N)):
+            print(f"  ch{i}: mean={_scaler.mean_[i]:.4f}  std={_scaler.scale_[i]:.4f}")
 
     args = update_args_from_model_params(args, train_dataset.N)
     model_dict = {'Autoformer': Autoformer, 'Transformer': Transformer, 'Informer': Informer}

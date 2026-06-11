@@ -10,6 +10,12 @@ Expected CSV format:
 
 The 'date' column is automatically excluded from input features.
 Data is split chronologically (no shuffle) into train/val/test sets.
+StandardScaler is fitted on training data only and applied to all splits,
+so that metrics (MSE/MAE) match the scale reported in the original Dish-TS
+and Autoformer papers.
+
+To disable scaling (e.g. for Dish-TS raw-value experiments), pass
+``scale_data=False`` to the constructor.
 
 Dataset sources:
   - ETTm2/ETTh1: https://github.com/zhouhaoyi/ETDataset
@@ -19,33 +25,50 @@ Dataset sources:
 import pandas as pd
 import numpy as np
 from torch.utils.data import Dataset
+from sklearn.preprocessing import StandardScaler
 
 
 class TSForecastDataset(Dataset):
-    def __init__(self, data_path='ETTh1.csv', flag='train', size=(96,48,96), split=(0.1, 0.2), features='M'):
-        self.seq_len, self.label_len, self.pred_len= size[0], size[1], size[2]
+    def __init__(self, data_path='ETTh1.csv', flag='train',
+                 size=(96, 48, 96), split=(0.1, 0.2),
+                 features='M', scaler=None, scale_data=True):
+        self.seq_len, self.label_len, self.pred_len = (
+            size[0], size[1], size[2])
         self.set_type = {'train': 0, 'val': 1, 'test': 2}[flag]
         self.ratio_vali, self.ratio_test = split[0], split[1]
         self.features = features
+        self._scaler = scaler  # shared across train/val/test
+        self.scale_data = scale_data and scaler is None  # fit only if no scaler provided
         self.__read_data__(data_path)
 
     def __read_data__(self, data_path):
         df_raw = pd.read_csv(data_path)
         # cols: 'M'=all variables (multivariate), 'S'=last variable only (univariate)
-        cols = list(df_raw.columns); cols.remove('date')
+        cols = list(df_raw.columns)
+        cols.remove('date')
         if self.features == 'S':
             cols = [cols[-1]]  # paper Table 1 univariate: forecast target series only
         # get rows
-        num_vali, num_test = int(len(df_raw)*self.ratio_vali), int(len(df_raw)*self.ratio_test)
+        num_vali = int(len(df_raw) * self.ratio_vali)
+        num_test = int(len(df_raw) * self.ratio_test)
         num_train = len(df_raw) - num_vali - num_test
-        border1s = [0, num_train, num_train+num_vali]
+        border1s = [0, num_train, num_train + num_vali]
         border2s = [num_train, num_train + num_vali, len(df_raw)]
-        left_border = border1s[self.set_type]; right_border = border2s[self.set_type]
-        # get data
-        self.data_x = df_raw[cols][left_border:right_border].values # input
-        self.data_y = df_raw[cols][left_border:right_border].values # output
-        self.N = self.data_x.shape[1] # number of series
-        self.train_data = df_raw[cols][border1s[0]:border2s[0]].values # train_data
+        left_border = border1s[self.set_type]
+        right_border = border2s[self.set_type]
+        # get raw data
+        raw_data = df_raw[cols].values.astype(np.float32)
+        self.train_data = raw_data[border1s[0]:border2s[0]]  # for scaler fitting
+        # StandardScaler: fit on train only, apply to all
+        if self._scaler is not None:
+            raw_data = self._scaler.transform(raw_data)
+        elif self.scale_data:
+            self._scaler = StandardScaler()
+            self._scaler.fit(self.train_data)
+            raw_data = self._scaler.transform(raw_data)
+        self.N = raw_data.shape[1]  # number of series
+        self.data_x = raw_data[left_border:right_border]
+        self.data_y = raw_data[left_border:right_border]
 
     def __getitem__(self, index):
         s_begin = index; s_end = s_begin + self.seq_len

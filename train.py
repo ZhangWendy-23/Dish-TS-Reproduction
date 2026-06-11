@@ -84,6 +84,10 @@ parser.add_argument('--affine', type=int, default=1)     # revin: use affine (1=
 parser.add_argument('--dish_init', type=str, default='standard')  # standard, avg, uniform
 parser.add_argument('--alpha', type=float, default=0.5,
                     help='Prior knowledge guidance weight for Dish-TS. Paper: searched 0 to 1. Default=0.5')
+parser.add_argument('--no-scale', action='store_true',
+                    help='Disable StandardScaler on input data. Keep this OFF '
+                         '(scaled) to match paper MSE scale. Use --no-scale to '
+                         'reproduce old raw-scale results.')
 args = parser.parse_args()
 
 
@@ -137,9 +141,12 @@ if DATA in ('ETTm2', 'ETTh1', 'ETTh2', 'ETTm1', 'ILI'):
     val_ratio, test_ratio = 0.2, 0.2
 else:
     val_ratio, test_ratio = 0.1, 0.2
-train_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='train', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features)
-val_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='val', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features)
-test_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='test', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features)
+train_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='train', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features, scale_data=not args.no_scale)
+# Share the StandardScaler fitted on train across val / test so all splits
+# live in the same Z-normalised space (see utils/dataset.py docstring).
+_scaler = getattr(train_dataset, '_scaler', None)
+val_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='val', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features, scaler=_scaler)
+test_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='test', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features, scaler=_scaler)
 
 # set forecast dataloader
 # Performance: num_workers=0 avoids DataLoader multiprocessing crashes on Python 3.12
@@ -305,9 +312,9 @@ timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 # --- Figure 3: cumulative CSV of (dataset, seq_len, pred_len, model, norm, alpha, MSE, ...)
 f3_csv = os.path.join(RESULTS_DIR, "figure3_runs.csv")
 f3_values = [DATA, args.seq_len, args.pred_len, MODEL, args.norm,
-             args.alpha, mse, mae, rmse, mape, mspe, timestamp]
+             args.alpha, args.seed, mse, mae, rmse, mape, mspe, timestamp]
 f3_columns = ["dataset", "seq_len", "pred_len", "model", "norm",
-              "alpha", "MSE", "MAE", "RMSE", "MAPE", "MSPE", "timestamp"]
+              "alpha", "seed", "MSE", "MAE", "RMSE", "MAPE", "MSPE", "timestamp"]
 assert len(f3_values) == len(f3_columns), (
     f"figure3_runs: {len(f3_values)} values vs {len(f3_columns)} columns"
 )

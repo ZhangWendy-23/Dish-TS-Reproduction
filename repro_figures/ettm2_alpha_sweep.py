@@ -31,6 +31,8 @@ import subprocess
 import sys
 from datetime import datetime
 
+import pandas as pd
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRAIN = os.path.join(ROOT, "train.py")
 LOG_DIR = os.path.join(ROOT, "logs")
@@ -50,9 +52,31 @@ def main() -> None:
                     help="Early stopping patience (Dish-TS often needs > paper's 7).")
     ap.add_argument("--dry_run", action="store_true",
                     help="Only print commands, do not launch training.")
+    ap.add_argument("--skip_existing", action="store_true", default=True,
+                    help="Skip (alpha, pred_len, seed) combos already in "
+                         "results/figure3_runs.csv.  Default: on.")
     args = ap.parse_args()
 
     os.makedirs(LOG_DIR, exist_ok=True)
+
+    # Load previously-completed combinations to avoid re-running
+    existing_keys = set()
+    f3_path = os.path.join(ROOT, "results", "figure3_runs.csv")
+    if args.skip_existing and os.path.exists(f3_path):
+        try:
+            f3_df = pd.read_csv(f3_path)
+            f3_df = f3_df[f3_df["dataset"] == "ETTm2"]
+            for _, row in f3_df.iterrows():
+                key = (float(row.get("alpha", 0.5)),
+                       int(row.get("pred_len", 0)),
+                       int(row.get("seed", 2023)))
+                existing_keys.add(key)
+            if existing_keys:
+                print(f"[skip_existing] {len(existing_keys)} combos already "
+                      f"in figure3_runs.csv, will skip them.")
+        except Exception:
+            pass
+
     t0 = datetime.now()
     total = len(args.alphas) * len(args.pred_lens) * len(args.seeds)
     print(f"[{t0:%Y-%m-%d %H:%M}] ETTm2 alpha sweep: {total} runs "
@@ -81,6 +105,11 @@ def main() -> None:
                     "--gpu", str(args.gpu),
                 ]
                 done += 1
+                # skip already-completed combos
+                if args.skip_existing and (alpha, pl, seed) in existing_keys:
+                    print(f"\n[{done}/{total}] SKIP alpha={alpha} pred_len={pl} "
+                          f"seed={seed} (already in figure3_runs.csv)")
+                    continue
                 print(f"\n[{done}/{total}] seed={seed} alpha={alpha} pred_len={pl}\n"
                       f"  -> {' '.join(cmd)}\n"
                       f"  -> log: {log_file}")
