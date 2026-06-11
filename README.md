@@ -103,12 +103,12 @@ python -c "from backbones import Autoformer; from DishTS import DishTS; print('I
 ### Run All Paper Experiments
 
 ```bash
-chmod +x run_paper_exps.sh
-./run_paper_exps.sh all 2>&1 | tee logs/master_all.log
-```
+# Core Table 2 & 3 (63 runs, ~8-12 hours on RTX 3090)
+python3 repro_figures/run_all_exps.py --gpu 0
 
-Full reproduction (542 experiments) takes ~2-5 days on a single RTX 3090.
-Run individual tables (see below) if you prefer to parallelize or save time.
+# Include long-horizon Table 4 experiments
+python3 repro_figures/run_all_exps.py --gpu 0 --long-horizon
+```
 
 ---
 
@@ -117,14 +117,27 @@ Run individual tables (see below) if you prefer to parallelize or save time.
 ```
 Dish-TS-Reproduction/
 ├── train.py                     # Main training script (CLI args, paper-aligned)
+├── smoke_test.py                # Environment verification (no GPU needed)
 ├── Model.py                     # Unified model wrapper (forecast backbone + norm model)
 ├── DishTS.py                    # Dish-TS core module (Dual-Conet with GELU activation)
 ├── REVIN.py                     # RevIN baseline implementation
 ├── .gitignore
 ├── requirements.txt
 │
-├── run_paper_exps.sh            # ★ Paper Table 1-4 one-click runner (recommended)
-├── run_simplified_exps.sh       # Simplified 18-experiment subset (~1-3 hours)
+├── repro_figures/               # Experiment & analysis scripts
+│   ├── run_all_exps.py          # ★ One-click Table 2 & 3 reproduction (63 runs)
+│   ├── ettm2_alpha_sweep.py     # Alpha sensitivity sweep on ETTm2
+│   ├── compare_paper.py         # Your results vs paper (quantitative comparison)
+│   ├── parse_logs.py            # Extract MSE from old logs → CSV
+│   ├── plot_figure1.py          # Distribution shift visualization
+│   ├── plot_figure3.py          # Alpha sensitivity curves (Figure 3)
+│   ├── plot_figure4.py          # Forecast comparison plot (Figure 4)
+│   └── dataset_diagnostic.py    # Check data quality / scale issues
+│
+├── paper_results/               # Reference: paper tables & figures (read-only)
+│   ├── table{1..6}_*.csv        # Tables 1-6 extracted from paper
+│   ├── analyze_paper.py         # Paper-side statistics
+│   └── reference_figure*.jpg    # Paper figure screenshots
 │
 ├── backbones/                   # Forecasting backbone models
 │   ├── __init__.py
@@ -132,9 +145,8 @@ Dish-TS-Reproduction/
 │   ├── Informer.py              # Informer (prob-sparse self-attention)
 │   ├── Transformer.py           # Vanilla Transformer
 │   └── layers/                  # Reusable neural network components
-│       ├── __init__.py
 │       ├── Embed.py             # Data/temporal/positional embeddings
-│       ├── Autoformer_EncDec.py # Autoformer-specific encoder/decoder with series decomposition
+│       ├── Autoformer_EncDec.py # Autoformer-specific encoder/decoder
 │       ├── Transformer_EncDec.py# Standard Transformer encoder/decoder
 │       ├── AutoCorrelation.py   # Auto-correlation attention mechanism
 │       ├── SelfAttention_Family.py # FullAttention + ProbAttention
@@ -143,184 +155,111 @@ Dish-TS-Reproduction/
 │
 ├── utils/                       # Utility modules
 │   ├── __init__.py              # Random seed configuration
-│   ├── dataset.py               # Data loader (M/S mode, 6:2:2 or 7:1:2 split)
+│   ├── dataset.py               # Data loader (M/S mode, StandardScaler)
 │   ├── earlystop.py             # Early stopping mechanism
 │   └── metric.py                # MSE/MAE/RMSE/MAPE/MSPE metrics
 │
-├── data/                        # 5 benchmark datasets (tracked in version control)
+├── data/                        # 5 benchmark datasets
 │   ├── ETTm2.csv  (~9.3 MB)    # 15-min level, 7 features, ~69,680 timestamps
 │   ├── ETTh1.csv  (~2.5 MB)    # Hourly, 7 features, ~17,420 timestamps
 │   ├── ECL.csv    (~92 MB)     # Hourly, 321 features, ~26,304 timestamps
 │   ├── WTH.csv    (~7.0 MB)    # 10-min level, 21 features, ~52,696 timestamps
 │   └── ILI.csv    (~67 KB)     # Weekly, 7 features, ~966 timestamps
 │
-├── results/                     # Result collection and analysis tools
-│   └── collect_results.py       # Parse logs -> CSV + LaTeX tables + plots
+├── results/                     # Your experiment outputs
+│   ├── paper_summary.csv        # All completed runs (appended by train.py)
+│   ├── figure3_runs.csv         # Training log for alpha sensitivity plots
+│   └── figures/                 # Generated PNGs and per-run forecast CSVs
 │
 ├── logs/                        # Experiment logs (tracked for reproducibility)
-│   ├── simplified/              # Simplified 18-experiment results
-│   └── backup/                  # Historical backup
 │
+├── run_paper_exps.sh            # Legacy shell runner (deprecated — use run_all_exps.py)
+├── run_simplified_exps.sh       # Legacy simplified runner
 ├── README.md                    # This file
-└── IMPROVEMENTS.md              # Complete modification log (16 items)
+└── IMPROVEMENTS.md              # Complete modification log
 ```
 
 ---
 
-## Paper Reproduction Guide
+## Current Experiment Workflow
 
-### Experiment Overview (4 Tables)
+### Quick Start: Reproduce Tables 2 & 3
 
-| Table | Description | seq_len | pred_len | Datasets | Models | Norms | Seeds | Total Exp. |
-|-------|-------------|---------|----------|----------|--------|-------|-------|-------------|
-| **1** | Univariate forecasting | = pred_len | {24, 48, 96, 168, 336} | All 5 | 3 | 3 | 1 | 225 |
-| **2** | Multivariate forecasting | 96 | {24, 48, 96, 168, 336} | All 5 | 3 | 3 | 1 | 225 |
-| **3** | RevIN vs. Dish-TS | 96 | {24, 168, 336} | 4 (excl. ILI) | Autoformer | 2 | 3 | 72 |
-| **4** | Long-horizon forecasting | 96 | {336, 420, 540, 600, 720} | ECL, ETTh1 | Autoformer | 2 | 1 | 20 |
-
-**Recommended execution order:**
-
-| Order | Command | Why First | Experiments | Estimated Time |
-|-------|---------|-----------|-------------|----------------|
-| 1 | `./run_paper_exps.sh quick` | Verify environment works | 6 | ~10 min |
-| 2 | `./run_paper_exps.sh table3` | Core result: RevIN vs Dish-TS | 72 | 4-6 hours |
-| 3 | `./run_paper_exps.sh table2` | Main multivariate results | 225 | 18-24 hours |
-| 4 | `./run_paper_exps.sh table1` | Univariate results | 225 | 12-20 hours |
-| 5 | `./run_paper_exps.sh table4` | Long-horizon results | 20 | 5-8 hours |
-
-### Table 1: Univariate Forecasting
-
-Evaluates Dish-TS in the univariate setting (`--features S`, only the last feature column). The input length equals the prediction length.
-
-**Parameters:**
-
-| Parameter | Value |
-|-----------|-------|
-| seq_len | 24, 48, 96, 168, 336 (= pred_len) |
-| pred_len | 24, 48, 96, 168, 336 |
-| features | `S` (univariate) |
-| Models | Autoformer, Informer, Transformer |
-| Normalizations | none, revin, dishts |
-| Datasets | ECL, ETTh1, ETTm2, WTH, ILI |
-| seed | 2023 |
-
-**Run:**
+The simplest way to run the core experiments (Tables 2 & 3 from the paper) on a single GPU:
 
 ```bash
-chmod +x run_paper_exps.sh
-nohup ./run_paper_exps.sh table1 > logs/table1_master.log 2>&1 &
+# 1. Install dependencies (+ scikit-learn for StandardScaler)
+pip install -r requirements.txt
+
+# 2. Verify environment
+python3 smoke_test.py --seq_len 96 --pred_len 336
+# Should print: SMOKE TEST PASSED
+
+# 3. Run ALL Table 2 & 3 experiments (63 runs, ~8-12 hours on RTX 3090)
+python3 repro_figures/run_all_exps.py --gpu 0
 ```
 
-### Table 2: Multivariate Forecasting
+This will:
+- Back up your old `paper_summary.csv` automatically
+- Run 4 datasets x {dishts, revin, none} x 2-3 horizons x 3 seeds
+- Append one row per run to `results/paper_summary.csv` and `results/figure3_runs.csv`
 
-The core experiment table in the paper. Uses fixed `seq_len=96` and `--features M` (all feature columns) across 5 datasets.
-
-**Parameters:**
-
-| Parameter | Value |
-|-----------|-------|
-| seq_len | 96 |
-| pred_len | 24, 48, 96, 168, 336 |
-| features | `M` (multivariate) |
-| Models | Autoformer, Informer, Transformer |
-| Normalizations | none, revin, dishts |
-| Datasets | ECL, ETTh1, ETTm2, WTH, ILI |
-| seed | 2023 |
-
-**Run:**
-
-```bash
-nohup ./run_paper_exps.sh table2 > logs/table2_master.log 2>&1 &
-```
-
-### Table 3: RevIN vs. Dish-TS Comparison
-
-Direct comparison between RevIN and Dish-TS using Autoformer as the backbone. Results are averaged over 3 random seeds (2023, 2024, 2025) and reported as mean ± standard deviation.
-
-**Parameters:**
-
-| Parameter | Value |
-|-----------|-------|
-| seq_len | 96 |
-| pred_len | 24, 168, 336 |
-| features | `M` |
-| Models | Autoformer (only) |
-| Normalizations | revin, dishts |
-| Datasets | ECL, ETTh1, ETTm2, WTH |
-| seeds | 2023, 2024, 2025 |
-
-**Run:**
-
-```bash
-nohup ./run_paper_exps.sh table3 > logs/table3_master.log 2>&1 &
-```
-
-### Table 4: Long-horizon Forecasting
-
-Tests the extrapolation capability by gradually increasing prediction length.
-
-**Parameters:**
-
-| Parameter | Value |
-|-----------|-------|
-| seq_len | 96 |
-| pred_len | 336, 420, 540, 600, 720 |
-| features | `M` |
-| Models | Autoformer |
-| Normalizations | none, dishts |
-| Datasets | ECL, ETTh1 |
-| seed | 2023 |
-
-> **Note**: The original paper uses N-BEATS as backbone for Table 4. This repository uses Autoformer as a substitute.
-
-**Run:**
-
-```bash
-nohup ./run_paper_exps.sh table4 > logs/table4_master.log 2>&1 &
-```
-
-### Quick Verification
-
-Run a smoke test (~10 minutes) to verify the environment is correctly configured before launching full experiments:
-
-```bash
-./run_paper_exps.sh quick
-```
-
-This runs 6 experiments on ETTm2 with Autoformer across 3 normalization methods and 2 prediction lengths (24, 96).
-
-### Simplified Experiments
-
-For limited time or compute resources, a simplified 18-experiment subset provides the main findings in 1-3 hours:
-
-```bash
-chmod +x run_simplified_exps.sh
-nohup ./run_simplified_exps.sh > logs/simplified_master.log 2>&1 &
-```
-
-**Matrix**: ETTm2 x {Autoformer, Informer} x {none, revin, dishts} x {24, 96, 336}
-
-### Collecting Results
-
-After experiments complete (or at any point to check progress):
-
-```bash
-# Generate result summary
-./run_paper_exps.sh summarize
-
-# Generate LaTeX tables and comparison plots
-python results/collect_results.py
-```
-
-Output files:
+**Output files after completion:**
 
 | File | Description |
 |------|-------------|
-| `results/paper_summary.csv` | Raw results for all completed experiments |
-| `results/summary_aggregated.csv` | Multi-seed mean ± standard deviation |
-| `results/table2_multivariate.tex` | LaTeX table for Table 2 |
-| `results/table3_revin_vs_dishts.tex` | LaTeX table for Table 3 |
-| `results/*.png` | MSE vs. prediction length comparison plots |
+| `results/paper_summary.csv` | All completed experiments (columns: data, model, norm, seed, seq_len, pred_len, MSE, MAE, ...) |
+| `results/figure3_runs.csv` | Dense training log (appended every run, used to plot alpha sensitivity curves) |
+| `results/figures/figure4_*.csv` | Per-run forecast samples (lookback + prediction + ground truth) |
+| `logs/<dataset>_<model>_<norm>_*.log` | Full training logs |
+
+### Compare with Paper
+
+```bash
+# Quantitative comparison: your results vs paper Tables 2 & 3
+python3 repro_figures/compare_paper.py
+# Outputs: results/paper_vs_mine.csv + console summary
+```
+
+The script checks whether Dish-TS > RevIN in the *same direction* as the paper for every (dataset, horizon) combination.
+
+### Alpha Sensitivity (ETTm2)
+
+If Dish-TS underperforms RevIN on ETTm2, sweep `--alpha`:
+
+```bash
+# 72 runs: alpha ∈ {0, 0.1, 0.25, 0.5, 0.75, 1.0} x 4 horizons x 3 seeds
+# Auto-skips runs already completed in figure3_runs.csv
+python3 repro_figures/ettm2_alpha_sweep.py --gpu 0 --seeds 2023 2024 2025
+
+# Plot alpha curve (Figure 3 style)
+python3 repro_figures/plot_figure3.py --input results/figure3_runs.csv \
+    --dataset ETTm2 --model Autoformer --norm dishts --zscore \
+    --output results/figures/figure3_ETTm2.png
+```
+
+### Long-Horizon (Table 4, pred_len=336)
+
+```bash
+python3 repro_figures/run_all_exps.py --gpu 0 --long-horizon
+```
+
+### Single Experiment
+
+```bash
+python3 train.py --data ETTm2 --model Autoformer --norm dishts \
+    --seq_len 96 --pred_len 96 --alpha 0.5 --gpu 0 --seed 2023
+```
+
+### Experiment Matrix Reference
+
+| Table | Description | Datasets | Norms | pred_len | Seeds | Script |
+|-------|-------------|----------|-------|----------|-------|--------|
+| 2 & 3 | Multivariate + RevIN vs Dish-TS | ECL, ETTh1, ETTm2, WTH | dishts, revin, none | 24, 96, 168 | 3 | `run_all_exps.py` |
+| 2 & 3 | Long-horizon (p336) | ECL, ETTh1, ETTm2, WTH | dishts, revin | 336 | 3 | `run_all_exps.py --long-horizon` |
+| Figure 3 | Alpha sensitivity | ETTm2 | dishts | 24, 96, 168, 336 | 3 | `ettm2_alpha_sweep.py` |
+| Figure 1 | Distribution shift | Any dataset | — | — | — | `plot_figure1.py` (no training) |
+| Figure 4 | Forecast comparison | ETTm2 | none, revin, dishts | 96 | 1 | `plot_figure4.py` (from CSV) |
 
 ### Preventing SSH Disconnection
 
@@ -433,11 +372,12 @@ nvidia-smi
 | `--norm` | str | `none` | Normalization: `none`, `revin`, `dishts` |
 | `--features` | str | `M` | Feature mode: `M` (multivariate), `S` (univariate, Table 1) |
 | `--seq_len` | int | `96` | Input/history window length |
-| `--label_len` | int | `0` | Decoder input length. `0` = auto-compute as `max(48, pred_len//2)`, capped at seq_len |
+| `--label_len` | int | `0` | Decoder input length. `0` = auto-compute as `min(seq_len, pred_len, max(48, pred_len//2))` |
 | `--pred_len` | int | `96` | Prediction/horizon window length |
-| `--batch_size` | int | `0` | `0` = auto-select per paper: Informer=256, Autoformer/Transformer=128; ECL=64 regardless |
+| `--batch_size` | int | `128` | Batch size. Paper default: Informer=256, Autoformer/Transformer=128; ECL=64. Auto-reduced to 64 for pred_len>168 |
 | `--lr` | float | `1e-3` | Learning rate (paper search range: [1e-4, 1e-3]) |
-| `--patience` | int | `7` | Early stopping patience epochs |
+| `--patience` | int | `15` | Early stopping patience epochs |
+| `--train_epochs` | int | `100` | Maximum training epochs (early stop may trigger sooner) |
 | `--seed` | int | `2023` | Random seed (paper uses 3 seeds for Table 3: 2023/2024/2025) |
 | `--alpha` | float | `0.5` | Dish-TS prior knowledge guidance weight (paper search: 0 to 1) |
 | `--dish_init` | str | `standard` | DishTS initialization: `standard` (GELU), `avg`, `uniform` |
@@ -471,19 +411,17 @@ Automatically selected based on dataset name, following the original paper:
 | ETTm2, ETTh1, ILI | 60% | 20% | 20% |
 | ECL, WTH | 70% | 10% | 20% |
 
-All experiments are conducted on raw data without global normalization, consistent with the paper setting.
+**Data preprocessing**: A `StandardScaler` is fit on the training set and applied to train/val/test before training (`mean=0, std=1` per channel). This makes MSE values directly comparable to the paper (typically in the 0.5–1.5 range for ETT datasets). To disable and use raw data scale instead, pass `--no-scale`.
 
 ### Batch Size Rules
 
-When `--batch_size 0` is specified (auto-selection):
+Default batch size is `128` (paper setting for Autoformer/Transformer). The following automatic adjustments apply:
 
-| Model | Default Batch Size | ECL Dataset |
-|-------|-------------------|-------------|
-| Informer | 256 | 64 |
-| Autoformer | 128 | 64 |
-| Transformer | 128 | 64 |
-
-Additionally, for `pred_len > 168`, batch size is automatically reduced to 64 to avoid CUDA out-of-memory errors.
+| Condition | Batch Size |
+|-----------|------------|
+| `--model Informer` | 256 |
+| `--data ECL` | 64 (321 series, large memory footprint) |
+| `--pred_len > 168` | 64 (avoid OOM) |
 
 ---
 

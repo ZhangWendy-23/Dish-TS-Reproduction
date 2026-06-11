@@ -445,7 +445,9 @@ if args.label_len == 0:
 | 24 | 上传 `paper_results/reference_figure{1,2,3,4}.jpg` 作为论文截图参考；重写 `repro_figures/` 为纯绘图脚本（`plot_figure1.py` / `plot_figure3.py` / `plot_figure4.py`）；扩展 `train.py` 每轮训练自动写入 `results/figure3_runs.csv` 和 `results/figures/figure4_*.csv`；README 增加 "论文参考 / 你的实验结果" 两层职责说明和端到端使用流程 | 2026-06-11 09:40:00 |
 | 25 | `utils/dataset.py` 添加 `StandardScaler` 默认预处理（fit on train only）：解决 MSE 数值比论文大 8-10× 的量级问题；`train.py` 新增 `--no-scale` 保持向后兼容；Scaler 在 train/val/test 间共享；`ettm2_alpha_sweep.py` 新增 `--skip_existing` 自动跳过已完成组合；`figure3_runs.csv` 新增 `seed` 列 | 2026-06-11 13:25:00 |
 | 26 | `requirements.txt` 补加 `scikit-learn>=0.24.0`；修复 `dataset.py` 中 `sklearn` import 为可选（未安装时自动回退 raw 模式 + 警告）；修正 README 中 pip install 命令 | 2026-06-11 13:35:00 |
+| 27 | 新建 `repro_figures/run_all_exps.py`（63-run 一键重跑 Table 2 & 3，含 `--long-horizon` 和自动备份旧 CSV）；新建 `repro_figures/compare_paper.py`（自动对比你的结果 vs 论文 Table 2/3）；新建 `repro_figures/parse_logs.py`（从旧日志解析 MSE 补写 CSV）；新建 `smoke_test.py`（离线参数/环境校验，无需 GPU） | 2026-06-11 13:38:00 |
+| 28 | README 全面更新：CLI Arguments 表格修正（`--batch_size 128`、`--patience 15`、`--label_len` 新公式、`--train_epochs`）；Data Splits 新增 StandardScaler 说明；Batch Size Rules 简化重写；实验指南替换为当前一键工作流（Quick Start → Compare → Alpha → Long-Horizon → Single Cmd）；Project Structure 补充新目录/脚本 | 2026-06-11 14:00:00 |
 
 ---
 
-*最后更新: 2026-06-11 13:35:00 CST*
+*最后更新: 2026-06-11 14:00:00 CST*
