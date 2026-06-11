@@ -1,34 +1,4 @@
 /root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
   return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-[INFO] label_len capped to 168 (seq_len=96 too short for 48)
-Traceback (most recent call last):
-  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 175, in <module>
-    for batch in train_loader:
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
-    data = self._next_data()
-           ^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 675, in _next_data
-    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
-    return self.collate_fn(data)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 316, in default_collate
-    return collate(batch, collate_fn_map=default_collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 173, in collate
-    return [collate(samples, collate_fn_map=collate_fn_map) for samples in transposed]  # Backwards compatibility.
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
-    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 222, in collate_numpy_array_fn
-    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
-    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 213, in collate_tensor_fn
-    return torch.stack(batch, 0, out=out)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-RuntimeError: stack expects each tensor to be equal size, but got [504, 321] at entry 0 and [0, 321] at entry 61
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),

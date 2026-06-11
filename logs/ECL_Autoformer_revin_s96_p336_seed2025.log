@@ -1,32 +1,36 @@
-[INFO] label_len capped to 168 (seq_len=96 too short for 48)
-Traceback (most recent call last):
-  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 175, in <module>
-    for batch in train_loader:
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
-    data = self._next_data()
-           ^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 675, in _next_data
-    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
-    return self.collate_fn(data)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 316, in default_collate
-    return collate(batch, collate_fn_map=default_collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 173, in collate
-    return [collate(samples, collate_fn_map=collate_fn_map) for samples in transposed]  # Backwards compatibility.
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
-    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 222, in collate_numpy_array_fn
-    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
-    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 213, in collate_tensor_fn
-    return torch.stack(batch, 0, out=out)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-RuntimeError: stack expects each tensor to be equal size, but got [504, 321] at entry 0 and [0, 321] at entry 43
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+epoch:0, train_loss:50968012.00000, val_loss:23615628.00000
+epoch:1, train_loss:47474700.00000, val_loss:22766782.00000
+epoch:2, train_loss:46833392.00000, val_loss:22886144.00000
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:45829588.00000, val_loss:22507088.00000
+epoch:4, train_loss:44981184.00000, val_loss:22168674.00000
+epoch:5, train_loss:44657748.00000, val_loss:22006686.00000
+epoch:6, train_loss:44169152.00000, val_loss:22082506.00000
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:43922716.00000, val_loss:21693488.00000
+epoch:8, train_loss:43645164.00000, val_loss:21674496.00000
+epoch:9, train_loss:43619216.00000, val_loss:21704088.00000
+EarlyStopping counter: 1 out of 7 with 9
+epoch:10, train_loss:377462161408.00000, val_loss:1065825271808.00000
+EarlyStopping counter: 2 out of 7 with 10
+epoch:11, train_loss:214312419328.00000, val_loss:420937600.00000
+EarlyStopping counter: 3 out of 7 with 11
+epoch:12, train_loss:2566537984.00000, val_loss:176094160.00000
+EarlyStopping counter: 4 out of 7 with 12
+epoch:13, train_loss:1612880768.00000, val_loss:271489440.00000
+EarlyStopping counter: 5 out of 7 with 13
+epoch:14, train_loss:1135271040.00000, val_loss:74693128.00000
+EarlyStopping counter: 6 out of 7 with 14
+epoch:15, train_loss:858333760.00000, val_loss:67022364.00000
+EarlyStopping counter: 7 out of 7 with 15
+Early stopping with best_score:21674496.0
+================================================================================
+DATA=ECL  MODEL=Autoformer  NORM=revin  SEED=2025  seq_len=96  label_len=96  pred_len=336  batch_size=64  lr=0.001  alpha=0.5
+  MSE=65678380.000000  MAE=859.992065  RMSE=8104.219727  MAPE=122858864.000000  MSPE=147287120792315232256.000000
+================================================================================
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha        MSE        MAE        RMSE        MAPE         MSPE
+ ECL Autoformer revin  2025       96         96       336          64    0.5 65678380.0 859.992065 8104.219727 122858864.0 1.472871e+20
