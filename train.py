@@ -55,22 +55,28 @@ def update_args_from_model_params(args, n_series):
 parser = argparse.ArgumentParser(description='Parameters')
 parser.add_argument('--seed', type=int, default=2023)
 parser.add_argument('--output_file', type=str, default='forecast.csv')
-# forecast — paper default: seq_len=96, label_len=pred_len//2 (min 48)
+# forecast — paper default: seq_len=96, label_len=max(48, pred_len//2)
+# IMPORTANT: label_len is additionally clamped to <= seq_len and <= pred_len
+#            to avoid negative r_begin in __getitem__ (pred_len=336 crashes otherwise).
 parser.add_argument('--seq_len', type=int, default=96)
 parser.add_argument('--label_len', type=int, default=0,
-                    help='Paper: label_len = max(48, pred_len//2); 0=auto')
+                    help='Paper: label_len = max(48, pred_len//2); 0=auto (clamped to seq_len, pred_len)')
 parser.add_argument('--pred_len', type=int, default=96)
 # data
 parser.add_argument('--data', type=str, default='ETTm2')
 parser.add_argument('--features', type=str, default='M')
 # forecast model
 parser.add_argument('--model', type=str, default='Transformer')
-parser.add_argument('--batch_size', type=int, default=0,
-                    help='Paper settings: Informer=256, Autoformer=128, Transformer=128; ECL=64 for all; 0=auto')
+parser.add_argument('--batch_size', type=int, default=128,
+                    help='Paper settings (explicit): Informer=256, Autoformer=128, Transformer=128; ECL=64 for all models because of its 321 series; reduce to 64 when pred_len>168 to avoid OOM on 12GB GPUs. 0=use heuristic auto-selection (legacy).')
 parser.add_argument('--lr', type=float, default=1e-3,
                     help='Learning rate. Paper: Adam optimizer with lr=1e-3')
-parser.add_argument('--patience', type=int, default=7,
-                    help='Early stopping patience. Paper: 7')
+parser.add_argument('--patience', type=int, default=15,
+                    help='Early stopping patience. Paper default is 7, but Dish-TS '
+                         'sometimes takes more epochs to learn the horizon-level '
+                         'CONET parameters, hence a default of 15 is safer.')
+parser.add_argument('--train_epochs', type=int, default=100,
+                    help='Maximum training epochs. Paper: 100.')
 parser.add_argument('--gpu', type=int, default=0)
 # shift / normalization model
 parser.add_argument('--norm', type=str, default='none')  # none, revin, dishts
@@ -88,15 +94,29 @@ device = torch.device(f'cuda:{GPU}' if torch.cuda.is_available() else 'cpu')
 
 # === Paper-specified batch sizes (Dish-TS paper "Implementation details")
 # Informer: 256, Autoformer: 128, Transformer: 128
-# Special case: Electricity (ECL) → 64 for all models (many series × long sequences)
+# Special case: Electricity (ECL) -> 64 for all models (many series x long sequences)
 # Long horizon (pred_len > 168): reduced to avoid OOM — safely capped at 64 for 12GB GPU
 if args.label_len == 0:
-    # Paper: label_len = max(48, pred_len//2), but must not exceed seq_len
-    # Without this clamp, r_begin in __getitem__ can go negative, causing
-    # inconsistent tensor sizes across batch samples -> RuntimeError
-    args.label_len = min(args.seq_len, max(48, args.pred_len // 2))
+    # Paper: label_len = max(48, pred_len//2)
+    #
+    # Additionally we MUST clamp label_len <= min(seq_len, pred_len).  Why?
+    #   1) seq_y in TSForecastDataset.__getitem__ spans
+    #        [s_end - label_len, s_end - label_len + label_len + pred_len]
+    #      which requires s_end - label_len >= 0  →  label_len <= s_end <= seq_len.
+    #   2) dec_inp in get_init_batch below slices batch_y[:, :label_len, :];
+    #      label_len must therefore not exceed the batch_y lookback region,
+    #      which is at most seq_len because we pass label_len as the decoder "warm start".
+    #
+    # Without this clamp pred_len=336 with seq_len=96 used to produce
+    #    RuntimeError: stack expects each tensor to be equal size,
+    #      but got [504, 7] at entry 0 and [0, 7] at entry 18
+    # because __getitem__ returned a 0-length seq_y for the last rows of the dataset.
+    upper = min(args.seq_len, args.pred_len)
+    args.label_len = min(upper, max(48, args.pred_len // 2))
 
 if args.batch_size == 0:
+    # legacy auto-selection — kept for backward compatibility only;
+    # new runs should pass --batch_size explicitly.
     if DATA == 'ECL':
         args.batch_size = 64
     elif MODEL == 'Informer':
@@ -164,7 +184,7 @@ def get_init_batch(batch):
     return batch_x,  batch_y, dec_inp
 
 
-max_epochs = 100
+max_epochs = args.train_epochs
 for epoch in range(max_epochs):
     # --- train (loss accumulated on GPU, one .item() at epoch end) ---
     train_loss_sum = torch.zeros(1, device=device)
@@ -230,6 +250,17 @@ with torch.no_grad():
 
 
 mae, mse, rmse, mape, mspe = get_metrics(preds, trues)
+
+# --- Per-column MSE for magnitude analysis ---------------------------------
+# The paper reports a single MSE averaged over all predicted columns.  When
+# reproducing, however, a single out-of-scale feature (e.g. an un-normalized
+# sensor on ECL / WTH) can dominate the total and make the result look
+# orders-of-magnitude different from the paper.  Printing each column's MSE
+# lets us spot such features instantly.
+per_col_mse = np.mean((preds - trues) ** 2, axis=(0, 1))  # shape (D,)
+per_col_str = " ".join(f"{float(v):.3f}" for v in per_col_mse)
+print(f"[train] per-column MSE: {per_col_str}")
+# ---------------------------------------------------------------------------
 
 print("=" * 80)
 print(f"DATA={DATA}  MODEL={MODEL}  NORM={args.norm}  SEED={args.seed}  "

@@ -630,6 +630,46 @@ and `--help` for the full list of options.
 > **Figure 2** is a pure architecture diagram and is kept as the reference
 > `paper_results/reference_figure2.jpg` only — there is nothing to plot.
 
+### Diagnosing the "ETTm2 Dish-TS lags RevIN" phenomenon
+
+If Dish-TS looks *worse* than RevIN on ETTm2 (or any dataset) on your
+machine, that is usually not a code bug — it is a hyper-parameter / data
+preprocessing issue.  Run the three scripts below in order to find out.
+
+1. **Scan your dataset for out-of-scale features.**
+   ```bash
+   python3 repro_figures/dataset_diagnostic.py --input data/ETTm2/ETTm2.csv
+   ```
+   Any column whose std is 10 × larger than the median column std is
+   automatically flagged, because such a column will "absorb" the MSE and
+   make Dish-TS / RevIN comparisons meaningless in absolute terms.
+
+2. **Re-run ETTm2 with varying alpha.**  Dish-TS is particularly sensitive
+   to `--alpha` (the prior-guidance weight) on ETTm2 because the horizon-
+   level learnt by HoriCoNet is large compared with the lookback level.
+   ```bash
+   # Defaults: alpha in [0, 0.1, 0.25, 0.5, 0.75, 1.0], pred_len in [24,96,168,336]
+   # patience raised to 15 (paper was 7) because HoriCoNet sometimes
+   # takes more epochs to converge.
+   python3 repro_figures/ettm2_alpha_sweep.py --gpu 0 --seeds 2023 2024 2025
+   ```
+   This generates one row per run in `results/figure3_runs.csv`.
+
+3. **Inspect results.**
+   ```bash
+   # Per-column MSE diagnostic (prints one number per feature column).
+   # After every run, the last console block looks like:
+   #   [train] per-column MSE: 8.2 6.1 0.04 44.2 ...
+   # If one column is 1000 × larger than the rest, it dominates the
+   # aggregate MSE and you should investigate its data file.
+
+   # Then plot a Figure-3 style curve to confirm whether Dish-TS is worse
+   # across all alphas / pred-lens or only for one specific combination:
+   python3 repro_figures/plot_figure3.py --input results/figure3_runs.csv \
+       --dataset ETTm2 --model Autoformer --norm dishts --zscore \
+       --output results/figures/figure3_ETTm2.png
+   ```
+
 ### Key observations from the 5 paper tables
 
 1. **Table 1 & 2 (Uni- vs Multi-variate)**: Dish-TS consistently reduces MSE across all 3 backbone models (Informer, Autoformer, N-BEATS). Improvement is typically larger in the multivariate setting (Autoformer: 34.2% avg reduction) than univariate (23.4%).

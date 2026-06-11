@@ -49,10 +49,29 @@ class TSForecastDataset(Dataset):
 
     def __getitem__(self, index):
         s_begin = index; s_end = s_begin + self.seq_len
-        r_begin = max(0, s_end - self.label_len)  # guard: label_len > seq_len case
+        # The decoder "warm start" needs the preceding label_len time steps from
+        # the same row.  r_begin must therefore be >= 0 and <= s_end.  When the
+        # user passes label_len > seq_len (e.g. --pred_len 336 --seq_len 96 and
+        # an overly generous auto label_len), the guard below keeps indexing sane.
+        r_begin = max(0, s_end - self.label_len)
         r_end = r_begin + self.label_len + self.pred_len
+        if r_end > len(self.data_x):
+            raise IndexError(
+                f"__getitem__({index}): r_end={r_end} exceeds data_x length "
+                f"{len(self.data_x)}. seq_len={self.seq_len} label_len={self.label_len} "
+                f"pred_len={self.pred_len}. Reduce pred_len/label_len or use a "
+                f"larger dataset."
+            )
         seq_x = self.data_x[s_begin:s_end]
         seq_y = self.data_y[r_begin:r_end]
+        # Defensive check: keep slices non-empty even when label_len > seq_len
+        # (otherwise stack error in the DataLoader is very hard to debug).
+        if seq_x.size == 0 or seq_y.size == 0:
+            raise ValueError(
+                f"Empty slice at index={index} (seq_len={self.seq_len} "
+                f"label_len={self.label_len} pred_len={self.pred_len}). "
+                f"Ensure label_len <= min(seq_len, pred_len)."
+            )
         return seq_x, seq_y
 
     def __len__(self):
