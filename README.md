@@ -546,6 +546,49 @@ python3 paper_results/analyze_paper.py        # re-generate the paper-side analy
 python3 results/collect_results.py            # aggregate your own experiment logs
 ```
 
+### New: Table 6 + Figure 1 / Figure 3 / Figure 4
+
+In addition to the tables above, we extracted **Table 6** (CONET initialization
+sensitivity, Dish-TS vs. Table 1's horizon, averaged over backbones) and added
+three re-production scripts for Figures 1 / 3 / 4.
+
+| File | Content |
+|------|---------|
+| `paper_results/table6_conet_init.csv` | `(dataset, backbone, horizon, init, mse)` rows for ETTh1 / Weather with Avg / Norm / Uni CONET initialization |
+| `repro_figures/figure1_distribution_shift.py` | Same *type* of plot as Figure 1 (conceptual): pick any slice of a dataset → plot series, lookback / horizon histograms + boxplot |
+| `repro_figures/figure3_alpha_sensitivity.py` | Reproduce Figure 3: for each of 4 α values × 5 lookback/horizon lengths × 4 datasets, train Autoformer + Dish-TS, gather MSE, z-score normalize and plot 1×4 panel curves |
+| `repro_figures/figure4_prediction_comparison.py` | Reproduce Figure 4: train (backbone / RevIN / Dish-TS) × Autoformer on ETTm2 and plot a single test sample's forecast overlay with Ground Truth |
+
+#### Using the new CSVs
+
+```python
+import pandas as pd
+t6 = pd.read_csv("paper_results/table6_conet_init.csv")
+print(t6.groupby(["init", "dataset"])["mse"].mean().unstack())
+# -> Avg / Norm / Uni comparison for CONET initialization on ETTh1 and Weather
+```
+
+#### Running the repro-figures scripts
+
+```bash
+# Figure 1 (conceptual, no training required)
+python3 repro_figures/figure1_distribution_shift.py --data Weather --seq_len 96 --pred_len 96
+# -> paper_results/figure1_distribution_shift.png
+
+# Figure 3 (requires training: 4 datasets × 4 alpha × 5 windows = 80 runs on GPU)
+python3 repro_figures/figure3_alpha_sensitivity.py
+# -> paper_results/figure3_alpha_sensitivity.csv  and  figure3_alpha_sensitivity.png
+
+# Figure 4 (requires training: 3 norm-methods × 1 dataset)
+python3 repro_figures/figure4_prediction_comparison.py \
+    --data ETTm2 --model Autoformer --seq_len 96 --pred_len 96 --sample_idx 0
+# -> paper_results/figure4_predictions.csv  and  figure4_predictions.png
+```
+
+> **Figure 2** (Dish-TS architecture diagram) is a pure concept diagram not tied
+> to a numerical experiment — it is therefore kept as-is in the paper and
+> intentionally not re-plotted here.
+
 ### Key observations from the 5 paper tables
 
 1. **Table 1 & 2 (Uni- vs Multi-variate)**: Dish-TS consistently reduces MSE across all 3 backbone models (Informer, Autoformer, N-BEATS). Improvement is typically larger in the multivariate setting (Autoformer: 34.2% avg reduction) than univariate (23.4%).

@@ -441,7 +441,8 @@ if args.label_len == 0:
 | 20 | README 平台适配（AutoDL 编码/tmux 安装）+ 去重（screen/nohup 合并） | 2026-06-10 20:54:33 |
 | 21 | `train.py` num_workers=0 修复 Python 3.12 DataLoader 崩溃 + README Notes | 2026-06-10 23:18:42 |
 | 22 | 新建 `paper_results/`（5 个论文表格 CSV + analyze_paper.py）+ README "Paper Table Data Reference" 章节 | 2026-06-11 08:20:00 |
+| 23 | 新增 `paper_results/table6_conet_init.csv`（CONET 初始化敏感性 Table 6）+ `repro_figures/figure1_distribution_shift.py`（概念图复现）+ `repro_figures/figure3_alpha_sensitivity.py`（α 敏感性曲线）+ `repro_figures/figure4_prediction_comparison.py`（ETTm2 预测曲线对比）；README 补充用法示例 | 2026-06-11 09:10:00 |
 
 ---
 
-*最后更新: 2026-06-11 08:20:00 CST*
+*最后更新: 2026-06-11 09:10:00 CST*
