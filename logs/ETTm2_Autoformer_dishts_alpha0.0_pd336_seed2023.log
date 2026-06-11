@@ -1,0 +1,46 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:30.19374, val_loss:25.34275
+epoch:1, train_loss:27.19835, val_loss:26.00741
+EarlyStopping counter: 1 out of 15 with 1
+epoch:2, train_loss:26.08787, val_loss:24.29582
+epoch:3, train_loss:25.32195, val_loss:26.02682
+EarlyStopping counter: 1 out of 15 with 3
+epoch:4, train_loss:24.78352, val_loss:36.36386
+EarlyStopping counter: 2 out of 15 with 4
+epoch:5, train_loss:24.33781, val_loss:28.85863
+EarlyStopping counter: 3 out of 15 with 5
+epoch:6, train_loss:23.84998, val_loss:44.87131
+EarlyStopping counter: 4 out of 15 with 6
+epoch:7, train_loss:23.29782, val_loss:28.88316
+EarlyStopping counter: 5 out of 15 with 7
+epoch:8, train_loss:23.23279, val_loss:26.33179
+EarlyStopping counter: 6 out of 15 with 8
+epoch:9, train_loss:22.62095, val_loss:35.83286
+EarlyStopping counter: 7 out of 15 with 9
+epoch:10, train_loss:22.38887, val_loss:34.25618
+EarlyStopping counter: 8 out of 15 with 10
+epoch:11, train_loss:22.21657, val_loss:32.26913
+EarlyStopping counter: 9 out of 15 with 11
+epoch:12, train_loss:21.95224, val_loss:33.08628
+EarlyStopping counter: 10 out of 15 with 12
+epoch:13, train_loss:21.74227, val_loss:34.37031
+EarlyStopping counter: 11 out of 15 with 13
+epoch:14, train_loss:21.40097, val_loss:32.83917
+EarlyStopping counter: 12 out of 15 with 14
+epoch:15, train_loss:21.76722, val_loss:28.12643
+EarlyStopping counter: 13 out of 15 with 15
+epoch:16, train_loss:21.16293, val_loss:33.61289
+EarlyStopping counter: 14 out of 15 with 16
+epoch:17, train_loss:21.28263, val_loss:35.02385
+EarlyStopping counter: 15 out of 15 with 17
+Early stopping with best_score:24.295820236206055
+[train] per-column MSE: 39.682 8.296 33.363 4.269 2.782 0.576 42.417
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=96  pred_len=336  batch_size=64  lr=0.001  alpha=0.0
+  MSE=18.936291  MAE=2.703860  RMSE=4.351580  MAPE=12388865.000000  MSPE=6956395320573952.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE     MAE    RMSE       MAPE         MSPE
+ETTm2 Autoformer dishts  2023       96         96       336          64    0.0 18.936291 2.70386 4.35158 12388865.0 6.956395e+15
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd336_alpha0.0_seed2023.csv

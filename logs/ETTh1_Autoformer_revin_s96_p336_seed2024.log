@@ -1,32 +1,49 @@
-[INFO] label_len capped to 168 (seq_len=96 too short for 48)
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:9.81480, val_loss:11.21147
+epoch:1, train_loss:8.72793, val_loss:9.98432
+epoch:2, train_loss:8.54722, val_loss:10.19978
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:8.24083, val_loss:10.40519
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:8.23230, val_loss:10.57949
+EarlyStopping counter: 3 out of 7 with 4
+epoch:5, train_loss:8.23227, val_loss:10.62936
+EarlyStopping counter: 4 out of 7 with 5
+epoch:6, train_loss:8.13005, val_loss:10.52624
+EarlyStopping counter: 5 out of 7 with 6
+epoch:7, train_loss:7.91624, val_loss:10.42151
+EarlyStopping counter: 6 out of 7 with 7
+epoch:8, train_loss:7.69151, val_loss:10.48099
+EarlyStopping counter: 7 out of 7 with 8
+Early stopping with best_score:9.9843168258667
+================================================================================
+DATA=ETTh1  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=96  pred_len=336  batch_size=64  lr=0.001  alpha=0.5
+  MSE=12.863230  MAE=2.159820  RMSE=3.586530  MAPE=896742.250000  MSPE=423487030165504.000000
+================================================================================
 Traceback (most recent call last):
-  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 175, in <module>
-    for batch in train_loader:
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
-    data = self._next_data()
-           ^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 675, in _next_data
-    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
-    return self.collate_fn(data)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 316, in default_collate
-    return collate(batch, collate_fn_map=default_collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 173, in collate
-    return [collate(samples, collate_fn_map=collate_fn_map) for samples in transposed]  # Backwards compatibility.
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
-    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 222, in collate_numpy_array_fn
-    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 141, in collate
-    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/data/_utils/collate.py", line 213, in collate_tensor_fn
-    return torch.stack(batch, 0, out=out)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-RuntimeError: stack expects each tensor to be equal size, but got [504, 7] at entry 0 and [0, 7] at entry 25
+  File "/root/miniconda3/lib/python3.12/site-packages/pandas/core/internals/construction.py", line 911, in _finalize_columns_and_data
+    columns = _validate_or_indexify_columns(contents, columns)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/pandas/core/internals/construction.py", line 958, in _validate_or_indexify_columns
+    raise AssertionError(
+AssertionError: 14 columns passed, passed data had 13 columns
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 241, in <module>
+    df = pd.DataFrame([[DATA, MODEL, args.norm, args.seq_len, args.label_len,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/pandas/core/frame.py", line 837, in __init__
+    arrays, columns, index = nested_data_to_arrays(
+                             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/pandas/core/internals/construction.py", line 477, in nested_data_to_arrays
+    arrays, columns = to_arrays(data, columns, dtype=dtype)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/pandas/core/internals/construction.py", line 812, in to_arrays
+    content, columns = _finalize_columns_and_data(arr, columns, dtype)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/pandas/core/internals/construction.py", line 914, in _finalize_columns_and_data
+    raise ValueError(err) from err
+ValueError: 14 columns passed, passed data had 13 columns
