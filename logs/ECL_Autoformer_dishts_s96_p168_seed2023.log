@@ -1,27 +1,51 @@
 /root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py:303: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
   return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
-epoch:0, train_loss:33124618.00000, val_loss:9283099.00000
-epoch:1, train_loss:8385543.00000, val_loss:4573980.00000
-epoch:2, train_loss:6793909.00000, val_loss:4150967.50000
-epoch:3, train_loss:6453203.00000, val_loss:3635847.00000
-epoch:4, train_loss:5890847.50000, val_loss:4041192.75000
-EarlyStopping counter: 1 out of 7 with 4
-epoch:5, train_loss:5993318.50000, val_loss:3896771.50000
-EarlyStopping counter: 2 out of 7 with 5
-epoch:6, train_loss:5631206.00000, val_loss:4612190.00000
-EarlyStopping counter: 3 out of 7 with 6
-epoch:7, train_loss:5347407.00000, val_loss:4503186.50000
-EarlyStopping counter: 4 out of 7 with 7
-epoch:8, train_loss:5001182.00000, val_loss:4086796.25000
-EarlyStopping counter: 5 out of 7 with 8
-epoch:9, train_loss:4717435.50000, val_loss:3771124.50000
-EarlyStopping counter: 6 out of 7 with 9
-epoch:10, train_loss:8975179.00000, val_loss:5404543.00000
-EarlyStopping counter: 7 out of 7 with 10
-Early stopping with best_score:3635847.0
+epoch:0, train_loss:0.60505, val_loss:0.54842
+epoch:1, train_loss:0.46535, val_loss:0.35047
+epoch:2, train_loss:0.34684, val_loss:0.30105
+epoch:3, train_loss:0.28881, val_loss:0.27379
+epoch:4, train_loss:0.27101, val_loss:0.26150
+epoch:5, train_loss:0.26016, val_loss:0.26100
+epoch:6, train_loss:0.25810, val_loss:0.30363
+EarlyStopping counter: 1 out of 15 with 6
+epoch:7, train_loss:232.19771, val_loss:1.26999
+EarlyStopping counter: 2 out of 15 with 7
+epoch:8, train_loss:1.41469, val_loss:0.97979
+EarlyStopping counter: 3 out of 15 with 8
+epoch:9, train_loss:1.23053, val_loss:0.89675
+EarlyStopping counter: 4 out of 15 with 9
+epoch:10, train_loss:1.15093, val_loss:0.85726
+EarlyStopping counter: 5 out of 15 with 10
+epoch:11, train_loss:1.09937, val_loss:0.83214
+EarlyStopping counter: 6 out of 15 with 11
+epoch:12, train_loss:1.06257, val_loss:0.81423
+EarlyStopping counter: 7 out of 15 with 12
+epoch:13, train_loss:1.03369, val_loss:0.79433
+EarlyStopping counter: 8 out of 15 with 13
+epoch:14, train_loss:1.01039, val_loss:0.78413
+EarlyStopping counter: 9 out of 15 with 14
+epoch:15, train_loss:0.99033, val_loss:0.76416
+EarlyStopping counter: 10 out of 15 with 15
+epoch:16, train_loss:0.97237, val_loss:0.75618
+EarlyStopping counter: 11 out of 15 with 16
+epoch:17, train_loss:0.95536, val_loss:0.74539
+EarlyStopping counter: 12 out of 15 with 17
+epoch:18, train_loss:0.94141, val_loss:0.73591
+EarlyStopping counter: 13 out of 15 with 18
+epoch:19, train_loss:0.92724, val_loss:0.72373
+EarlyStopping counter: 14 out of 15 with 19
+epoch:20, train_loss:0.91354, val_loss:0.71484
+EarlyStopping counter: 15 out of 15 with 20
+Early stopping with best_score:0.26100224256515503
+[train] per-column MSE: 0.425 0.217 0.007 0.185 0.326 0.167 0.927 0.249 0.348 0.710 0.226 0.778 0.180 0.267 0.156 0.345 0.276 0.450 0.150 0.803 0.492 0.315 0.193 0.243 0.252 0.786 0.180 0.433 0.413 0.751 0.417 0.322 2.322 0.257 0.172 0.248 0.567 0.322 0.338 0.368 0.162 0.207 0.462 0.249 0.227 0.193 0.311 0.174 0.284 0.240 0.708 0.217 0.313 0.228 0.279 0.469 0.299 0.414 0.291 0.157 0.271 0.171 0.147 0.160 0.566 0.257 0.261 0.193 0.622 0.209 0.580 0.295 0.210 0.219 0.147 0.690 0.248 0.367 0.297 0.734 0.264 1.045 0.343 1.291 0.977 0.191 0.354 0.483 0.079 0.160 0.117 0.073 0.727 0.088 0.100 0.139 0.484 0.195 0.481 0.561 0.254 0.163 0.201 0.519 0.466 0.729 0.655 0.507 0.278 0.335 0.239 0.262 0.208 0.635 0.219 0.181 0.384 0.479 0.194 0.243 0.353 0.570 0.227 0.622 0.453 0.346 0.540 0.498 0.826 0.450 0.567 0.258 0.607 0.741 0.497 0.093 0.130 0.157 0.107 0.136 0.271 0.150 0.115 0.364 0.147 0.088 0.239 0.186 0.163 0.184 0.139 0.143 0.169 0.146 0.166 0.191 0.159 0.232 0.226 0.122 0.181 0.162 0.163 0.151 0.175 0.153 0.193 0.151 0.144 0.128 0.176 0.101 0.152 0.159 0.111 0.077 0.108 0.157 0.230 0.146 0.115 0.083 0.069 0.077 0.237 0.089 0.095 0.130 0.259 0.186 0.088 0.069 0.177 0.191 0.197 0.109 0.198 0.142 0.161 0.150 0.172 0.104 0.125 0.171 0.224 0.164 0.073 0.159 0.097 0.111 0.150 0.134 0.105 0.093 0.126 0.106 0.166 0.093 0.126 0.136 0.117 0.147 0.105 0.131 0.100 0.121 0.167 0.107 0.116 0.155 0.171 0.131 0.150 0.109 0.083 0.096 0.189 0.171 0.129 0.141 0.115 0.136 0.101 0.110 0.093 1.198 0.108 0.123 0.228 0.102 0.131 0.152 0.122 0.199 0.107 0.319 0.135 0.110 0.129 0.142 0.148 0.153 0.091 0.168 0.170 0.180 0.118 0.157 0.174 0.105 0.106 0.127 0.135 0.095 0.236 0.171 0.165 0.166 0.097 0.169 0.143 0.130 0.125 0.143 0.144 0.153 0.168 0.461 0.433 0.178 0.142 0.129 0.092 0.146 0.135 0.177 0.076 0.157 0.519 0.219 0.210 0.079 0.162 0.288 0.107 0.273 0.118 0.401 0.104 0.161 0.094 0.135 0.112 0.147 0.073 0.095 0.185 0.799 0.395 0.614 0.506
 ================================================================================
-DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=64  lr=0.001  alpha=0.5
-  MSE=8692665.000000  MAE=327.513062  RMSE=2948.332520  MAPE=136962720.000000  MSPE=268990629107678052352.000000
+DATA=ECL  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=0.258760  MAE=0.354640  RMSE=0.508680  MAPE=544.448608  MSPE=40383078400.000000
 ================================================================================
-data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha       MSE        MAE       RMSE        MAPE         MSPE
- ECL Autoformer dishts  2023       96         84       168          64    0.5 8692665.0 327.513062 2948.33252 136962720.0 2.689906e+20
+data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE       MAPE         MSPE
+ ECL Autoformer dishts  2023       96         84       168         128    0.5 0.25876 0.35464 0.50868 544.448608 4.038308e+10
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ECL_Autoformer_dishts_sq96_pd168_alpha0.5_seed2023.csv
+# data=ECL norm=dishts pred_len=168 seed=2023
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS-Reproduction/train.py --data ECL --model Autoformer --norm dishts --seq_len 96 --pred_len 168 --alpha 0.5 --batch_size 128 --patience 15 --seed 2023 --gpu 0
+
