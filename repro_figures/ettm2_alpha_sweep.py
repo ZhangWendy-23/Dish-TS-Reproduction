@@ -106,6 +106,7 @@ def main() -> None:
                     "--patience", str(args.patience),
                     "--seed", str(seed),
                     "--gpu", str(args.gpu),
+                    "--figure3",                  # ← write to figure3_runs.csv
                 ]
                 done += 1
                 # skip already-completed combos

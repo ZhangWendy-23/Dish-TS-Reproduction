@@ -88,6 +88,10 @@ parser.add_argument('--no-scale', action='store_true',
                     help='Disable StandardScaler on input data. Keep this OFF '
                          '(scaled) to match paper MSE scale. Use --no-scale to '
                          'reproduce old raw-scale results.')
+parser.add_argument('--figure3', action='store_true',
+                    help='Append a row to results/figure3_runs.csv (used by '
+                         'alpha sensitivity sweep scripts). Off by default so '
+                         'standard Table 2/3 experiments do not pollute figure3.')
 args = parser.parse_args()
 
 
@@ -297,64 +301,66 @@ print(df.to_string(index=False))
 #   Figure 4: the FIRST test sample's lookback + forecast + ground-truth saved
 #             to results/figures/figure4_<RUN_ID>.csv
 #
-# Later we can call repro_figures/plot_figure{3,4}.py to generate PNGs directly
-# from these CSVs -- no re-training needed.
+# These are ONLY written when --figure3 is passed (used by alpha-sweep / Figure
+# reproduction scripts).  Normal Table 2/3 experiments skip this to avoid
+# polluting figure3_runs.csv.
 # ---------------------------------------------------------------------------
-import os
-import datetime
+if args.figure3:
+    import os
+    import datetime
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-RESULTS_DIR = os.path.join(ROOT_DIR, "results")
-FIGURES_DIR = os.path.join(RESULTS_DIR, "figures")
-os.makedirs(FIGURES_DIR, exist_ok=True)
-timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+    RESULTS_DIR = os.path.join(ROOT_DIR, "results")
+    FIGURES_DIR = os.path.join(RESULTS_DIR, "figures")
+    os.makedirs(FIGURES_DIR, exist_ok=True)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-# --- Figure 3: cumulative CSV of (dataset, seq_len, pred_len, model, norm, alpha, MSE, ...)
-f3_csv = os.path.join(RESULTS_DIR, "figure3_runs.csv")
-f3_values = [DATA, args.seq_len, args.pred_len, MODEL, args.norm,
-             args.alpha, args.seed, mse, mae, rmse, mape, mspe, timestamp]
-f3_columns = ["dataset", "seq_len", "pred_len", "model", "norm",
-              "alpha", "seed", "MSE", "MAE", "RMSE", "MAPE", "MSPE", "timestamp"]
-assert len(f3_values) == len(f3_columns), (
-    f"figure3_runs: {len(f3_values)} values vs {len(f3_columns)} columns"
-)
-f3_df = pd.DataFrame([f3_values], columns=f3_columns)
-if os.path.exists(f3_csv):
-    f3_df.to_csv(f3_csv, mode="a", header=False, index=False)
-else:
-    f3_df.to_csv(f3_csv, mode="w", header=True, index=False)
-print(f"[train] appended 1 row to {f3_csv}")
+    # --- Figure 3: cumulative CSV of (dataset, seq_len, pred_len, model, norm, alpha, MSE, ...)
+    f3_csv = os.path.join(RESULTS_DIR, "figure3_runs.csv")
+    f3_values = [DATA, args.seq_len, args.pred_len, MODEL, args.norm,
+                 args.alpha, args.seed, mse, mae, rmse, mape, mspe, timestamp]
+    f3_columns = ["dataset", "seq_len", "pred_len", "model", "norm",
+                  "alpha", "seed", "MSE", "MAE", "RMSE", "MAPE", "MSPE", "timestamp"]
+    assert len(f3_values) == len(f3_columns), (
+        f"figure3_runs: {len(f3_values)} values vs {len(f3_columns)} columns"
+    )
+    f3_df = pd.DataFrame([f3_values], columns=f3_columns)
+    if os.path.exists(f3_csv):
+        f3_df.to_csv(f3_csv, mode="a", header=False, index=False)
+    else:
+        f3_df.to_csv(f3_csv, mode="w", header=True, index=False)
+    print(f"[train] appended 1 row to {f3_csv}")
 
-# --- Figure 4: save the FIRST test sample (lookback + prediction + ground-truth)
-if preds is not None and trues is not None:
-    lookback0 = None
-    with torch.no_grad():
-        for i, batch in enumerate(test_loader):
-            lookback0 = batch[0][0:1].detach().cpu().numpy()  # (1, seq_len, D)
-            break
-    if lookback0 is not None:
-        lb = lookback0[0]                  # (seq_len, D)
-        pred0 = preds[0]                   # (pred_len, D)
-        true0 = trues[0]                   # (pred_len, D)
-        full_len = args.seq_len + args.pred_len
-        ground_truth = np.concatenate([lb, true0], axis=0)
-        pred_series = np.concatenate([np.full_like(lb, np.nan), pred0], axis=0)
+    # --- Figure 4: save the FIRST test sample (lookback + prediction + ground-truth)
+    if preds is not None and trues is not None:
+        lookback0 = None
+        with torch.no_grad():
+            for i, batch in enumerate(test_loader):
+                lookback0 = batch[0][0:1].detach().cpu().numpy()  # (1, seq_len, D)
+                break
+        if lookback0 is not None:
+            lb = lookback0[0]                  # (seq_len, D)
+            pred0 = preds[0]                   # (pred_len, D)
+            true0 = trues[0]                   # (pred_len, D)
+            full_len = args.seq_len + args.pred_len
+            ground_truth = np.concatenate([lb, true0], axis=0)
+            pred_series = np.concatenate([np.full_like(lb, np.nan), pred0], axis=0)
 
-        f4_filename = (f"figure4_{DATA}_{MODEL}_{args.norm}_"
-                      f"sq{args.seq_len}_pd{args.pred_len}_alpha{args.alpha}_"
-                      f"seed{args.seed}.csv")
-        f4_file = os.path.join(FIGURES_DIR, f4_filename)
-        out_rows = []
-        for t in range(full_len):
-            row = {"timestep": t, "dataset": DATA, "model": MODEL,
-                   "norm": args.norm, "seq_len": args.seq_len,
-                   "pred_len": args.pred_len, "alpha": args.alpha,
-                   "seed": args.seed}
-            for c in range(preds.shape[-1]):
-                row[f"gt_{c}"] = ground_truth[t, c]
-                row[f"pred_{c}"] = pred_series[t, c]
-            out_rows.append(row)
-        pd.DataFrame(out_rows).to_csv(f4_file, index=False)
-        print(f"[train] wrote figure4 sample to {f4_file}")
+            f4_filename = (f"figure4_{DATA}_{MODEL}_{args.norm}_"
+                          f"sq{args.seq_len}_pd{args.pred_len}_alpha{args.alpha}_"
+                          f"seed{args.seed}.csv")
+            f4_file = os.path.join(FIGURES_DIR, f4_filename)
+            out_rows = []
+            for t in range(full_len):
+                row = {"timestep": t, "dataset": DATA, "model": MODEL,
+                       "norm": args.norm, "seq_len": args.seq_len,
+                       "pred_len": args.pred_len, "alpha": args.alpha,
+                       "seed": args.seed}
+                for c in range(preds.shape[-1]):
+                    row[f"gt_{c}"] = ground_truth[t, c]
+                    row[f"pred_{c}"] = pred_series[t, c]
+                out_rows.append(row)
+            pd.DataFrame(out_rows).to_csv(f4_file, index=False)
+            print(f"[train] wrote figure4 sample to {f4_file}")
 
 
