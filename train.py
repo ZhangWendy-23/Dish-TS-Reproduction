@@ -174,14 +174,14 @@ loss_fn = nn.MSELoss()
 
 
 def get_init_batch(batch):
-    batch_x,  batch_y = batch
+    batch_x, batch_y = batch
     # non_blocking=True allows H2D transfer to overlap with CPU compute
-    # (requires pin_memory=True in DataLoader)
-    batch_x = batch_x.cuda(non_blocking=True).float()
-    batch_y = batch_y.cuda(non_blocking=True).float()
+    # (requires pin_memory=True in DataLoader); ignored if device is cpu
+    batch_x = batch_x.to(device, non_blocking=True).float()
+    batch_y = batch_y.to(device, non_blocking=True).float()
     dec_inp = torch.zeros_like(batch_y[:, -args.pred_len:, :])
     dec_inp = torch.cat([batch_y[:, :args.label_len, :], dec_inp], dim=1)
-    return batch_x,  batch_y, dec_inp
+    return batch_x, batch_y, dec_inp
 
 
 max_epochs = args.train_epochs
@@ -269,10 +269,19 @@ print(f"DATA={DATA}  MODEL={MODEL}  NORM={args.norm}  SEED={args.seed}  "
 print(f"  MSE={mse:.6f}  MAE={mae:.6f}  RMSE={rmse:.6f}  MAPE={mape:.6f}  MSPE={mspe:.6f}")
 print("=" * 80)
 
-df = pd.DataFrame([[DATA, MODEL, args.norm, args.seq_len, args.label_len,
-                     args.pred_len, args.batch_size, args.alpha, mse, mae, rmse, mape, mspe]],
-                   columns=['data', 'model', 'norm', 'seed', 'seq_len', 'label_len',
-                            'pred_len', 'batch_size', 'alpha', 'MSE', 'MAE', 'RMSE', 'MAPE', 'MSPE'])
+df = pd.DataFrame([[DATA, MODEL, args.norm, args.seed,
+                     args.seq_len, args.label_len, args.pred_len,
+                     args.batch_size, args.alpha,
+                     mse, mae, rmse, mape, mspe]],
+                   columns=['data', 'model', 'norm', 'seed',
+                            'seq_len', 'label_len', 'pred_len',
+                            'batch_size', 'alpha',
+                            'MSE', 'MAE', 'RMSE', 'MAPE', 'MSPE'])
+# defensive: make sure the column list matches the data list exactly
+assert len(df.columns) == len(df.values[0]), (
+    f"Column/value mismatch: {len(df.columns)} columns vs "
+    f"{len(df.values[0])} values"
+)
 print(df.to_string(index=False))
 
 # ---------------------------------------------------------------------------
@@ -295,16 +304,18 @@ timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # --- Figure 3: cumulative CSV of (dataset, seq_len, pred_len, model, norm, alpha, MSE, ...)
 f3_csv = os.path.join(RESULTS_DIR, "figure3_runs.csv")
-f3_row = pd.DataFrame(
-    [[DATA, args.seq_len, args.pred_len, MODEL, args.norm,
-      args.alpha, mse, mae, timestamp]],
-    columns=["dataset", "seq_len", "pred_len", "model", "norm",
-             "alpha", "MSE", "MAE", "timestamp"],
+f3_values = [DATA, args.seq_len, args.pred_len, MODEL, args.norm,
+             args.alpha, mse, mae, rmse, mape, mspe, timestamp]
+f3_columns = ["dataset", "seq_len", "pred_len", "model", "norm",
+              "alpha", "MSE", "MAE", "RMSE", "MAPE", "MSPE", "timestamp"]
+assert len(f3_values) == len(f3_columns), (
+    f"figure3_runs: {len(f3_values)} values vs {len(f3_columns)} columns"
 )
+f3_df = pd.DataFrame([f3_values], columns=f3_columns)
 if os.path.exists(f3_csv):
-    f3_row.to_csv(f3_csv, mode="a", header=False, index=False)
+    f3_df.to_csv(f3_csv, mode="a", header=False, index=False)
 else:
-    f3_row.to_csv(f3_csv, mode="w", header=True, index=False)
+    f3_df.to_csv(f3_csv, mode="w", header=True, index=False)
 print(f"[train] appended 1 row to {f3_csv}")
 
 # --- Figure 4: save the FIRST test sample (lookback + prediction + ground-truth)
