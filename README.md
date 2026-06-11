@@ -546,48 +546,89 @@ python3 paper_results/analyze_paper.py        # re-generate the paper-side analy
 python3 results/collect_results.py            # aggregate your own experiment logs
 ```
 
-### New: Table 6 + Figure 1 / Figure 3 / Figure 4
+### New: Reference figures & "plot-only" reproduction scripts
 
-In addition to the tables above, we extracted **Table 6** (CONET initialization
-sensitivity, Dish-TS vs. Table 1's horizon, averaged over backbones) and added
-three re-production scripts for Figures 1 / 3 / 4.
+The paper's four figures have been uploaded as reference screenshots:
 
-| File | Content |
-|------|---------|
-| `paper_results/table6_conet_init.csv` | `(dataset, backbone, horizon, init, mse)` rows for ETTh1 / Weather with Avg / Norm / Uni CONET initialization |
-| `repro_figures/figure1_distribution_shift.py` | Same *type* of plot as Figure 1 (conceptual): pick any slice of a dataset → plot series, lookback / horizon histograms + boxplot |
-| `repro_figures/figure3_alpha_sensitivity.py` | Reproduce Figure 3: for each of 4 α values × 5 lookback/horizon lengths × 4 datasets, train Autoformer + Dish-TS, gather MSE, z-score normalize and plot 1×4 panel curves |
-| `repro_figures/figure4_prediction_comparison.py` | Reproduce Figure 4: train (backbone / RevIN / Dish-TS) × Autoformer on ETTm2 and plot a single test sample's forecast overlay with Ground Truth |
+- `paper_results/reference_figure1.jpg` — distribution shift between lookback / horizon windows
+- `paper_results/reference_figure2.jpg` — Dish-TS architecture diagram (conceptual, not reproducible numerically)
+- `paper_results/reference_figure3.jpg` — alpha sensitivity curves (MSE z-score)
+- `paper_results/reference_figure4.jpg` — qualitative forecast comparison (ETTm2)
 
-#### Using the new CSVs
+These are **reference material only**. The scripts below produce **your** own
+version of these plots from **your** experimental data (not from the paper's
+original numbers).
 
-```python
-import pandas as pd
-t6 = pd.read_csv("paper_results/table6_conet_init.csv")
-print(t6.groupby(["init", "dataset"])["mse"].mean().unstack())
-# -> Avg / Norm / Uni comparison for CONET initialization on ETTh1 and Weather
+### How to get your Figure 1/3/4 from your experiments
+
+The project keeps two clearly-separated layers:
+
+| Layer | Directory | Purpose |
+|-------|-----------|---------|
+| Paper reference | `paper_results/` | Tables 1–6 extracted from the paper, plus `reference_figure{1,2,3,4}.jpg` screenshots — read-only reference. |
+| Your results | `results/` | **Anything your runs produce goes here.** `figure3_runs.csv` is appended automatically by `train.py`. Sample forecasts (used for Figure 4) are saved per-run to `results/figures/figure4_<run_id>.csv`.
+| Plot-only scripts | `repro_figures/` | Three small scripts that read the `results/` CSVs and emit PNGs to `results/figures/`. They **never** re-run training. |
+
+#### Step 1 — produce data
+
+`train.py` now writes two things at the end of every run (in addition to the
+console metrics):
+
+```
+results/
+├── figure3_runs.csv              <-- one row per run, columns: dataset, seq_len,
+│                                     pred_len, model, norm, alpha, MSE, MAE, timestamp
+│                                     (appended in-place every time you run)
+└── figures/
+    └── figure4_<dataset>_<model>_<norm>_sq<L>_pd<H>_alpha<A>_seed<S>.csv
+                                     <-- lookback (L steps NaN pred) + horizon forecast
+                                         (H steps) + ground truth, column per channel
 ```
 
-#### Running the repro-figures scripts
+To reproduce Figure 3, run the experiment matrix you care about, for example:
 
 ```bash
-# Figure 1 (conceptual, no training required)
-python3 repro_figures/figure1_distribution_shift.py --data Weather --seq_len 96 --pred_len 96
-# -> paper_results/figure1_distribution_shift.png
-
-# Figure 3 (requires training: 4 datasets × 4 alpha × 5 windows = 80 runs on GPU)
-python3 repro_figures/figure3_alpha_sensitivity.py
-# -> paper_results/figure3_alpha_sensitivity.csv  and  figure3_alpha_sensitivity.png
-
-# Figure 4 (requires training: 3 norm-methods × 1 dataset)
-python3 repro_figures/figure4_prediction_comparison.py \
-    --data ETTm2 --model Autoformer --seq_len 96 --pred_len 96 --sample_idx 0
-# -> paper_results/figure4_predictions.csv  and  figure4_predictions.png
+# Sweep alpha ∈ {0,0.25,0.5,1.0} × pred_len ∈ {24,48,96,168,336}
+for ALPHA in 0.0 0.25 0.5 1.0; do
+  for PL in 24 48 96 168 336; do
+    python3 train.py \
+        --data ETTm2 --model Autoformer --norm dishts \
+        --seq_len $PL --pred_len $PL --alpha $ALPHA --seed 2021
+  done
+done
 ```
 
-> **Figure 2** (Dish-TS architecture diagram) is a pure concept diagram not tied
-> to a numerical experiment — it is therefore kept as-is in the paper and
-> intentionally not re-plotted here.
+Each call appends one row to `results/figure3_runs.csv` and writes a
+Figure-4-style sample CSV to `results/figures/`.
+
+#### Step 2 — plot from CSVs
+
+```bash
+# Figure 1 (distribution shift) — no training needed, reads the raw data CSV.
+python3 repro_figures/plot_figure1.py \
+    --input data/Weather/Weather.csv \
+    --seq_len 96 --pred_len 96 --sample_idx 0
+# -> results/figures/figure1_Weather.png  +  .json (stats snapshot)
+
+# Figure 3 (alpha sensitivity) — reads results/figure3_runs.csv.
+python3 repro_figures/plot_figure3.py \
+    --input results/figure3_runs.csv \
+    --dataset ETTm2 --model Autoformer --norm dishts --zscore
+# -> results/figures/figure3_ETTm2.png
+
+# Figure 4 (qualitative forecast) — reads two per-run sample CSVs and overlays.
+python3 repro_figures/plot_figure4.py \
+    --backbone 'results/figures/figure4_ETTm2_Autoformer_none_*.csv' \
+    --dishts  'results/figures/figure4_ETTm2_Autoformer_dishts_*.csv' \
+    --revin   'results/figures/figure4_ETTm2_Autoformer_revin_*.csv'
+# -> results/figures/figure4_ETTm2.png
+```
+
+All three scripts accept `--output <path>.png` to override the default filename
+and `--help` for the full list of options.
+
+> **Figure 2** is a pure architecture diagram and is kept as the reference
+> `paper_results/reference_figure2.jpg` only — there is nothing to plot.
 
 ### Key observations from the 5 paper tables
 

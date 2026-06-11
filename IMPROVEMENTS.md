@@ -442,7 +442,8 @@ if args.label_len == 0:
 | 21 | `train.py` num_workers=0 修复 Python 3.12 DataLoader 崩溃 + README Notes | 2026-06-10 23:18:42 |
 | 22 | 新建 `paper_results/`（5 个论文表格 CSV + analyze_paper.py）+ README "Paper Table Data Reference" 章节 | 2026-06-11 08:20:00 |
 | 23 | 新增 `paper_results/table6_conet_init.csv`（CONET 初始化敏感性 Table 6）+ `repro_figures/figure1_distribution_shift.py`（概念图复现）+ `repro_figures/figure3_alpha_sensitivity.py`（α 敏感性曲线）+ `repro_figures/figure4_prediction_comparison.py`（ETTm2 预测曲线对比）；README 补充用法示例 | 2026-06-11 09:10:00 |
+| 24 | 上传 `paper_results/reference_figure{1,2,3,4}.jpg` 作为论文截图参考；重写 `repro_figures/` 为纯绘图脚本（`plot_figure1.py` / `plot_figure3.py` / `plot_figure4.py`）；扩展 `train.py` 每轮训练自动写入 `results/figure3_runs.csv` 和 `results/figures/figure4_*.csv`；README 增加 "论文参考 / 你的实验结果" 两层职责说明和端到端使用流程 | 2026-06-11 09:40:00 |
 
 ---
 
-*最后更新: 2026-06-11 09:10:00 CST*
+*最后更新: 2026-06-11 09:40:00 CST*
