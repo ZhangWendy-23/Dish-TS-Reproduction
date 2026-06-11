@@ -10,9 +10,11 @@ Expected CSV format:
 
 The 'date' column is automatically excluded from input features.
 Data is split chronologically (no shuffle) into train/val/test sets.
+
 StandardScaler is fitted on training data only and applied to all splits,
 so that metrics (MSE/MAE) match the scale reported in the original Dish-TS
-and Autoformer papers.
+and Autoformer papers.  If scikit-learn is not installed, the scaler is
+skipped with a warning (metrics will be on raw-data scale).
 
 To disable scaling (e.g. for Dish-TS raw-value experiments), pass
 ``scale_data=False`` to the constructor.
@@ -25,7 +27,19 @@ Dataset sources:
 import pandas as pd
 import numpy as np
 from torch.utils.data import Dataset
-from sklearn.preprocessing import StandardScaler
+
+try:
+    from sklearn.preprocessing import StandardScaler
+    _HAS_SKLEARN = True
+except ImportError:
+    _HAS_SKLEARN = False
+    import warnings
+    warnings.warn(
+        "scikit-learn is not installed.  Input data will NOT be standardized "
+        "to z-score space; MSE values will be on raw-data scale and cannot be "
+        "directly compared with paper tables.  Install scikit-learn to fix: "
+        "pip install scikit-learn>=0.24.0"
+    )
 
 
 class TSForecastDataset(Dataset):
@@ -38,7 +52,8 @@ class TSForecastDataset(Dataset):
         self.ratio_vali, self.ratio_test = split[0], split[1]
         self.features = features
         self._scaler = scaler  # shared across train/val/test
-        self.scale_data = scale_data and scaler is None  # fit only if no scaler provided
+        self.scale_data = (scale_data and scaler is None
+                           and _HAS_SKLEARN)  # fit only if no scaler provided
         self.__read_data__(data_path)
 
     def __read_data__(self, data_path):

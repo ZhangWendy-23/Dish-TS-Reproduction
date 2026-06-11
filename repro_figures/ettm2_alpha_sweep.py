@@ -65,6 +65,9 @@ def main() -> None:
     if args.skip_existing and os.path.exists(f3_path):
         try:
             f3_df = pd.read_csv(f3_path)
+            # Backward compat: older figure3_runs.csv may lack a seed column.
+            if "seed" not in f3_df.columns:
+                f3_df["seed"] = 2023
             f3_df = f3_df[f3_df["dataset"] == "ETTm2"]
             for _, row in f3_df.iterrows():
                 key = (float(row.get("alpha", 0.5)),
