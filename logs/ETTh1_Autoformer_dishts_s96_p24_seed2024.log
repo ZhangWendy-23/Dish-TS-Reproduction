@@ -1,23 +1,49 @@
-epoch:0, train_loss:15.32114, val_loss:8.47176
-epoch:1, train_loss:5.89213, val_loss:7.38065
-epoch:2, train_loss:5.34279, val_loss:8.03293
-EarlyStopping counter: 1 out of 7 with 2
-epoch:3, train_loss:5.03662, val_loss:7.57336
-EarlyStopping counter: 2 out of 7 with 3
-epoch:4, train_loss:4.85165, val_loss:7.70816
-EarlyStopping counter: 3 out of 7 with 4
-epoch:5, train_loss:4.63712, val_loss:8.93775
-EarlyStopping counter: 4 out of 7 with 5
-epoch:6, train_loss:4.45898, val_loss:7.73656
-EarlyStopping counter: 5 out of 7 with 6
-epoch:7, train_loss:4.32064, val_loss:8.29929
-EarlyStopping counter: 6 out of 7 with 7
-epoch:8, train_loss:4.21195, val_loss:9.74896
-EarlyStopping counter: 7 out of 7 with 8
-Early stopping with best_score:7.380651950836182
+epoch:0, train_loss:0.60588, val_loss:0.44981
+epoch:1, train_loss:0.37452, val_loss:0.46185
+EarlyStopping counter: 1 out of 15 with 1
+epoch:2, train_loss:0.35436, val_loss:0.45879
+EarlyStopping counter: 2 out of 15 with 2
+epoch:3, train_loss:0.34494, val_loss:0.44853
+epoch:4, train_loss:0.32991, val_loss:0.48249
+EarlyStopping counter: 1 out of 15 with 4
+epoch:5, train_loss:0.31636, val_loss:0.45416
+EarlyStopping counter: 2 out of 15 with 5
+epoch:6, train_loss:0.30778, val_loss:0.49375
+EarlyStopping counter: 3 out of 15 with 6
+epoch:7, train_loss:0.29729, val_loss:0.46060
+EarlyStopping counter: 4 out of 15 with 7
+epoch:8, train_loss:0.28961, val_loss:0.50162
+EarlyStopping counter: 5 out of 15 with 8
+epoch:9, train_loss:0.27940, val_loss:0.46113
+EarlyStopping counter: 6 out of 15 with 9
+epoch:10, train_loss:0.26762, val_loss:0.50679
+EarlyStopping counter: 7 out of 15 with 10
+epoch:11, train_loss:0.26034, val_loss:0.48137
+EarlyStopping counter: 8 out of 15 with 11
+epoch:12, train_loss:0.24613, val_loss:0.50746
+EarlyStopping counter: 9 out of 15 with 12
+epoch:13, train_loss:0.24314, val_loss:0.50040
+EarlyStopping counter: 10 out of 15 with 13
+epoch:14, train_loss:0.23253, val_loss:0.49060
+EarlyStopping counter: 11 out of 15 with 14
+epoch:15, train_loss:0.22900, val_loss:0.50038
+EarlyStopping counter: 12 out of 15 with 15
+epoch:16, train_loss:0.21556, val_loss:0.49183
+EarlyStopping counter: 13 out of 15 with 16
+epoch:17, train_loss:0.21123, val_loss:0.48909
+EarlyStopping counter: 14 out of 15 with 17
+epoch:18, train_loss:0.20755, val_loss:0.49182
+EarlyStopping counter: 15 out of 15 with 18
+Early stopping with best_score:0.44852977991104126
+[train] per-column MSE: 1.104 0.337 1.062 0.267 0.650 0.162 0.148
 ================================================================================
-DATA=ETTh1  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
-  MSE=10.227580  MAE=1.785290  RMSE=3.198060  MAPE=724205.375000  MSPE=386994874089472.000000
+DATA=ETTh1  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=24  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=0.532780  MAE=0.521040  RMSE=0.729920  MAPE=2.174310  MSPE=112.326233
 ================================================================================
- data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha      MSE     MAE    RMSE       MAPE         MSPE
-ETTh1 Autoformer dishts  2024       96         48        24         128    0.5 10.22758 1.78529 3.19806 724205.375 3.869949e+14
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE    MAPE       MSPE
+ETTh1 Autoformer dishts  2024       96         24        24         128    0.5 0.53278 0.52104 0.72992 2.17431 112.326233
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ETTh1_Autoformer_dishts_sq96_pd24_alpha0.5_seed2024.csv
+# data=ETTh1 norm=dishts pred_len=24 seed=2024
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS-Reproduction/train.py --data ETTh1 --model Autoformer --norm dishts --seq_len 96 --pred_len 24 --alpha 0.5 --batch_size 128 --patience 15 --seed 2024 --gpu 0
+

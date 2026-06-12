@@ -1,24 +1,46 @@
 /root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
   return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-epoch:0, train_loss:30.33141, val_loss:19.88384
-epoch:1, train_loss:23.32094, val_loss:22.60005
-EarlyStopping counter: 1 out of 7 with 1
-epoch:2, train_loss:22.15714, val_loss:24.74539
-EarlyStopping counter: 2 out of 7 with 2
-epoch:3, train_loss:21.42570, val_loss:27.32784
-EarlyStopping counter: 3 out of 7 with 3
-epoch:4, train_loss:21.19844, val_loss:25.90728
-EarlyStopping counter: 4 out of 7 with 4
-epoch:5, train_loss:21.07677, val_loss:27.52069
-EarlyStopping counter: 5 out of 7 with 5
-epoch:6, train_loss:20.96484, val_loss:26.21396
-EarlyStopping counter: 6 out of 7 with 6
-epoch:7, train_loss:21.27002, val_loss:24.33508
-EarlyStopping counter: 7 out of 7 with 7
-Early stopping with best_score:19.88383674621582
+epoch:0, train_loss:0.46363, val_loss:1.30004
+epoch:1, train_loss:0.43206, val_loss:1.34496
+EarlyStopping counter: 1 out of 15 with 1
+epoch:2, train_loss:0.41713, val_loss:1.41074
+EarlyStopping counter: 2 out of 15 with 2
+epoch:3, train_loss:0.40554, val_loss:1.34999
+EarlyStopping counter: 3 out of 15 with 3
+epoch:4, train_loss:0.39792, val_loss:1.42568
+EarlyStopping counter: 4 out of 15 with 4
+epoch:5, train_loss:0.38912, val_loss:1.48657
+EarlyStopping counter: 5 out of 15 with 5
+epoch:6, train_loss:0.38396, val_loss:1.59736
+EarlyStopping counter: 6 out of 15 with 6
+epoch:7, train_loss:0.37973, val_loss:1.47438
+EarlyStopping counter: 7 out of 15 with 7
+epoch:8, train_loss:0.37571, val_loss:1.58638
+EarlyStopping counter: 8 out of 15 with 8
+epoch:9, train_loss:0.37149, val_loss:1.46109
+EarlyStopping counter: 9 out of 15 with 9
+epoch:10, train_loss:0.36863, val_loss:1.68151
+EarlyStopping counter: 10 out of 15 with 10
+epoch:11, train_loss:0.37095, val_loss:1.49921
+EarlyStopping counter: 11 out of 15 with 11
+epoch:12, train_loss:0.36313, val_loss:1.43574
+EarlyStopping counter: 12 out of 15 with 12
+epoch:13, train_loss:0.35915, val_loss:1.62302
+EarlyStopping counter: 13 out of 15 with 13
+epoch:14, train_loss:0.38646, val_loss:1.51620
+EarlyStopping counter: 14 out of 15 with 14
+epoch:15, train_loss:0.38414, val_loss:1.54761
+EarlyStopping counter: 15 out of 15 with 15
+Early stopping with best_score:1.3000373840332031
+[train] per-column MSE: 0.676 0.791 0.129 0.726 0.588 0.011 0.326
 ================================================================================
 DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
-  MSE=16.357800  MAE=2.814870  RMSE=4.044480  MAPE=10311568.000000  MSPE=5576166777815040.000000
+  MSE=0.464960  MAE=0.491990  RMSE=0.681880  MAPE=1.645920  MSPE=338.680115
 ================================================================================
- data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE       MAPE         MSPE
-ETTm2 Autoformer dishts  2024       96         84       168         128    0.5 16.3578 2.81487 4.04448 10311568.0 5.576167e+15
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE    MAPE       MSPE
+ETTm2 Autoformer dishts  2024       96         84       168         128    0.5 0.46496 0.49199 0.68188 1.64592 338.680115
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd168_alpha0.5_seed2024.csv
+# data=ETTm2 norm=dishts pred_len=168 seed=2024
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS-Reproduction/train.py --data ETTm2 --model Autoformer --norm dishts --seq_len 96 --pred_len 168 --alpha 0.5 --batch_size 128 --patience 15 --seed 2024 --gpu 0
+

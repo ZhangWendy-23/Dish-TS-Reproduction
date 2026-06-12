@@ -1,0 +1,44 @@
+epoch:0, train_loss:0.36059, val_loss:0.25029
+epoch:1, train_loss:0.33565, val_loss:0.28726
+EarlyStopping counter: 1 out of 15 with 1
+epoch:2, train_loss:0.32929, val_loss:0.30873
+EarlyStopping counter: 2 out of 15 with 2
+epoch:3, train_loss:0.32028, val_loss:0.30176
+EarlyStopping counter: 3 out of 15 with 3
+epoch:4, train_loss:0.31064, val_loss:0.28794
+EarlyStopping counter: 4 out of 15 with 4
+epoch:5, train_loss:0.29787, val_loss:0.40349
+EarlyStopping counter: 5 out of 15 with 5
+epoch:6, train_loss:0.28468, val_loss:0.50108
+EarlyStopping counter: 6 out of 15 with 6
+epoch:7, train_loss:0.27539, val_loss:0.36335
+EarlyStopping counter: 7 out of 15 with 7
+epoch:8, train_loss:0.26457, val_loss:0.42439
+EarlyStopping counter: 8 out of 15 with 8
+epoch:9, train_loss:0.25559, val_loss:0.58491
+EarlyStopping counter: 9 out of 15 with 9
+epoch:10, train_loss:0.24772, val_loss:0.47255
+EarlyStopping counter: 10 out of 15 with 10
+epoch:11, train_loss:0.23802, val_loss:0.45221
+EarlyStopping counter: 11 out of 15 with 11
+epoch:12, train_loss:0.23660, val_loss:0.63288
+EarlyStopping counter: 12 out of 15 with 12
+epoch:13, train_loss:0.22777, val_loss:0.55990
+EarlyStopping counter: 13 out of 15 with 13
+epoch:14, train_loss:0.22370, val_loss:0.59358
+EarlyStopping counter: 14 out of 15 with 14
+epoch:15, train_loss:0.21734, val_loss:0.65302
+EarlyStopping counter: 15 out of 15 with 15
+Early stopping with best_score:0.2502947747707367
+[train] per-column MSE: 0.287 0.348 0.111 0.413 0.069 0.009 0.220
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=none  SEED=2025  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.5
+  MSE=0.208660  MAE=0.309060  RMSE=0.456800  MAPE=1.790760  MSPE=763.786377
+================================================================================
+ data      model norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE   RMSE    MAPE       MSPE
+ETTm2 Autoformer none  2025       96         84       168         128    0.5 0.20866 0.30906 0.4568 1.79076 763.786377
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ETTm2_Autoformer_none_sq96_pd168_alpha0.5_seed2025.csv
+# data=ETTm2 norm=none pred_len=168 seed=2025
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS-Reproduction/train.py --data ETTm2 --model Autoformer --norm none --seq_len 96 --pred_len 168 --alpha 0.5 --batch_size 128 --patience 15 --seed 2025 --gpu 0
+

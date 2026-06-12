@@ -1,27 +1,49 @@
 /root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
   return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-epoch:0, train_loss:43901.38672, val_loss:10438.68457
-epoch:1, train_loss:27288.62305, val_loss:10444.02930
-EarlyStopping counter: 1 out of 7 with 1
-epoch:2, train_loss:24364.85352, val_loss:9877.03516
-epoch:3, train_loss:10100907.00000, val_loss:868838.12500
-EarlyStopping counter: 1 out of 7 with 3
-epoch:4, train_loss:267348.90625, val_loss:20305.28516
-EarlyStopping counter: 2 out of 7 with 4
-epoch:5, train_loss:64146.41016, val_loss:22516.55469
-EarlyStopping counter: 3 out of 7 with 5
-epoch:6, train_loss:75160.57031, val_loss:16163.13184
-EarlyStopping counter: 4 out of 7 with 6
-epoch:7, train_loss:48435.73828, val_loss:17650.72266
-EarlyStopping counter: 5 out of 7 with 7
-epoch:8, train_loss:55624.77734, val_loss:13789.31152
-EarlyStopping counter: 6 out of 7 with 8
-epoch:9, train_loss:42064.94141, val_loss:15790.35156
-EarlyStopping counter: 7 out of 7 with 9
-Early stopping with best_score:9877.03515625
+epoch:0, train_loss:0.78358, val_loss:0.42161
+epoch:1, train_loss:0.42040, val_loss:0.38957
+epoch:2, train_loss:0.38639, val_loss:0.38114
+epoch:3, train_loss:0.36258, val_loss:0.37866
+epoch:4, train_loss:2639.88184, val_loss:358.00769
+EarlyStopping counter: 1 out of 15 with 4
+epoch:5, train_loss:85.11777, val_loss:2.91534
+EarlyStopping counter: 2 out of 15 with 5
+epoch:6, train_loss:4.17143, val_loss:1.64065
+EarlyStopping counter: 3 out of 15 with 6
+epoch:7, train_loss:2.48826, val_loss:1.25018
+EarlyStopping counter: 4 out of 15 with 7
+epoch:8, train_loss:1.90851, val_loss:1.02012
+EarlyStopping counter: 5 out of 15 with 8
+epoch:9, train_loss:1.61486, val_loss:0.92568
+EarlyStopping counter: 6 out of 15 with 9
+epoch:10, train_loss:1.36137, val_loss:0.83972
+EarlyStopping counter: 7 out of 15 with 10
+epoch:11, train_loss:1.25749, val_loss:0.79334
+EarlyStopping counter: 8 out of 15 with 11
+epoch:12, train_loss:1.20070, val_loss:0.75089
+EarlyStopping counter: 9 out of 15 with 12
+epoch:13, train_loss:1.11939, val_loss:0.67102
+EarlyStopping counter: 10 out of 15 with 13
+epoch:14, train_loss:1.06337, val_loss:0.67508
+EarlyStopping counter: 11 out of 15 with 14
+epoch:15, train_loss:0.97273, val_loss:0.68953
+EarlyStopping counter: 12 out of 15 with 15
+epoch:16, train_loss:0.95072, val_loss:0.62221
+EarlyStopping counter: 13 out of 15 with 16
+epoch:17, train_loss:0.88283, val_loss:0.61404
+EarlyStopping counter: 14 out of 15 with 17
+epoch:18, train_loss:0.97762, val_loss:0.59228
+EarlyStopping counter: 15 out of 15 with 18
+Early stopping with best_score:0.37866219878196716
+[train] per-column MSE: 0.129 0.056 0.056 0.067 0.188 0.028 0.053 0.034 0.052 0.052 0.062 0.001 0.421 0.378 0.051 1.014 0.127 0.122 0.087 0.053 0.001
 ================================================================================
-DATA=WTH  MODEL=Autoformer  NORM=revin  SEED=2025  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
-  MSE=3889.867188  MAE=19.014721  RMSE=62.368801  MAPE=640733184.000000  MSPE=10526646259001851904.000000
+DATA=WTH  MODEL=Autoformer  NORM=revin  SEED=2025  seq_len=96  label_len=24  pred_len=24  batch_size=128  lr=0.001  alpha=0.5
+  MSE=0.144350  MAE=0.197720  RMSE=0.379940  MAPE=1.833710  MSPE=5932.262207
 ================================================================================
-data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha         MSE       MAE      RMSE        MAPE         MSPE
- WTH Autoformer revin  2025       96         48        24         128    0.5 3889.867188 19.014721 62.368801 640733184.0 1.052665e+19
+data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE    MAPE        MSPE
+ WTH Autoformer revin  2025       96         24        24         128    0.5 0.14435 0.19772 0.37994 1.83371 5932.262207
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_WTH_Autoformer_revin_sq96_pd24_alpha0.5_seed2025.csv
+# data=WTH norm=revin pred_len=24 seed=2025
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS-Reproduction/train.py --data WTH --model Autoformer --norm revin --seq_len 96 --pred_len 24 --alpha 0.5 --batch_size 128 --patience 15 --seed 2025 --gpu 0
+
