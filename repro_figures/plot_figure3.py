@@ -88,14 +88,19 @@ def plot_alpha_sensitivity(df: pd.DataFrame, dataset: str, model: str, norm: str
             grouped["MSE_z"] = (grouped["MSE"] - mu) / sd
             y_col = "MSE_z"
 
+    # Get unique pred_len values for x-axis ticks
+    all_preds = sorted(grouped["pred_len"].unique())
+
     for idx, alpha in enumerate(alphas):
         seg = grouped[grouped["alpha"] == alpha].sort_values("pred_len")
         ax.plot(seg["pred_len"], seg[y_col], marker="o", linewidth=2.0,
-                color=palette[idx], label=rf"$\alpha$ = {alpha:g}")
+                color=palette[idx], label=f"alpha = {alpha:g}")
 
-    ax.set_xlabel("pred_len (lookback = pred_len, typically)")
+    ax.set_xlabel("Prediction Horizon (pred_len)")
     ax.set_ylabel("MSE (z-score)" if zscore else "MSE")
     ax.set_title(title)
+    ax.set_xticks(all_preds)  # use actual pred_len values, not auto ticks
+    ax.set_xticklabels([str(int(p)) for p in all_preds])
     ax.grid(True, alpha=0.3)
     ax.legend(title="alpha", loc="best", fontsize=10)
     fig.tight_layout()
