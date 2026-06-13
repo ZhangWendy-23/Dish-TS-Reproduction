@@ -1,0 +1,47 @@
+epoch:0, train_loss:0.50406, val_loss:1.73466
+epoch:1, train_loss:0.45239, val_loss:1.78160
+EarlyStopping counter: 1 out of 15 with 1
+epoch:2, train_loss:0.44585, val_loss:1.76050
+EarlyStopping counter: 2 out of 15 with 2
+epoch:3, train_loss:0.43826, val_loss:1.72787
+epoch:4, train_loss:0.43332, val_loss:1.65967
+epoch:5, train_loss:0.43065, val_loss:2.17751
+EarlyStopping counter: 1 out of 15 with 5
+epoch:6, train_loss:0.44940, val_loss:1.87220
+EarlyStopping counter: 2 out of 15 with 6
+epoch:7, train_loss:0.42770, val_loss:1.89235
+EarlyStopping counter: 3 out of 15 with 7
+epoch:8, train_loss:0.42475, val_loss:2.03841
+EarlyStopping counter: 4 out of 15 with 8
+epoch:9, train_loss:0.41983, val_loss:1.92792
+EarlyStopping counter: 5 out of 15 with 9
+epoch:10, train_loss:0.42123, val_loss:1.98906
+EarlyStopping counter: 6 out of 15 with 10
+epoch:11, train_loss:0.42049, val_loss:2.31733
+EarlyStopping counter: 7 out of 15 with 11
+epoch:12, train_loss:0.42054, val_loss:2.54018
+EarlyStopping counter: 8 out of 15 with 12
+epoch:13, train_loss:0.41347, val_loss:2.40867
+EarlyStopping counter: 9 out of 15 with 13
+epoch:14, train_loss:0.42922, val_loss:1.90936
+EarlyStopping counter: 10 out of 15 with 14
+epoch:15, train_loss:0.43305, val_loss:3.39260
+EarlyStopping counter: 11 out of 15 with 15
+epoch:16, train_loss:0.42590, val_loss:2.16863
+EarlyStopping counter: 12 out of 15 with 16
+epoch:17, train_loss:0.42156, val_loss:2.41610
+EarlyStopping counter: 13 out of 15 with 17
+epoch:18, train_loss:0.41997, val_loss:1.97382
+EarlyStopping counter: 14 out of 15 with 18
+epoch:19, train_loss:0.42082, val_loss:2.64076
+EarlyStopping counter: 15 out of 15 with 19
+Early stopping with best_score:1.6596708297729492
+[train] per-column MSE: 0.552 0.958 0.122 0.746 0.806 0.009 0.236
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=48  pred_len=96  batch_size=128  lr=0.001  alpha=1.0
+  MSE=0.490270  MAE=0.501870  RMSE=0.700190  MAPE=1.621080  MSPE=384.205200
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE    MAPE     MSPE
+ETTm2 Autoformer dishts  2023       96         48        96         128    1.0 0.49027 0.50187 0.70019 1.62108 384.2052
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd96_alpha1.0_seed2023.csv

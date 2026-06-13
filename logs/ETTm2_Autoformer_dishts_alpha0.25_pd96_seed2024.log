@@ -1,0 +1,50 @@
+epoch:0, train_loss:0.36495, val_loss:0.91276
+epoch:1, train_loss:0.31837, val_loss:0.87030
+epoch:2, train_loss:0.31037, val_loss:0.96657
+EarlyStopping counter: 1 out of 15 with 2
+epoch:3, train_loss:0.30684, val_loss:1.01656
+EarlyStopping counter: 2 out of 15 with 3
+epoch:4, train_loss:0.31152, val_loss:0.96683
+EarlyStopping counter: 3 out of 15 with 4
+epoch:5, train_loss:0.30928, val_loss:0.86810
+epoch:6, train_loss:0.30346, val_loss:0.81462
+epoch:7, train_loss:0.30279, val_loss:1.01611
+EarlyStopping counter: 1 out of 15 with 7
+epoch:8, train_loss:0.31411, val_loss:1.13844
+EarlyStopping counter: 2 out of 15 with 8
+epoch:9, train_loss:0.30589, val_loss:0.97768
+EarlyStopping counter: 3 out of 15 with 9
+epoch:10, train_loss:0.30402, val_loss:0.87892
+EarlyStopping counter: 4 out of 15 with 10
+epoch:11, train_loss:0.30353, val_loss:0.96678
+EarlyStopping counter: 5 out of 15 with 11
+epoch:12, train_loss:0.29822, val_loss:1.11316
+EarlyStopping counter: 6 out of 15 with 12
+epoch:13, train_loss:0.29536, val_loss:0.99382
+EarlyStopping counter: 7 out of 15 with 13
+epoch:14, train_loss:0.29796, val_loss:0.94304
+EarlyStopping counter: 8 out of 15 with 14
+epoch:15, train_loss:0.29109, val_loss:0.98992
+EarlyStopping counter: 9 out of 15 with 15
+epoch:16, train_loss:0.28777, val_loss:1.05769
+EarlyStopping counter: 10 out of 15 with 16
+epoch:17, train_loss:0.28914, val_loss:0.97077
+EarlyStopping counter: 11 out of 15 with 17
+epoch:18, train_loss:0.28675, val_loss:0.97286
+EarlyStopping counter: 12 out of 15 with 18
+epoch:19, train_loss:0.29067, val_loss:0.96125
+EarlyStopping counter: 13 out of 15 with 19
+epoch:20, train_loss:0.30176, val_loss:0.96856
+EarlyStopping counter: 14 out of 15 with 20
+epoch:21, train_loss:0.30641, val_loss:1.26183
+EarlyStopping counter: 15 out of 15 with 21
+Early stopping with best_score:0.8146153092384338
+[train] per-column MSE: 0.297 0.455 0.098 0.428 0.241 0.009 0.149
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=96  batch_size=128  lr=0.001  alpha=0.25
+  MSE=0.239740  MAE=0.341240  RMSE=0.489640  MAPE=1.680110  MSPE=616.091125
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE    MAPE       MSPE
+ETTm2 Autoformer dishts  2024       96         48        96         128   0.25 0.23974 0.34124 0.48964 1.68011 616.091125
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd96_alpha0.25_seed2024.csv

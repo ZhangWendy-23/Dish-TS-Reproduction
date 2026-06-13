@@ -1,0 +1,62 @@
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:0.47927, val_loss:1.05928
+epoch:1, train_loss:0.44403, val_loss:1.45183
+EarlyStopping counter: 1 out of 15 with 1
+epoch:2, train_loss:0.42498, val_loss:1.18764
+EarlyStopping counter: 2 out of 15 with 2
+epoch:3, train_loss:0.48684, val_loss:1.77328
+EarlyStopping counter: 3 out of 15 with 3
+epoch:4, train_loss:0.47043, val_loss:1.55158
+EarlyStopping counter: 4 out of 15 with 4
+epoch:5, train_loss:0.45213, val_loss:2.56071
+EarlyStopping counter: 5 out of 15 with 5
+epoch:6, train_loss:0.42610, val_loss:2.28985
+EarlyStopping counter: 6 out of 15 with 6
+epoch:7, train_loss:0.41216, val_loss:1.95965
+EarlyStopping counter: 7 out of 15 with 7
+epoch:8, train_loss:4.04512, val_loss:38.29898
+EarlyStopping counter: 8 out of 15 with 8
+epoch:9, train_loss:0.74866, val_loss:1.08814
+EarlyStopping counter: 9 out of 15 with 9
+epoch:10, train_loss:0.59092, val_loss:0.92654
+epoch:11, train_loss:0.57787, val_loss:0.94009
+EarlyStopping counter: 1 out of 15 with 11
+epoch:12, train_loss:0.55456, val_loss:1.06933
+EarlyStopping counter: 2 out of 15 with 12
+epoch:13, train_loss:0.52231, val_loss:1.25836
+EarlyStopping counter: 3 out of 15 with 13
+epoch:14, train_loss:0.49950, val_loss:1.48924
+EarlyStopping counter: 4 out of 15 with 14
+epoch:15, train_loss:0.48240, val_loss:1.36761
+EarlyStopping counter: 5 out of 15 with 15
+epoch:16, train_loss:0.46726, val_loss:2.08948
+EarlyStopping counter: 6 out of 15 with 16
+epoch:17, train_loss:0.45456, val_loss:1.82000
+EarlyStopping counter: 7 out of 15 with 17
+epoch:18, train_loss:0.44681, val_loss:2.47253
+EarlyStopping counter: 8 out of 15 with 18
+epoch:19, train_loss:0.43934, val_loss:1.93616
+EarlyStopping counter: 9 out of 15 with 19
+epoch:20, train_loss:0.43337, val_loss:2.10479
+EarlyStopping counter: 10 out of 15 with 20
+epoch:21, train_loss:0.42958, val_loss:2.11073
+EarlyStopping counter: 11 out of 15 with 21
+epoch:22, train_loss:0.41971, val_loss:1.75689
+EarlyStopping counter: 12 out of 15 with 22
+epoch:23, train_loss:0.41753, val_loss:1.53758
+EarlyStopping counter: 13 out of 15 with 23
+epoch:24, train_loss:0.41475, val_loss:1.83835
+EarlyStopping counter: 14 out of 15 with 24
+epoch:25, train_loss:0.41532, val_loss:1.75419
+EarlyStopping counter: 15 out of 15 with 25
+Early stopping with best_score:0.9265425205230713
+[train] per-column MSE: 0.393 0.457 0.131 0.525 0.355 0.015 0.346
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=96  pred_len=336  batch_size=64  lr=0.001  alpha=0.25
+  MSE=0.319640  MAE=0.406600  RMSE=0.565370  MAPE=1.901880  MSPE=571.790100
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE    MAE    RMSE    MAPE     MSPE
+ETTm2 Autoformer dishts  2024       96         96       336          64   0.25 0.31964 0.4066 0.56537 1.90188 571.7901
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd336_alpha0.25_seed2024.csv

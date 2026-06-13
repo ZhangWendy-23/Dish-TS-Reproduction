@@ -22,65 +22,33 @@ epoch:12, train_loss:0.16605, val_loss:0.48296
 EarlyStopping counter: 4 out of 15 with 12
 epoch:13, train_loss:0.16442, val_loss:0.51063
 EarlyStopping counter: 5 out of 15 with 13
-Traceback (most recent call last):
-  File "/root/autodl-tmp/Dish-TS-Reproduction/train.py", line 203, in <module>
-    forecast = unify_model(batch_x, dec_inp)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/autodl-tmp/Dish-TS-Reproduction/Model.py", line 17, in forward
-    forecast = self.fm(batch_x, None, dec_inp, None)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/autodl-tmp/Dish-TS-Reproduction/backbones/Autoformer.py", line 110, in forward
-    enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/autodl-tmp/Dish-TS-Reproduction/backbones/layers/Autoformer_EncDec.py", line 103, in forward
-    x, attn = attn_layer(x, attn_mask=attn_mask)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/autodl-tmp/Dish-TS-Reproduction/backbones/layers/Autoformer_EncDec.py", line 69, in forward
-    new_x, attn = self.attention(
-                  ^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/autodl-tmp/Dish-TS-Reproduction/backbones/layers/AutoCorrelation.py", line 156, in forward
-    out, attn = self.inner_correlation(
-                ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/autodl-tmp/Dish-TS-Reproduction/backbones/layers/AutoCorrelation.py", line 122, in forward
-    V = self.time_delay_agg_training(values.permute(0, 2, 3, 1).contiguous(), corr).permute(0, 3, 1, 2)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/autodl-tmp/Dish-TS-Reproduction/backbones/layers/AutoCorrelation.py", line 38, in time_delay_agg_training
-    weights = torch.stack([mean_value[:, index[i]] for i in range(top_k)], dim=-1)
-                           ~~~~~~~~~~^^^^^^^^^^^^^
-KeyboardInterrupt
+epoch:14, train_loss:0.16338, val_loss:0.50425
+EarlyStopping counter: 6 out of 15 with 14
+epoch:15, train_loss:0.16192, val_loss:0.48700
+EarlyStopping counter: 7 out of 15 with 15
+epoch:16, train_loss:0.15891, val_loss:0.48958
+EarlyStopping counter: 8 out of 15 with 16
+epoch:17, train_loss:0.15901, val_loss:0.48851
+EarlyStopping counter: 9 out of 15 with 17
+epoch:18, train_loss:0.15887, val_loss:0.56376
+EarlyStopping counter: 10 out of 15 with 18
+epoch:19, train_loss:0.15942, val_loss:0.52114
+EarlyStopping counter: 11 out of 15 with 19
+epoch:20, train_loss:0.15602, val_loss:0.49799
+EarlyStopping counter: 12 out of 15 with 20
+epoch:21, train_loss:0.15502, val_loss:0.51449
+EarlyStopping counter: 13 out of 15 with 21
+epoch:22, train_loss:0.34469, val_loss:20.67604
+EarlyStopping counter: 14 out of 15 with 22
+epoch:23, train_loss:34.62747, val_loss:1.69416
+EarlyStopping counter: 15 out of 15 with 23
+Early stopping with best_score:0.4663281738758087
+[train] per-column MSE: 0.227 0.288 0.065 0.369 0.090 0.008 0.074
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2023  seq_len=96  label_len=24  pred_len=24  batch_size=128  lr=0.001  alpha=0.1
+  MSE=0.160310  MAE=0.268450  RMSE=0.400380  MAPE=1.618840  MSPE=523.831848
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha     MSE     MAE    RMSE    MAPE       MSPE
+ETTm2 Autoformer dishts  2023       96         24        24         128    0.1 0.16031 0.26845 0.40038 1.61884 523.831848
+[train] appended 1 row to /root/autodl-tmp/Dish-TS-Reproduction/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd24_alpha0.1_seed2023.csv
