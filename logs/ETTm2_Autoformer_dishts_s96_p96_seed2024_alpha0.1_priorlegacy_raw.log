@@ -1,0 +1,32 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+epoch:0, train_loss:19.27612, val_loss:14.09746
+epoch:1, train_loss:14.37049, val_loss:14.25781
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:14.11754, val_loss:15.70895
+EarlyStopping counter: 2 out of 7 with 2
+epoch:3, train_loss:14.16712, val_loss:21.82848
+EarlyStopping counter: 3 out of 7 with 3
+epoch:4, train_loss:14.10616, val_loss:20.89785
+EarlyStopping counter: 4 out of 7 with 4
+epoch:5, train_loss:13.65550, val_loss:16.29600
+EarlyStopping counter: 5 out of 7 with 5
+epoch:6, train_loss:13.38852, val_loss:18.90145
+EarlyStopping counter: 6 out of 7 with 6
+epoch:7, train_loss:13.82775, val_loss:22.29950
+EarlyStopping counter: 7 out of 7 with 7
+Early stopping with best_score:14.097455978393555
+[train] per-column MSE: 24.522 6.358 22.776 3.475 5.787 0.528 23.277
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=96  batch_size=128  lr=0.001  alpha=0.1  prior=legacy  dish_init=avg  scale=False  patience=7
+  MSE=12.401820  MAE=2.353980  RMSE=3.521620  MAPE=10126774.000000  MSPE=5210918463995904.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha features      MSE     MAE    RMSE       MAPE         MSPE
+ETTm2 Autoformer dishts  2024       96         48        96         128    0.1        M 12.40182 2.35398 3.52162 10126774.0 5.210918e+15
+[train] appended 1 row to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd96_alpha0.1_seed2024.csv
+# data=ETTm2 norm=dishts pl=96 seed=2024 alpha=0.1 prior=legacy
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm dishts --seq_len 96 --pred_len 96 --label_len 48 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.1 --prior legacy --dish_init avg --figure3
+

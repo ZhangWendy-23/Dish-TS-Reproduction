@@ -1,0 +1,35 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+/root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:21.04059, val_loss:16.35548
+epoch:1, train_loss:19.30040, val_loss:16.31776
+epoch:2, train_loss:18.31438, val_loss:17.28934
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:17.21245, val_loss:17.64541
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:16.47142, val_loss:20.27336
+EarlyStopping counter: 3 out of 7 with 4
+epoch:5, train_loss:15.74170, val_loss:20.02572
+EarlyStopping counter: 4 out of 7 with 5
+epoch:6, train_loss:15.26869, val_loss:21.18028
+EarlyStopping counter: 5 out of 7 with 6
+epoch:7, train_loss:14.77715, val_loss:23.85628
+EarlyStopping counter: 6 out of 7 with 7
+epoch:8, train_loss:14.64839, val_loss:24.80410
+EarlyStopping counter: 7 out of 7 with 8
+Early stopping with best_score:16.317760467529297
+[train] per-column MSE: 28.969 6.744 26.297 3.440 1.922 0.510 31.281
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.0  prior=none  dish_init=avg  scale=False  patience=7
+  MSE=14.196760  MAE=2.416800  RMSE=3.767860  MAPE=9575140.000000  MSPE=4447319449665536.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha features      MSE    MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer revin  2024       96         84       168         128    0.0        M 14.19676 2.4168 3.76786 9575140.0 4.447319e+15
+[train] appended 1 row to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS/results/figures/figure4_ETTm2_Autoformer_revin_sq96_pd168_alpha0.0_seed2024.csv
+# data=ETTm2 norm=revin pl=168 seed=2024 alpha=0.0 prior=none
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm revin --seq_len 96 --pred_len 168 --label_len 84 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.0 --prior none --dish_init avg --figure3
+

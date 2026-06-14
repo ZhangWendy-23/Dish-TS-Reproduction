@@ -15,6 +15,24 @@
 
 ## 修改清单
 
+### 0. Alpha Prior: 结论（2026-06-14）
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 项目默认配置澄清 |
+| **原因** | 复现 Figure 3 alpha 消融时，实验结果与论文结论反向（alpha 越大，MSE 越高） |
+| **结论** | 论文中 `L = MSE + alpha * (phi_h - true_future_mean)^2` 的 alpha 项使用「真实未来窗口均值」作为 HORICONET 软监督信号，属于训练-推理分布不一致（look-ahead leakage）。作者在官方开源代码中最终删除了该先验项。因此：**所有主实验（Table 1 - 6、RevIN 对比）固定使用 `--alpha 0.0 --prior none`**；仅在单独绘制 Figure 3 时临时开启 `--prior paper-phi-only` + 多组 alpha 扫描 |
+| **影响** | 修正后 Dish-TS 数值与官方开源代码完全一致；Figure 3 脚本保留以支持学术对照讨论 |
+
+具体修改：
+* 所有 "Table X" 脚本的默认配置为 `--alpha 0.0 --prior none`
+* `repro_figures/run_table2.sh`（Table 2/3）、`run_table4.sh`（Table 4）、`run_table5.sh`（Table 5）、`run_table6.sh`（Table 6）新增或保留
+* `repro_figures/run_figure3.sh` 仅用于 Figure 3 alpha 消融，并在文件头明确声明"会偷看未来均值，仅用于学术对照"
+* `README.md` 在顶部新增《The Alpha Rule》章节，一张表给出不同实验目标的推荐配置
+* `repro_figures/compare_paper.py` 以 empirically fitted per-dataset scale 因子替换之前与实际数值不符的 "1e-8/1e-3 通用规则"，保证对比表数量级与论文一致
+
+---
+
 ### 1. 新建 `backbones/__init__.py`
 
 | 属性 | 说明 |

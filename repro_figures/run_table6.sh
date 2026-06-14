@@ -36,12 +36,12 @@ for DATA in "${DATASETS[@]}"; do
         [[ "$DATA" == "ECL" ]] && bs=64
 
         for pred_len in "${PREDS[@]}"; do
-            for init in avg norm uni; do
-                for seed in "${SEEDS[@]}"; do
-                    log="logs/t6_${DATA}_${MODEL}_dishts_L${pred_len}_H${pred_len}_init_${init}_seed${seed}.log"
-                    echo "[t6] data=$DATA model=$model H=$pred_len init=$init seed=$seed bs=$bs -> $log"
-                    python3 -u train.py \
-                        --data "$DATA" --model "$MODEL" --norm dishts \
+                for init in avg norm uni; do
+                    for seed in "${SEEDS[@]}"; do
+                        log="logs/t6_${DATA}_${MODEL}_dishts_L${pred_len}_H${pred_len}_init_${init}_seed${seed}.log"
+                        echo "[t6] data=$DATA model=$MODEL H=$pred_len init=$init seed=$seed bs=$bs -> $log"
+                        python3 -u train.py \
+                            --data "$DATA" --model "$MODEL" --norm dishts \
                         --dish_init "$init" \
                         --seq_len "$pred_len" --pred_len "$pred_len" --label_len 48 \
                         --batch_size "$bs" --lr 1e-3 --train_epochs 100 --patience 10 \

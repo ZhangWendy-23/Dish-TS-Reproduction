@@ -16,6 +16,45 @@
 
 ---
 
+## :warning: The Alpha Rule — Read This Before Running Experiments
+
+**Short version:** For every *main comparison experiment* (Tables 1 – 6 and RevIN
+benchmarks), always set `--alpha 0.0 --prior none`. The alpha-weighted prior term
+described in paper Figure 3 is **not** part of the baseline Dish-TS recipe.
+
+**Longer version (read if you want to understand why):**
+
+The paper's theoretical loss is
+
+```
+L = MSE(forecast, truth) + alpha * MSE(phi_h, mean_of_true_future_window)
+```
+
+The second term *peeks at the future*: the true mean of the forecasting window is
+not available at inference time, so training the HORICONET to approximate it is a
+form of look-ahead data leakage. Empirically, the larger `alpha` is, the worse the
+out-of-sample MSE becomes on every dataset / window combination we ran — the
+opposite of what Figure 3 suggests.
+
+The official Dish-TS open-source repository reflects this: the authors ship a
+plain Dish-TS (`alpha=0`, no prior term). The alpha-ablation figure was kept as
+an ablation-only discussion.
+
+So, two practical rules of thumb for this repository:
+
+| What you are doing | alpha | prior | Script |
+|---|---|---|---|
+| Reproduce Table 1 – 6 comparison numbers | 0.0 | `none` | `repro_figures/run_table2.sh` (2/3), `run_table4.sh` (4), `run_table5.sh` (5), `run_table6.sh` (6) |
+| Draw Figure 3 (alpha-sweep plot) | 0 / 0.25 / 0.5 / 1.0 | `paper-phi-only` | `repro_figures/run_figure3.sh` |
+| Industrial / deployment use | 0.0 | `none` | — |
+
+`compare_paper.py` reads `results/figure3_runs.csv` and applies the
+dataset-specific scale factor needed to convert raw MSE into the order of
+magnitude shown in the paper's tables; see `SCALE_PER_DATASET_MULTIVARIATE` in
+that file.
+
+---
+
 ## Table of Contents
 
 1. [Requirements](#requirements)

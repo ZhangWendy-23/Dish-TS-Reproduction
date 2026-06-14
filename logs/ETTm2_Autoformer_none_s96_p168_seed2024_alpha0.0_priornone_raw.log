@@ -1,0 +1,32 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+epoch:0, train_loss:21.88641, val_loss:17.18315
+epoch:1, train_loss:21.60597, val_loss:17.61802
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:21.23938, val_loss:18.94868
+EarlyStopping counter: 2 out of 7 with 2
+epoch:3, train_loss:20.85238, val_loss:17.71075
+EarlyStopping counter: 3 out of 7 with 3
+epoch:4, train_loss:20.81648, val_loss:19.15566
+EarlyStopping counter: 4 out of 7 with 4
+epoch:5, train_loss:19.77034, val_loss:20.69335
+EarlyStopping counter: 5 out of 7 with 5
+epoch:6, train_loss:18.78182, val_loss:21.49611
+EarlyStopping counter: 6 out of 7 with 6
+epoch:7, train_loss:17.72648, val_loss:21.32972
+EarlyStopping counter: 7 out of 7 with 7
+Early stopping with best_score:17.183147430419922
+[train] per-column MSE: 29.315 6.315 27.299 3.472 1.893 0.617 34.705
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=none  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.0  prior=none  dish_init=avg  scale=False  patience=7
+  MSE=14.836280  MAE=2.464850  RMSE=3.851790  MAPE=9461640.000000  MSPE=4264007024246784.000000
+================================================================================
+ data      model norm  seed  seq_len  label_len  pred_len  batch_size  alpha features      MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer none  2024       96         84       168         128    0.0        M 14.83628 2.46485 3.85179 9461640.0 4.264007e+15
+[train] appended 1 row to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS/results/figures/figure4_ETTm2_Autoformer_none_sq96_pd168_alpha0.0_seed2024.csv
+# data=ETTm2 norm=none pl=168 seed=2024 alpha=0.0 prior=none
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm none --seq_len 96 --pred_len 168 --label_len 84 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.0 --prior none --dish_init avg --figure3
+
