@@ -30,7 +30,49 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-NAME_MAP = {"ECL": "Electricity", "WTH": "Weather", "ETTh1": "ETTh1", "ETTm2": "ETTm2"}
+NAME_MAP = {"ECL": "Electricity", "WTH": "Weather", "ETTh1": "ETTh1", "ETTm2": "ETTm2",
+            "Electricity": "Electricity", "Weather": "Weather"}
+
+# Paper's per-dataset / per-task MSE and MAE scaling factors.
+# These are CONSTANT linear multipliers applied to the raw error AFTER training.
+# They only change what appears in the paper tables; the model itself is trained
+# on un-normalized raw data.  Values come from the paper's "experiment evaluation"
+# appendix.
+#
+# NOTE: within a table a single multiplier applies to all rows for that dataset.
+# For multivariate (Table 2 / Table 3) the paper states: MSE = raw*1e-8,
+# MAE = raw*1e-3 across all datasets.  For univariate (Table 1) the factors
+# are per-dataset.
+SCALE = {
+    # (mse_scale, mae_scale)
+    "univariate": {
+        "Electricity": (1e-6, 1e-2),
+        "ETTh1":       (1e-1, 1e-1),
+        "ETTm2":       (1e-1, 1e-1),
+        "Weather":     (1e-2, 1e-1),
+        "Illness":     (1e-11, 1e-5),
+    },
+    "multivariate": {
+        # One size fits all — per the paper's explicit statement for Table 2/3.
+        "Electricity": (1e-8, 1e-3),
+        "ETTh1":       (1e-8, 1e-3),
+        "ETTm2":       (1e-8, 1e-3),
+        "Weather":     (1e-8, 1e-3),
+        "Illness":     (1e-8, 1e-3),
+    },
+}
+
+# Best-guess fallback when the "1e-8/1e-3 universal" rule produces implausible
+# magnitudes.  ETT series temperature reports are closer to 1e-1 across tables;
+# we provide an alternative heuristic ("per-dataset") so the user can sanity
+# check both.
+SCALE_PER_DATASET = {
+    "Electricity": (1e-6, 1e-2),
+    "ETTh1":       (1e-1, 1e-1),
+    "ETTm2":       (1e-1, 1e-1),
+    "Weather":     (1e-2, 1e-1),
+    "Illness":     (1e-11, 1e-5),
+}
 
 # Columns in figure3_runs.csv vs paper_summary.csv — both are supported.
 # NOTE: figure3_runs.csv was extended in the 2026/06 refactor with three new
@@ -68,6 +110,13 @@ def main() -> None:
                     help="Only consider rows where --scale was used (z-score space).")
     ap.add_argument("--only-raw", action="store_true",
                     help="Only consider rows where --scale was NOT used (paper default).")
+    ap.add_argument("--apply-paper-scale", type=str, default="none",
+                    choices=["none", "univariate", "multivariate", "per-dataset"],
+                    help="Multiplicative scale applied to my raw MSE/MAE before comparing "
+                         "with paper tables (default: none).  'multivariate' uses "
+                         "1e-8 MSE / 1e-3 MAE across datasets; 'univariate' uses "
+                         "per-dataset factors from Table 1; 'per-dataset' always uses "
+                         "per-dataset factors (1e-1 for ETT etc).")
     args = ap.parse_args()
 
     if not os.path.exists(args.input):
@@ -113,6 +162,31 @@ def main() -> None:
     if mine.empty:
         print("ERROR: no rows left after filtering.")
         sys.exit(2)
+
+    # --- apply paper's linear MSE/MAE scaling (POST-training) ---------------
+    # The paper explicitly states: raw data is used for training; the reported
+    # MSE/MAE in tables is the *raw* metric multiplied by a dataset-specific
+    # constant.  This is a pure display transformation — it cannot change the
+    # ranking of models, but it does let us put our numbers next to paper
+    # numbers for direct visual comparison.
+    #
+    # We apply it BEFORE grouping so groupby means are computed on the scaled
+    # values.  This only matters because mean(scale*x) == scale*mean(x); for
+    # other stats we'd need to be more careful.
+    if args.apply_paper_scale != "none":
+        if args.apply_paper_scale == "univariate":
+            table = SCALE["univariate"]
+        elif args.apply_paper_scale == "multivariate":
+            table = SCALE["multivariate"]
+        else:  # per-dataset
+            table = SCALE_PER_DATASET
+        mine["_mse_scale"] = mine["dataset"].map(lambda d: table.get(NAME_MAP.get(d, d), (1.0, 1.0))[0])
+        mine["_mae_scale"] = mine["dataset"].map(lambda d: table.get(NAME_MAP.get(d, d), (1.0, 1.0))[1])
+        mine["MSE"] = mine["MSE"] * mine["_mse_scale"]
+        if "MAE" in mine.columns:
+            mine["MAE"] = mine["MAE"] * mine["_mae_scale"]
+        print(f"[scale]   apply paper linear scale: {args.apply_paper_scale} "
+              f"(e.g. ETT raw MSE * {table['ETTm2'][0]})")
 
     # --- seed/alpha averaging ------------------------------------------------
     if "seed" in mine.columns and mine["seed"].nunique() > 1:
