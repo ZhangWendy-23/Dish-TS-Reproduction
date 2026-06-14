@@ -1,130 +1,92 @@
 #!/usr/bin/env bash
 #
-# Paper Table 3 "RevIN vs Dish-TS" full sweep.
+# Paper Tables 2 & 3 — multivariate forecasting (L=H).
 #
-# Matrix:   4 datasets × (plain Autoformer + RevIN + Dish-TS)
-#           × 4 prediction lengths × 3 seeds
-#           + additional alpha sweep for Dish-TS.
+# Table 2 reports Informer / Autoformer / N-BEATS with and without Dish-TS.
+# Table 3 reports RevIN vs Dish-TS on Autoformer backbone with MSE only.
 #
-# Paper defaults:
-#   raw-data (no --scale) / L = H (--seq_len 0, auto == pred_len)
-#   label_len = 48              (decoder warm-start)
-#   batch_size 128              (Autoformer default; ECL is forced to 64)
-#   train_epochs 100 / patience 7
-#   dish_init = avg             (Table 6 ablation default)
-#   prior = paper-phi-only      (prior signal reaches HoriCoNet only)
-#   alpha ∈ {0.0, 0.25, 0.5, 1.0}  (Figure 3 sweep, Table 3 main result)
+# Datasets: Electricity (= ECL), ETTh1, ETTm2, Weather (4 datasets).
+# L=H ∈ {24, 48, 96, 168, 336} (5 horizons).
+# Backbones: Informer, Autoformer, N-BEATS.
+# Normalization methods: none (plain), revin, dishts.
+# Seeds: 2023, 2024, 2025.
 #
-# Total jobs:
-#   dishts: 4 datasets × 4 preds × 4 alphas × 3 seeds   = 192
-#   revin : 4 datasets × 4 preds × 3 seeds              = 48
-#   none  : 4 datasets × 4 preds × 3 seeds              = 48
-#   total : 288 jobs
+# Total jobs per norm: 4 datasets × 5 horizons × 3 backbones × 3 seeds
+#                    = 180  (per norm); so 3 norms × 180 = 540.
 #
-# At ~4 min/job on a 3090 this is roughly 19 h of wall time.
+# Typical run time: ~5 min/job → ~45 h total on a single 3090.
+# You can parallelise across GPUs by setting GPU=0/1/... and restricting
+# DATA / NORM env vars.
 #
-# NOTE: the official Dish-TS repo does NOT use an alpha prior loss at all
-# (equivalent to --prior none / alpha 0).  So both of the following are
-# legitimate paper baselines and we keep both:
-#   * dishts with alpha 0 / prior none         -> official repo equiv
-#   * dishts with prior paper-phi-only / alpha>0 -> with the paper's claimed
-#                                                    horizon guidance signal
+#   # example 1: ECL only with Informer + Dish-TS, GPU 0
+#   DATA=ECL MODEL=Informer NORMS="none dishts" GPU=0 bash repro_figures/run_table3.sh
+#
+#   # example 2: everything but ECL on GPU 1
+#   DATASET_SUBSET="ETTh1 ETTm2 Weather" GPU=1 bash repro_figures/run_table3.sh
 
 set -u
 PROJ_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJ_ROOT"
 
-MODEL=Autoformer
-DISH_INIT=avg
-FEATURES="${FEATURES:-M}"        # M = multivariate (Table 2/3); S = univariate (Table 1)
-SEQ_LEN=0            # 0 means "auto-align to pred_len" (paper L=H)
-LABEL_LEN=0          # 0 means auto-clamp to min(seq_len, pred_len), floor 48
-TRAIN_EPOCHS=100
-PATIENCE=7
-LR="${LR:-1e-3}"
-GPU=0
+GPU="${GPU:-0}"
+SEEDS=(2023 2024 2025)
+PREDS=(24 48 96 168 336)
+MODELS=("Informer" "Autoformer" "N-BEATS")
+NORMS=(${NORMS:-"none revin dishts"})
+
+# `--seq_len 0` is the repo convention for "auto-set to pred_len" so that
+# the experiment automatically respects the paper's L=H rule.
+SEQ_LEN=0
+
+DATASETS=(${DATASET_SUBSET:-"ECL ETTh1 ETTm2 Weather"})
 
 mkdir -p logs results
 
-DATASETS=(ETTm2 ETTh1 ECL WTH)
-PREDS=(24 96 168 336)
-SEEDS=(2023 2024 2025)
-ALPHAS=(0.0 0.25 0.5 1.0)
-
-# --- job counting ---------------------------------------------------------
 total=0
-for _ in "${DATASETS[@]}"; do
-    for _ in "${PREDS[@]}"; do
-        for _ in "${SEEDS[@]}"; do
-            # dishts × 4 alphas + revin + none = 6 lines
-            for _ in 1 2 3 4 5 6; do total=$((total + 1)); done
+for DATA in "${DATASETS[@]}"; do
+    for MODEL in "${MODELS[@]}"; do
+        for norm in "${NORMS[@]}"; do
+            for pred_len in "${PREDS[@]}"; do
+                for seed in "${SEEDS[@]}"; do
+                    total=$((total + 1))
+                done
+            done
         done
     done
 done
-# dishts only: 4 d × 4 p × 3 s × 4 a = 192
-# revin + none: 4 d × 4 p × 3 s × 2 = 96
-# but the loop above counts per "(d,p,s)" 6 lines which is wrong; just
-# recompute explicitly:
-total=$(( ${#DATASETS[@]} * ${#PREDS[@]} * ${#SEEDS[@]} * (${#ALPHAS[@]} + 2) ))
 
 i=0
 for DATA in "${DATASETS[@]}"; do
-    # ECL (Electricity): many series × long sequences → paper uses bs=64
-    if [ "$DATA" = "ECL" ]; then
-        BATCH_SIZE=64
-    else
-        BATCH_SIZE=128
-    fi
+    for MODEL in "${MODELS[@]}"; do
+        # Informer's default batch_size is 256 in our repo; ECL uses 64.
+        if [[ "$DATA" == "ECL" ]]; then
+            bs=64
+        elif [[ "$MODEL" == "Informer" ]]; then
+            bs=256
+        else
+            bs=128
+        fi
 
-    for p in "${PREDS[@]}"; do
-        for s in "${SEEDS[@]}"; do
-            # --- plain Autoformer (norm = none) ---
-            i=$((i + 1))
-            log="logs/${DATA}_${MODEL}_none_seq${p}_pred${p}_seed${s}_${FEATURES}_lr${LR}_raw.log"
-            echo "[$i/$total] plain Autoformer  data=$DATA  pred=$p  seed=$s  features=$FEATURES  lr=$LR"
-            python3 -u train.py \
-                --data "$DATA" --model "$MODEL" --norm none \
-                --features "$FEATURES" \
-                --seq_len "$SEQ_LEN" --pred_len "$p" --label_len "$LABEL_LEN" \
-                --batch_size "$BATCH_SIZE" --lr "$LR" \
-                --train_epochs "$TRAIN_EPOCHS" --patience "$PATIENCE" \
-                --seed "$s" --gpu "$GPU" --figure3 \
-                >"$log" 2>&1
-
-            # --- RevIN baseline ---
-            i=$((i + 1))
-            log="logs/${DATA}_${MODEL}_revin_seq${p}_pred${p}_seed${s}_${FEATURES}_lr${LR}_raw.log"
-            echo "[$i/$total] RevIN  data=$DATA  pred=$p  seed=$s  features=$FEATURES  lr=$LR"
-            python3 -u train.py \
-                --data "$DATA" --model "$MODEL" --norm revin \
-                --features "$FEATURES" \
-                --seq_len "$SEQ_LEN" --pred_len "$p" --label_len "$LABEL_LEN" \
-                --batch_size "$BATCH_SIZE" --lr "$LR" \
-                --train_epochs "$TRAIN_EPOCHS" --patience "$PATIENCE" \
-                --seed "$s" --gpu "$GPU" --figure3 \
-                >"$log" 2>&1
-
-            # --- Dish-TS with alpha sweep (prior=paper-phi-only) ---
-            for a in "${ALPHAS[@]}"; do
-                i=$((i + 1))
-                log="logs/${DATA}_${MODEL}_dishts_seq${p}_pred${p}_seed${s}_alpha${a}_priorPaperPhiOnly_${FEATURES}_lr${LR}_raw.log"
-                echo "[$i/$total] Dish-TS(paper-phi-only)  data=$DATA  pred=$p  alpha=$a  seed=$s  features=$FEATURES  lr=$LR"
-                python3 -u train.py \
-                    --data "$DATA" --model "$MODEL" --norm dishts \
-                    --alpha "$a" --prior paper-phi-only --dish_init "$DISH_INIT" \
-                    --features "$FEATURES" \
-                    --seq_len "$SEQ_LEN" --pred_len "$p" --label_len "$LABEL_LEN" \
-                    --batch_size "$BATCH_SIZE" --lr "$LR" \
-                    --train_epochs "$TRAIN_EPOCHS" --patience "$PATIENCE" \
-                    --seed "$s" --gpu "$GPU" --figure3 \
-                    >"$log" 2>&1
+        for norm in "${NORMS[@]}"; do
+            for pred_len in "${PREDS[@]}"; do
+                for seed in "${SEEDS[@]}"; do
+                    i=$((i + 1))
+                    log="logs/table2_${DATA}_${MODEL}_${norm}_L${pred_len}_H${pred_len}_seed${seed}.log"
+                    echo "[$i/$total] data=$DATA model=$MODEL norm=$norm L=H=$pred_len seed=$seed bs=$bs -> $log"
+                    python3 -u train.py \
+                        --data "$DATA" --model "$MODEL" --norm "$norm" \
+                        --seq_len "$SEQ_LEN" --pred_len "$pred_len" \
+                        --batch_size "$bs" --lr 1e-3 \
+                        --train_epochs 100 --patience 7 \
+                        --features M --seed "$seed" --gpu "$GPU" \
+                        --figure3 \
+                        >"$log" 2>&1
+                done
             done
         done
     done
 done
 
 echo
-echo "============================================================"
-echo "All $total jobs finished."
-echo "Now inspect results with:  python3 repro_figures/compare_paper.py"
-echo "                           python3 show_alpha_curves.py"
+echo "Done. Now compare with paper reference numbers:"
+echo "  python3 repro_figures/compare_paper.py --apply-paper-scale multivariate"

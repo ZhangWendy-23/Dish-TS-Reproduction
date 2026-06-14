@@ -237,7 +237,12 @@ def main() -> None:
     idx_cols = [c for c in group_cols if c != "norm"]
     mean_pivot = mean.pivot_table(index=idx_cols,
                                   columns="norm", values="MSE").reset_index()
-    if "model" in mean_pivot.columns:
+
+    # For comparison with paper Table 2 we do not restrict to Autoformer.
+    # If the user ran multiple backbones, we compare each one against the
+    # corresponding column in table2_multivariate.csv.  For convenience we
+    # still prefer Autoformer when the experiment mix contains it.
+    if "model" in mean_pivot.columns and "Autoformer" in mean_pivot["model"].values:
         mean_pivot = mean_pivot[mean_pivot["model"] == "Autoformer"].reset_index(drop=True)
 
     compare_rows = []
