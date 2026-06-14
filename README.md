@@ -68,8 +68,6 @@ that file.
    - [Table 4: Long-horizon Forecasting](#table-4-long-horizon-forecasting)
    - [Quick Verification](#quick-verification)
    - [Simplified Experiments](#simplified-experiments)
-   - [Preventing SSH Disconnection](#preventing-ssh-disconnection)
-   - [Monitoring Progress](#monitoring-progress)
    - [Collecting Results](#collecting-results)
 5. [Configuration Reference](#configuration-reference)
    - [CLI Arguments](#cli-arguments)
@@ -125,307 +123,424 @@ ls -lh data/                       # Should list 5 CSV files
 python -c "from backbones import Autoformer; from DishTS import DishTS; print('Installation OK')"
 ```
 
-> **Warning: SSH Disconnection Will Kill Your Experiments**
->
-> If you run experiments over SSH and your connection drops, all child processes
-> (including training jobs) will be terminated. **Always use one of these methods:**
->
-> | Method | Survives Disconnect | Reconnect to View Output | Recommendation |
-> |--------|---------------------|--------------------------|----------------|
-> | **`screen`** | Yes | Yes (`screen -r`) | Best |
-> | **`tmux`** | Yes | Yes (`tmux attach`) | Best |
-> | **`nohup`** | Yes | No (use `tail -f log`) | OK for fire-and-forget |
-> | Direct SSH | **No** | — | Never use |
->
-> See [Preventing SSH Disconnection](#preventing-ssh-disconnection) below for detailed instructions.
-
-### Run All Paper Experiments
-
-```bash
-# Core Table 2 & 3 (63 runs, ~8-12 hours on RTX 3090)
-python3 repro_figures/run_all_exps.py --gpu 0
-
-# Include long-horizon Table 4 experiments
-python3 repro_figures/run_all_exps.py --gpu 0 --long-horizon
-```
-
 ---
 
 ## Project Structure
 
 ```
 Dish-TS-Reproduction/
-├── train.py                     # Main training script (CLI args, paper-aligned)
-├── smoke_test.py                # Environment verification (no GPU needed)
-├── Model.py                     # Unified model wrapper (forecast backbone + norm model)
-├── DishTS.py                    # Dish-TS core module (Dual-Conet with GELU activation)
-├── REVIN.py                     # RevIN baseline implementation
+├── train.py                      # Single-run training entry-point
+│                                   # (CLI args mirror paper hyper-parameters)
+├── Model.py                      # Unified forecast backbone + norm wrapper
+├── DishTS.py                     # Dish-TS core (Dual-Conet + GELU)
+├── REVIN.py                      # RevIN baseline
+├── smoke_test.py                 # Lightweight environment verification
 ├── .gitignore
 ├── requirements.txt
 │
-├── repro_figures/               # Experiment & analysis scripts
-│   ├── run_all_exps.py          # ★ One-click Table 2 & 3 reproduction (63 runs)
-│   ├── ettm2_alpha_sweep.py     # Alpha sensitivity sweep on ETTm2
-│   ├── compare_paper.py         # Your results vs paper (quantitative comparison)
-│   ├── parse_logs.py            # Extract MSE from old logs → CSV
-│   ├── plot_figure1.py          # Distribution shift visualization
-│   ├── plot_figure3.py          # Alpha sensitivity curves (Figure 3)
-│   ├── plot_figure4.py          # Forecast comparison plot (Figure 4)
-│   └── dataset_diagnostic.py    # Check data quality / scale issues
+├── repro_figures/                # Experiment and analysis scripts
+│   ├── run_all.sh                # (1) Runs every sweep in sequence
+│   ├── run_sanity.sh             # (1b) Phase 1 — ETTm2 gate check (27 jobs)
+│   ├── run_table2.sh             # (2) Table 2 / Table 3 main comparison
+│   ├── run_table3.sh             # (2b) RevIN vs Dish-TS (Table 3 only)
+│   ├── run_table4.sh             # (3) Table 4 — long-horizon, L=96 fixed
+│   ├── run_table5.sh             # (4) Table 5 — lookback length ablation
+│   ├── run_table6.sh             # (5) Table 6 — CONET init ablation
+│   ├── run_figure3.sh            # (6) Figure 3 — alpha sensitivity (★)
+│   ├── run_baselines_none_revin.sh # (7) Phase 3 — none / revin comparison
+│   ├── compare_paper.py          # Quantitative "ours vs paper" tables
+│   ├── parse_logs.py             # Legacy log → CSV converter (if needed)
+│   ├── plot_figure1.py           # Distribution-shift visualisation
+│   ├── plot_figure3.py           # Figure 3 curve plotter
+│   ├── plot_figure4.py           # Figure 4 forecast-sample plotter
+│   └── dataset_diagnostic.py     # Data quality / scale diagnostics
 │
-├── paper_results/               # Reference: paper tables & figures (read-only)
-│   ├── table{1..6}_*.csv        # Tables 1-6 extracted from paper
-│   ├── analyze_paper.py         # Paper-side statistics
-│   └── reference_figure*.jpg    # Paper figure screenshots
+│ ★  run_figure3.sh uses `--prior paper-phi-only`, which trains the
+│    HORICONET against the true future-window mean. This reproduces the
+│    paper's theoretical Figure 3 only. For every comparison table of the
+│    paper (Tables 1–6) and for real deployment, use alpha=0 / prior=none;
+│    see the "Alpha Rule" section above.
 │
-├── backbones/                   # Forecasting backbone models
+├── paper_results/                # Paper reference tables (read-only)
+│   ├── table{1..6}_*.csv
+│   └── reference_figure*.jpg
+│
+├── backbones/                    # Forecast backbones
 │   ├── __init__.py
-│   ├── Autoformer.py            # Autoformer (auto-correlation mechanism)
-│   ├── Informer.py              # Informer (prob-sparse self-attention)
-│   ├── Transformer.py           # Vanilla Transformer
-│   └── layers/                  # Reusable neural network components
-│       ├── Embed.py             # Data/temporal/positional embeddings
-│       ├── Autoformer_EncDec.py # Autoformer-specific encoder/decoder
-│       ├── Transformer_EncDec.py# Standard Transformer encoder/decoder
-│       ├── AutoCorrelation.py   # Auto-correlation attention mechanism
-│       ├── SelfAttention_Family.py # FullAttention + ProbAttention
-│       ├── masking.py           # Causal masking and ProbMask
-│       └── utils.py             # Utility functions
+│   ├── Autoformer.py
+│   ├── Informer.py
+│   ├── Transformer.py
+│   └── NBEATS.py                 # N-BEATS Generic Architecture (paper)
 │
-├── utils/                       # Utility modules
-│   ├── __init__.py              # Random seed configuration
-│   ├── dataset.py               # Data loader (M/S mode, StandardScaler)
-│   ├── earlystop.py             # Early stopping mechanism
-│   └── metric.py                # MSE/MAE/RMSE/MAPE/MSPE metrics
+├── utils/
+│   ├── __init__.py               # Seed management
+│   ├── dataset.py                # Data loader (M/S mode)
+│   ├── earlystop.py
+│   └── metric.py                 # MSE, MAE, RMSE, MAPE, MSPE
 │
-├── data/                        # 5 benchmark datasets
-│   ├── ETTm2.csv  (~9.3 MB)    # 15-min level, 7 features, ~69,680 timestamps
-│   ├── ETTh1.csv  (~2.5 MB)    # Hourly, 7 features, ~17,420 timestamps
-│   ├── ECL.csv    (~92 MB)     # Hourly, 321 features, ~26,304 timestamps
-│   ├── WTH.csv    (~7.0 MB)    # 10-min level, 21 features, ~52,696 timestamps
-│   └── ILI.csv    (~67 KB)     # Weekly, 7 features, ~966 timestamps
+├── data/                         # 5 benchmark datasets
+│   ├── ETTm2.csv                 # 15-min  level, 7 features, ~69,680 ts
+│   ├── ETTh1.csv                 # Hourly level, 7 features, ~17,420 ts
+│   ├── ECL.csv                   # Hourly      , 321 features, ~26,304 ts
+│   ├── WTH.csv                   # 10-min level, 21 features, ~52,696 ts
+│   └── ILI.csv                   # Weekly      , 7   features, ~966    ts
 │
-├── results/                     # Your experiment outputs
-│   ├── paper_summary.csv        # All completed runs (appended by train.py)
-│   ├── figure3_runs.csv         # Training log for alpha sensitivity plots
-│   └── figures/                 # Generated PNGs and per-run forecast CSVs
+├── results/                      # Experiment outputs
+│   ├── figure3_runs.csv          # Master training log (1 row per run)
+│   ├── paper_vs_mine.csv         # Generated by compare_paper.py
+│   └── figures/                  # Plots and forecast-sample CSVs
 │
-├── logs/                        # Experiment logs (tracked for reproducibility)
-│
-├── run_paper_exps.sh            # Legacy shell runner (deprecated — use run_all_exps.py)
-├── run_simplified_exps.sh       # Legacy simplified runner
-├── README.md                    # This file
-└── IMPROVEMENTS.md              # Complete modification log
+└── logs/                         # Full per-run training logs
+└── IMPROVEMENTS.md               # Complete modification log vs original repo
 ```
 
 ---
 
-## Current Experiment Workflow
+## Step-by-Step Reproduction Procedure
 
-### Quick Start: Reproduce Tables 2 & 3
+The following steps reproduce every figure and comparison table reported in the
+paper. Each step corresponds to a single shell command and produces a well-defined
+output file, so the workflow is fully auditable.
 
-The simplest way to run the core experiments (Tables 2 & 3 from the paper) on a single GPU:
+> **Conventions across every table / script below**
+>
+> - Lookback `L == pred_len` for every standard comparison (Tables 2/3/6).
+> - Three fixed seeds (`2023, 2024, 2025`) are used for every non-deterministic
+>   experiment, and mean / std over the three seeds is reported.
+> - `--alpha 0.0 --prior none` is used for every **comparison** experiment;
+>   alpha > 0 is only used when plotting Figure 3. See "The Alpha Rule" above.
+> - Per-run CSV logs are appended to `results/figure3_runs.csv`, and full
+>   training logs are written to `logs/<dataset>_<model>_<norm>_*.log`.
 
-```bash
-# 1. Install dependencies (+ scikit-learn for StandardScaler)
-pip install -r requirements.txt
+---
 
-# 2. Verify environment
-python3 smoke_test.py --seq_len 96 --pred_len 336
-# Should print: SMOKE TEST PASSED
-
-# 3. Run ALL Table 2 & 3 experiments (63 runs, ~8-12 hours on RTX 3090)
-python3 repro_figures/run_all_exps.py --gpu 0
-```
-
-This will:
-- Back up your old `paper_summary.csv` automatically
-- Run 4 datasets x {dishts, revin, none} x 2-3 horizons x 3 seeds
-- Append one row per run to `results/paper_summary.csv` and `results/figure3_runs.csv`
-
-**Output files after completion:**
-
-| File | Description |
-|------|-------------|
-| `results/paper_summary.csv` | All completed experiments (columns: data, model, norm, seed, seq_len, pred_len, MSE, MAE, ...) |
-| `results/figure3_runs.csv` | Dense training log (appended every run, used to plot alpha sensitivity curves) |
-| `results/figures/figure4_*.csv` | Per-run forecast samples (lookback + prediction + ground truth) |
-| `logs/<dataset>_<model>_<norm>_*.log` | Full training logs |
-
-### Compare with Paper
+### Step 1 — Environment and Dependencies
 
 ```bash
-# Quantitative comparison: your results vs paper Tables 2 & 3
-python3 repro_figures/compare_paper.py
-# Outputs: results/paper_vs_mine.csv + console summary
-```
-
-The script checks whether Dish-TS > RevIN in the *same direction* as the paper for every (dataset, horizon) combination.
-
-### Alpha Sensitivity (ETTm2)
-
-If Dish-TS underperforms RevIN on ETTm2, sweep `--alpha`:
-
-```bash
-# 72 runs: alpha ∈ {0, 0.1, 0.25, 0.5, 0.75, 1.0} x 4 horizons x 3 seeds
-# Auto-skips runs already completed in figure3_runs.csv
-python3 repro_figures/ettm2_alpha_sweep.py --gpu 0 --seeds 2023 2024 2025
-
-# Plot alpha curve (Figure 3 style)
-python3 repro_figures/plot_figure3.py --input results/figure3_runs.csv \
-    --dataset ETTm2 --model Autoformer --norm dishts --zscore \
-    --output results/figures/figure3_ETTm2.png
-```
-
-### Long-Horizon Forecasting (Table 4 — N-BEATS, L=96, H=336..720)
-
-```bash
-# N-BEATS with fixed lookback L=96 and growing horizon H (336..720).
-# Compares plain N-BEATS vs N-BEATS + Dish-TS.
-bash repro_figures/run_table4.sh
-```
-
-### Lookback Length Ablation (Table 5 — N-BEATS, H=48, L=48..240)
-
-```bash
-# N-BEATS with fixed horizon H=48, varying lookback length L.
-bash repro_figures/run_table5.sh
-```
-
-### Single Experiment
-
-```bash
-python3 train.py --data ETTm2 --model Autoformer --norm dishts \
-    --seq_len 96 --pred_len 96 --alpha 0.5 --gpu 0 --seed 2023
-```
-
-Run the same experiment with N-BEATS backbone:
-
-```bash
-python3 train.py --data ETTm2 --model NBEATS --norm dishts \
-    --seq_len 96 --pred_len 96 --alpha 0.0 --prior none \
-    --gpu 0 --seed 2023
-```
-
-The `--model NBEATS` backbone uses the paper's **N-BEATS Generic Architecture** baseline out of the box:
-
-| Hyper-parameter           | Value |
-|---------------------------|-------|
-| generic_architecture      | True  |
-| num_stacks                | 2     |
-| num_blocks                | 3     |
-| num_layers                | 4     |
-| layer_width               | 128   |
-| expansion_coefficient_dim | 128   |
-
-No covariates, time embeddings, or positional encoding are used — only the raw univariate (or multivariate, per-feature) time series.  See `backbones/NBEATS.py` for the full implementation.
-
-### Experiment Matrix Reference
-
-| Table | Description | Datasets | Backbone | Norms | pred_len | Seeds | Script |
-|-------|-------------|----------|----------|-------|----------|-------|--------|
-| 2 & 3 | Multivariate + RevIN vs Dish-TS | ECL, ETTh1, ETTm2, WTH | Autoformer | dishts, revin, none | 24, 96, 168 | 3 | `run_table3.sh` |
-| 4 | Long-horizon (L=96, H=336..720) | ECL, ETTh1 | N-BEATS | none, dishts | 336, 420, 540, 600, 720 | 3 | `run_table4.sh` |
-| 5 | Lookback length (H=48, L=48..240) | ECL, ETTh1 | N-BEATS | none, dishts | 48 | 3 | `run_table5.sh` |
-| Fig. 3 | Alpha sensitivity | ETTm2 | Autoformer | dishts | 24, 96, 168, 336 | 3 | `run_paper_phi_only.sh` |
-
-### Preventing SSH Disconnection
-
-SSH connection drops are the #1 cause of failed experiments. Here's how to protect
-your runs:
-
-#### Option A: `screen` (Recommended)
-
-```bash
-# 1. Create a named session
-screen -S dishts
-
-# 2. Run your experiment inside the session
+git clone https://github.com/ZhangWendy-23/Dish-TS-Reproduction.git
 cd Dish-TS-Reproduction
-./run_paper_exps.sh table3 2>&1 | tee logs/table3_master.log
+pip install -r requirements.txt
+```
 
-# 3. Detach from the session (keeps it running):
-#    Press Ctrl+A, then press D
+Verify the environment and the datasets are present:
 
-# 4. Log out, close laptop, come back later
+```bash
+nvidia-smi                                # RTX 3090 24 GiB or equivalent
+ls -lh data/                              # 5 CSV files
+python3 smoke_test.py --seq_len 96 --pred_len 336
+# Expected: SMOKE TEST PASSED
+```
 
-# 5. Reconnect to the session from any SSH login:
+**Resource guidelines.** A single RTX 3090 (24 GiB GPU RAM, ~16 GiB system RAM
+available) is sufficient; with two GPUs you may set `GPU=0` for half the jobs
+and `GPU=1` for the rest to halve wall-clock time.
+
+---
+
+### Step 2 — Run a Single Experiment (Sanity Check)
+
+Before starting a long sweep, run a single job to confirm the pipeline works.
+Both invocations below are on the smallest configuration (L=H=24, seed=2023):
+
+```bash
+# Autoformer baseline
+python3 train.py --data ETTm2 --model Autoformer --norm revin \
+    --seq_len 24 --pred_len 24 --label_len 48 --batch_size 128 \
+    --lr 1e-3 --train_epochs 50 --patience 7 --alpha 0.0 --prior none \
+    --features M --seed 2023 --gpu 0 --figure3
+
+# Autoformer + Dish-TS (the paper's central comparison)
+python3 train.py --data ETTm2 --model Autoformer --norm dishts \
+    --seq_len 24 --pred_len 24 --label_len 48 --batch_size 128 \
+    --lr 1e-3 --train_epochs 50 --patience 7 --alpha 0.0 --prior none \
+    --features M --seed 2023 --gpu 0 --figure3
+```
+
+Each run prints a one-row summary (`MSE`, `MAE`, `RMSE`, …) and appends a row
+to `results/figure3_runs.csv`.
+
+---
+
+### Step 2b — Recommended 3-Phase End-to-End Checklist
+
+The three scripts below form a self-contained end-to-end workflow that
+moves from a small sanity check → full sweep → comparison baselines,
+so that you always run on the SAME checkout you just pulled.
+
+Run them exactly in this order, on a single 3090 with the latest code:
+
+| Phase | What | Jobs | GPU time | Script |
+|---|---|---|---|---|
+| **Phase 1 — Single-dataset sanity check | ETTm2 × Autoformer × `paper-phi-only × {96, 168, 336} × {0.0, 0.5, 1.0} × 3 seeds | 27 | ~30–60 min | `bash repro_figures/run_sanity.sh` |
+| **Phase 2 — Figure 3 full 4-dataset sweep | **4 datasets × Autoformer × `paper-phi-only` × 4 horizons × 4 alphas × 3 seeds | 192 | ~20 h | `bash repro_figures/run_figure3.sh` |
+| **Phase 3 — None / RevIN baselines** | **4 datasets × Autoformer × {none, revin} × 4 horizons × 3 seeds | 96 | ~8 h | `bash repro_figures/run_baselines_none_revin.sh` |
+
+**Gate rule: only proceed from Phase 1 → Phase 2 if alpha=0.0 is the best
+(or very close to it). If it is not, something in the current code has
+regressed and running the longer Phase 2 sweep on old output is meaningless.
+
+Always run inside a detachable terminal. Example:
+
+```bash
+screen -U -S dishts-phase1
+cd ~/Dish-TS-Reproduction
+bash repro_figures/run_sanity.sh 2>&1 | tee logs/phase1_master.log
+# Ctrl+A, D to detach
+```
+
+Then, once Phase 1 passes:
+
+```bash
+screen -U -S dishts-phase2
+bash repro_figures/run_figure3.sh 2>&1 | tee logs/phase2_master.log
+```
+
+And finally:
+
+```bash
+screen -U -S dishts-phase3
+bash repro_figures/run_baselines_none_revin.sh 2>&1 | tee logs/phase3_master.log
+```
+
+After Phase 3, `results/figure3_runs.csv` contains one row per completed job, and
+`compare_paper.py` aggregates it.
+
+---
+
+### Step 3 — Full Experiment Matrix — Pick Your Sweep
+
+The table below lists every reproducible piece of content in the paper together
+with the single shell command that generates it.
+
+| What to reproduce | Datasets | Backbone | Norms | Pred_len range | Seeds | GPU time (1× 3090) | Script |
+|---|---|---|---|---|---|---|---|
+| **Table 1** — Univariate forecasting | ECL, ETTh1, ETTm2, WTH | Autoformer | dishts, revin, none | 24, 48, 96, 168, 336 | 3 | ~12 h | `DATASET_SUBSET="ECL ETTh1 ETTm2 WTH" FEATURES=S bash repro_figures/run_table2.sh` |
+| **Table 2** — Multivariate forecasting | ECL, ETTh1, ETTm2, WTH | Autoformer, Informer, N-BEATS | dishts, revin, none | 24, 48, 96, 168, 336 | 3 | ~30 h | `bash repro_figures/run_table2.sh` |
+| **Table 3** — RevIN vs Dish-TS (MSE) | ECL, ETTh1, ETTm2, WTH | Autoformer | dishts, revin | 24, 168, 336 | 3 | ~6 h | `bash repro_figures/run_table3.sh` |
+| **Table 4** — Long-horizon forecasting | ECL, ETTh1 | N-BEATS | dishts, none | 336..720 (L fixed at 96) | 3 | ~5 h | `bash repro_figures/run_table4.sh` |
+| **Table 5** — Lookback length ablation | ECL, ETTh1 | N-BEATS | dishts, none | 48 (L ∈ {48, 96, 144, 192, 240}) | 3 | ~3 h | `bash repro_figures/run_table5.sh` |
+| **Table 6** — CONET initialisation | ETTh1, WTH | Autoformer, N-BEATS | dishts (avg, norm, uni) | 24, 96, 168 | 3 | ~4 h | `bash repro_figures/run_table6.sh` |
+| **Figure 3** — Alpha sensitivity | ECL, ETTh1, ETTm2, WTH | Autoformer | dishts | 24, 96, 168, 336 | 3 | ~12 h | `bash repro_figures/run_figure3.sh` |
+| **Phase 1 — Sanity check** (gate step) | ETTm2 | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | ~30–60 min | `bash repro_figures/run_sanity.sh` |
+| **Phase 3 — None / RevIN baselines** | ECL, ETTh1, ETTm2, WTH | Autoformer | none, revin | 24, 96, 168, 336 | 3 | ~8 h | `bash repro_figures/run_baselines_none_revin.sh` |
+| **Everything (one command)** | — | — | — | — | — | ~72 h | `bash repro_figures/run_all.sh` |
+
+**Recommended order** — run the shorter sweeps first to validate the pipeline,
+then proceed to the longest ones:
+
+```bash
+# (A) Phase 1 gate — sanity check (~30-60 min, stops if regresses)
+bash repro_figures/run_sanity.sh
+
+# (B) Phase 2 — Figure 3 alpha sweep (~20 h on 1x3090)
+bash repro_figures/run_figure3.sh
+
+# (C) Phase 3 — comparison baselines (~8 h)
+bash repro_figures/run_baselines_none_revin.sh
+
+# (D) The full comparison tables (Tables 1-6, if reproducing the paper)
+bash repro_figures/run_table2.sh       # Table 2/3 — the paper's main result
+bash repro_figures/run_table6.sh       # Table 6 — CONET init ablation
+
+# (E) N-BEATS ablations (≈8 h)
+bash repro_figures/run_table4.sh       # Table 4
+bash repro_figures/run_table5.sh       # Table 5
+```
+
+**Sub-setting a sweep.** All `run_table*.sh` scripts honour a
+`DATASET_SUBSET="..."` environment variable, so you can run a single dataset at
+a time without editing the file:
+
+```bash
+DATASET_SUBSET="ETTm2" GPU=0 bash repro_figures/run_table2.sh
+```
+
+---
+
+### Step 4 — Protect Long Runs Against SSH Disconnection
+
+SSH disconnection is the #1 cause of failed experiments on remote boxes. Always
+launch long sweeps inside `screen` or `tmux`. A full example:
+
+```bash
+# (1) Create a named terminal session.  Ctrl+A, D to detach; it keeps running.
+screen -U -S dishts
+
+# (2) Inside the session, launch the sweep and tee output to a master log
+cd ~/Dish-TS-Reproduction
+bash repro_figures/run_all.sh 2>&1 | tee logs/run_all_master.log
+
+# (3) Detach (Ctrl+A then D) and log out — your experiments are safe.
+# (4) Later, from any SSH login, reattach with:
 screen -r dishts
 
-# 6. List all sessions:
+# (5) List / kill sessions:
 screen -ls
-
-# 7. Kill a session when done:
 screen -S dishts -X quit
 ```
 
-#### Option B: `tmux`
+If `tmux` is preferred, replace the first line with `tmux new -s dishts`, use
+`Ctrl+B, D` to detach, and `tmux attach -t dishts` to reattach.
+
+---
+
+### Step 5 — Monitor Progress While the Sweep Runs
+
+During execution, the easiest way to check progress is:
 
 ```bash
-# 1. Create a named session
+# (a) how many runs are done?  (total — expected per script)
+wc -l results/figure3_runs.csv
+
+# (b) tail the master log to see the current job
+tail -n 80 logs/run_all_master.log
+
+# (c) look at live per-job logs for a specific run
+ls -lh logs/ | tail -n 20
+tail -n 40 "logs/<the latest .log file>"
+```
+
+---
+
+### Step 6 — Quantitative Comparison Against the Paper
+
+After **any** sweep above, run:
+
+```bash
+python3 repro_figures/compare_paper.py --apply-paper-scale multivariate
+```
+
+The script produces two outputs:
+
+| Output | Location | Purpose |
+|---|---|---|
+| Aggregated comparison table | `results/paper_vs_mine.csv` | Your mean MSE / MAE vs the paper's numbers, grouped by dataset × model × norm × pred_len |
+| Console summary | stdout | Per-dataset "dishts vs revin" direction check, and a fitted linear scale factor |
+
+The printed scale factor should be close to 1.0 on every dataset once all seeds
+have finished; if it is not, the most common causes are (a) an old version of
+`compare_paper.py` (run `git pull`), or (b) missing seeds for a specific
+configuration (the script warns about this on stdout).
+
+---
+
+### Step 7 — Figures
+
+After the sweep scripts finish, generate publication-quality plots from the
+CSV results:
+
+```bash
+# Figure 3 — alpha sensitivity curves (requires the run_figure3.sh sweep)
+python3 repro_figures/plot_figure3.py \
+    --input results/figure3_runs.csv --output results/figures/figure3.png
+
+# Figure 4 — forecast samples
+python3 repro_figures/plot_figure4.py --data ETTm2 --pred_len 168 \
+    --output results/figures/figure4_ETTm2_H168.png
+```
+
+---
+
+### Hyper-parameter Reference (All Sweeps)
+
+| Parameter | Value | Notes |
+|---|---|---|
+| Optimiser | Adam | Standard PyTorch default `(β_1, β_2) = (0.9, 0.999)` |
+| Initial learning rate | `1 × 10^-3` | |
+| Scheduler | Reduce-on-plateau (`patience=3`, factor 0.5) | Decoupled from the paper's patience parameter |
+| Max epochs | 100 | Early stopping with patience 7 for comparison runs |
+| Batch size | 128 (Autoformer / Transformer), 256 (N-BEATS), 64 (ECL) | ECL has many features and is kept small for GPU memory |
+| Random seeds | `{2023, 2024, 2025}` | Applied to `numpy`, `torch`, `torch.cuda` at the top of `train.py` |
+| Normalisation | None / RevIN / Dish-TS (depending on sweep) | Raw, unnormalised data are used; the Dish-TS normaliser learns only per-feature scale and shift parameters |
+| Dish-TS activation | GELU | Matches the paper's default |
+| Alpha prior (comparison runs) | 0.0 (disabled) | See "The Alpha Rule" above |
+| Alpha prior (Figure 3 only) | `{0.0, 0.25, 0.5, 1.0}` | `--prior paper-phi-only` |
+
+The N-BEATS Generic Architecture used in Tables 4/5 is configured as follows in
+`backbones/NBEATS.py`: `num_stacks = 2`, `num_blocks = 3`, `num_layers = 4`,
+`layer_width = 128`, `expansion_coefficient_dim = 128`, no covariates or
+time / positional embeddings.
+
+---
+
+### Troubleshooting
+
+**Symptom 1.** A job fails with
+`RuntimeError: stack expects each tensor to be equal size`.
+Root cause: `label_len` is not a valid half-window for the chosen `seq_len`.
+Workaround: use the defaults in the sweep scripts (`label_len=48` when
+`seq_len=pred_len`, otherwise `label_len=min(pred_len, 48)`).
+
+**Symptom 2.** `paper_vs_mine.csv` shows a factor ≠ 1.0 between your MSE and
+the paper's MSE on a dataset where you expected better alignment. This typically
+means fewer than 3 seeds completed for that configuration — check the seed count
+in `results/figure3_runs.csv`, re-run the missing seeds, and run
+`compare_paper.py` again.
+
+**Symptom 3.** Dish-TS underperforms RevIN on ETTm2 with alpha > 0. This is
+expected behaviour: the alpha prior peeks at the true future-window mean during
+training, which introduces a train/val distribution shift. Always use
+`alpha=0.0 --prior none` for Table 2/3 comparisons. See "The Alpha Rule" above
+for the full discussion.
+
+---
+
+### Quick Verification
+
+Run a single small dataset sweep to validate the pipeline end-to-end before
+launching the full experiment matrix. This completes in roughly 30 minutes on
+a 3090:
+
+```bash
+DATASET_SUBSET="ETTm2" GPU=0 bash repro_figures/run_table3.sh
+python3 repro_figures/compare_paper.py --apply-paper-scale multivariate
+```
+
+Then open `results/paper_vs_mine.csv` to inspect the printed per-run
+comparison.
+
+---
+
+### Preventing SSH Disconnection (Cheat sheet)
+
+Step 4 of the main procedure already includes the recommended commands.
+This subsection keeps a compact copy-paste block for reference.
+
+**`screen`**
+
+```bash
+screen -U -S dishts                 # create a named session
+cd ~/Dish-TS-Reproduction && bash repro_figures/run_all.sh 2>&1 | tee logs/run_all_master.log
+# Ctrl+A, D to detach — the session keeps running
+# Later, from any SSH login, re-attach: screen -r dishts
+# List / kill sessions: screen -ls ; screen -S dishts -X quit
+```
+
+**`tmux`**
+
+```bash
 tmux new -s dishts
-
-# 2. Run your experiment inside the session
-cd Dish-TS-Reproduction
-./run_paper_exps.sh table3 2>&1 | tee logs/table3_master.log
-
-# 3. Detach: Press Ctrl+B, then press D
-
-# 4. Reconnect:
-tmux attach -t dishts
-
-# 5. List all sessions:
-tmux ls
-
-# 6. Kill a session:
-tmux kill-session -t dishts
+cd ~/Dish-TS-Reproduction && bash repro_figures/run_all.sh 2>&1 | tee logs/run_all_master.log
+# Ctrl+B, D to detach.       Re-attach: tmux attach -t dishts
+tmux ls                                # list
+tmux kill-session -t dishts           # kill
 ```
 
-#### Option C: `nohup` + `&`
+**`nohup` (fire-and-forget — no interactive resumption)**
 
 ```bash
-nohup ./run_paper_exps.sh table3 > logs/table3_master.log 2>&1 &
-
-# Check progress:
-tail -f logs/table3_master.log
-
-# Find process ID:
+nohup bash repro_figures/run_all.sh > logs/run_all_master.log 2>&1 &
+tail -f logs/run_all_master.log       # follow live output
 ps aux | grep "train.py" | grep -v grep
-
-# Kill if needed:
-kill <PID>
+kill <PID>                            # abort
 ```
 
-> **Why `nohup` alone may not be enough**: even with `nohup`, some cloud
-> environments may kill orphaned processes after SSH disconnection. `screen`
-> or `tmux` is always preferred.
+**Cloud platform notes**
 
-> **Cloud Platform Notes**
->
-> - **AutoDL**: `screen` defaults to C encoding, causing garbled Chinese text
->   and frozen input. Use `screen -U -S dishts` to force UTF-8 mode.
-> - **`tmux` not found?** Run `apt-get install -y tmux -qq`. Most cloud
->   containers do not pre-install it. If you see `sessions should be nested
->   with care`, you are already inside a tmux session - use `nohup` or create
->   a sub-session with a different name.
-> - `^[[A` appearing when scrolling the mouse wheel is normal terminal artifact
->   inside tmux; it does not affect running experiments.
-
-### Monitoring Progress
-
-```bash
-# Currently running experiments
-ps aux | grep "train.py" | grep -v grep
-
-# Latest log output
-tail -50 logs/table3_master.log
-
-# GPU utilization
-nvidia-smi
-
-# Summarize completed results at any time
-./run_paper_exps.sh summarize
-```
+- AutoDL: `screen` defaults to C encoding, causing garbled Chinese text and frozen input. Use `screen -U -S dishts` to force UTF-8 mode.
+- `tmux` not pre-installed: `apt-get install -y tmux -qq`.
+- If you see `sessions should be nested with care`, you are already inside a tmux session — use `nohup` or a new session with a different name.
+- `^[[A` appearing when scrolling inside tmux is a harmless terminal artefact and does not affect running experiments.
 
 ---
 
@@ -436,20 +551,21 @@ nvidia-smi
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
 | `--data` | str | `ETTm2` | Dataset: `ETTm2`, `ETTh1`, `ECL`, `WTH`, `ILI` |
-| `--model` | str | `Transformer` | Forecast model: `Autoformer`, `Informer`, `Transformer`, `NBEATS` (N-BEATS, used in paper Tables 4 & 5) |
-| `--norm` | str | `none` | Normalization: `none`, `revin`, `dishts` |
-| `--features` | str | `M` | Feature mode: `M` (multivariate), `S` (univariate, Table 1) |
+| `--model` | str | `Transformer` | Forecast backbone: `Autoformer`, `Informer`, `Transformer`, `NBEATS` |
+| `--norm` | str | `none` | Normalisation: `none`, `revin`, `dishts` |
+| `--features` | str | `M` | Feature mode: `M` (multivariate, Tables 2–6), `S` (univariate, Table 1) |
 | `--seq_len` | int | `96` | Input/history window length |
-| `--label_len` | int | `0` | Decoder input length. `0` = auto-compute as `min(seq_len, pred_len, max(48, pred_len//2))` |
+| `--label_len` | int | `0` | Decoder input length. `0` auto-computes as `min(seq_len, pred_len, max(48, pred_len//2))` |
 | `--pred_len` | int | `96` | Prediction/horizon window length |
-| `--batch_size` | int | `128` | Batch size. Paper default: Informer=256, Autoformer/Transformer=128; ECL=64. Auto-reduced to 64 for pred_len>168 |
-| `--lr` | float | `1e-3` | Learning rate (paper search range: [1e-4, 1e-3]) |
-| `--patience` | int | `15` | Early stopping patience epochs |
-| `--train_epochs` | int | `100` | Maximum training epochs (early stop may trigger sooner) |
-| `--seed` | int | `2023` | Random seed (paper uses 3 seeds for Table 3: 2023/2024/2025) |
-| `--alpha` | float | `0.5` | Dish-TS prior knowledge guidance weight (paper search: 0 to 1) |
-| `--dish_init` | str | `standard` | DishTS initialization: `standard` (GELU), `avg`, `uniform` |
-| `--affine` | int | `1` | RevIN affine transformation: `1` = enabled, `0` = disabled |
+| `--batch_size` | int | `128` | N-BEATS default is 256; ECL default is 64; for pred_len>168 use 64 |
+| `--lr` | float | `1e-3` | Base learning rate (paper search range: [1e-4, 1e-3]) |
+| `--patience` | int | `7` | Early-stopping patience epochs |
+| `--train_epochs` | int | `100` | Maximum training epochs (early stop may trigger earlier) |
+| `--seed` | int | `2023` | Random seed; paper sweeps {2023, 2024, 2025} |
+| `--alpha` | float | `0.0` | Prior-guidance weight. Use 0.0 for all comparison runs (Tables 1–6); Figure 3 sweeps {0.0, 0.25, 0.5, 1.0} |
+| `--prior` | str | `none` | Form of the alpha-loss term: `none`, `paper-phi-only`, `legacy` |
+| `--dish_init` | str | `avg` | Initialisation of the Dish-TS reduce coefficients: `avg`, `norm`, `uni` |
+| `--affine` | int | `1` | RevIN affine: 1 = enabled, 0 = disabled |
 | `--gpu` | int | `0` | GPU device ID |
 
 ### Model Hyperparameters
@@ -464,7 +580,7 @@ Hard-coded in `train.py`, identical to the original paper:
 | `e_layers` | 2 | Number of encoder layers |
 | `d_layers` | 1 | Number of decoder layers |
 | `dropout` | 0.05 | Dropout rate |
-| `activation` | `gelu` | Activation function |
+| `activation` | `gelu` | Transformer activation |
 | `embed_type` | 3 | Embedding type (no temporal embedding) |
 | `moving_avg` | 25 | Autoformer moving average kernel size |
 | `factor` | 3 | Informer prob-sparse attention factor |
@@ -479,15 +595,21 @@ Automatically selected based on dataset name, following the original paper:
 | ETTm2, ETTh1, ILI | 60% | 20% | 20% |
 | ECL, WTH | 70% | 10% | 20% |
 
-**Data preprocessing**: A `StandardScaler` is fit on the training set and applied to train/val/test before training (`mean=0, std=1` per channel). This makes MSE values directly comparable to the paper (typically in the 0.5–1.5 range for ETT datasets). To disable and use raw data scale instead, pass `--no-scale`.
+**Data preprocessing.** Data are used in the raw (original) scale; per-feature normalisation is the responsibility of the chosen `--norm`:
+
+- `none` → raw data, no scaling.
+- `revin` → reversible instance normalisation (per-instance subtract + divide).
+- `dishts` → Dual-Conet (back-horizon) normalisation, learned end-to-end.
+
+Reported MSE for `ETT*` datasets therefore lies in the tens-to-hundreds range on our run; to convert these numbers back into the paper's quoted range (typically 0.5–1.5 on ETT datasets), apply the per-dataset linear scale factor computed by `compare_paper.py` (see Step 6).
 
 ### Batch Size Rules
 
-Default batch size is `128` (paper setting for Autoformer/Transformer). The following automatic adjustments apply:
+Default batch size is `128` (paper setting for Autoformer/Transformer). The following automatic adjustments apply in the sweep scripts:
 
 | Condition | Batch Size |
 |-----------|------------|
-| `--model Informer` | 256 |
+| `--model NBEATS` | 256 |
 | `--data ECL` | 64 (321 series, large memory footprint) |
 | `--pred_len > 168` | 64 (avoid OOM) |
 
@@ -636,45 +758,30 @@ and `--help` for the full list of options.
 > **Figure 2** is a pure architecture diagram and is kept as the reference
 > `paper_results/reference_figure2.jpg` only — there is nothing to plot.
 
-### Diagnosing the "ETTm2 Dish-TS lags RevIN" phenomenon
+### Diagnosing a "Dish-TS lags RevIN" regression
 
-If Dish-TS looks *worse* than RevIN on ETTm2 (or any dataset) on your
-machine, that is usually not a code bug — it is a hyper-parameter / data
-preprocessing issue.  Run the three scripts below in order to find out.
+If Dish-TS reports *worse* MSE than RevIN on your machine, the most common causes are:
 
-1. **Scan your dataset for out-of-scale features.**
-   ```bash
-   python3 repro_figures/dataset_diagnostic.py --input data/ETTm2/ETTm2.csv
-   ```
-   Any column whose std is 10 × larger than the median column std is
-   automatically flagged, because such a column will "absorb" the MSE and
-   make Dish-TS / RevIN comparisons meaningless in absolute terms.
+1. **Alpha > 0** (the prior term peeked at the true horizon mean).
+   Fix: set `--alpha 0.0 --prior none` and re-run.
+2. **A single out-of-scale column dominates the aggregate MSE.**
+   Run `train.py` with `--norm dishts` and look at the per-column line:
+   `[train] per-column MSE: 8.2  6.1  0.04  44.2 ...`.
+   If any column is 1,000 × larger than the median, investigate that
+   column in the data file; `repro_figures/dataset_diagnostic.py`
+   will flag it automatically.
+3. **Missing seeds for a specific dataset/pred_len configuration.**
+   Use `python3 repro_figures/compare_paper.py` to get a mean/std
+   report and confirm every cell has three seeds.
+4. **Different data file (ETTm2 has many variants online).**
+   Confirm your data file matches `data/ETTm2/ETTm2.csv` shipped with
+   the repo; compare the first three rows with the original authors'
+   download.
 
-2. **Re-run ETTm2 with varying alpha.**  Dish-TS is particularly sensitive
-   to `--alpha` (the prior-guidance weight) on ETTm2 because the horizon-
-   level learnt by HoriCoNet is large compared with the lookback level.
-   ```bash
-   # Defaults: alpha in [0, 0.1, 0.25, 0.5, 0.75, 1.0], pred_len in [24,96,168,336]
-   # patience raised to 15 (paper was 7) because HoriCoNet sometimes
-   # takes more epochs to converge.
-   python3 repro_figures/ettm2_alpha_sweep.py --gpu 0 --seeds 2023 2024 2025
-   ```
-   This generates one row per run in `results/figure3_runs.csv`.
+If you still see regression after the four checks above, save the full
+`logs/<run>.log` and `results/figure3_runs.csv` for inspection.
 
-3. **Inspect results.**
-   ```bash
-   # Per-column MSE diagnostic (prints one number per feature column).
-   # After every run, the last console block looks like:
-   #   [train] per-column MSE: 8.2 6.1 0.04 44.2 ...
-   # If one column is 1000 × larger than the rest, it dominates the
-   # aggregate MSE and you should investigate its data file.
-
-   # Then plot a Figure-3 style curve to confirm whether Dish-TS is worse
-   # across all alphas / pred-lens or only for one specific combination:
-   python3 repro_figures/plot_figure3.py --input results/figure3_runs.csv \
-       --dataset ETTm2 --model Autoformer --norm dishts --zscore \
-       --output results/figures/figure3_ETTm2.png
-   ```
+---
 
 ### Key observations from the 5 paper tables
 
