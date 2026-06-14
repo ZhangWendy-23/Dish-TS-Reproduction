@@ -1,13 +1,17 @@
 """
 Dish-TS Training Script (AAAI 2023)
 =====================================
-Official reproduction of "Dish-TS: A General Paradigm for Alleviating
+Reproduction of "Dish-TS: A General Paradigm for Alleviating
 Distribution Shift in Time Series Forecasting".
 
 Key features:
 - Dual-CONET normalization (BackCoNet + HoriCoNet) via DishTS module
-- Prior knowledge guidance loss: Loss = MSE + alpha * (mean(pred) - phih)^2
-- No global data normalization - operates on raw values
+- Optional prior-loss variants for horizon-level CONET (disabled by default to match the
+  official Dish-TS repo, which does NOT use any prior loss):
+    L = MSE                                        (prior=none, default)
+    L = MSE + alpha * (phih - true_horizon_mean)^2 (prior=paper)
+    L = MSE + alpha * (pred_mean - phih)^2        (prior=legacy)
+- No global data normalization by default - operates on raw values
 
 Datasets (place CSV files under ./data/):
   - ETTm2.csv  : Electricity Transformer Temperature, 15-minutely
@@ -19,7 +23,7 @@ Datasets (place CSV files under ./data/):
 CSV format: date column + feature columns (no index column)
 
 Usage (paper settings):
-  python train.py --data ETTm2 --model Autoformer --norm dishts --batch_size 0 --alpha 0.5 --gpu 0
+  python train.py --data ETTm2 --model Autoformer --norm dishts --batch_size 128 --gpu 0
 """
 
 import os
@@ -71,23 +75,52 @@ parser.add_argument('--batch_size', type=int, default=128,
                     help='Paper settings (explicit): Informer=256, Autoformer=128, Transformer=128; ECL=64 for all models because of its 321 series; reduce to 64 when pred_len>168 to avoid OOM on 12GB GPUs. 0=use heuristic auto-selection (legacy).')
 parser.add_argument('--lr', type=float, default=1e-3,
                     help='Learning rate. Paper: Adam optimizer with lr=1e-3')
-parser.add_argument('--patience', type=int, default=15,
-                    help='Early stopping patience. Paper default is 7, but Dish-TS '
-                         'sometimes takes more epochs to learn the horizon-level '
-                         'CONET parameters, hence a default of 15 is safer.')
+parser.add_argument('--patience', type=int, default=7,
+                    help='Early stopping patience. Paper default is 7.')
 parser.add_argument('--train_epochs', type=int, default=100,
                     help='Maximum training epochs. Paper: 100.')
 parser.add_argument('--gpu', type=int, default=0)
 # shift / normalization model
 parser.add_argument('--norm', type=str, default='none')  # none, revin, dishts
 parser.add_argument('--affine', type=int, default=1)     # revin: use affine (1=yes, 0=no)
-parser.add_argument('--dish_init', type=str, default='standard')  # standard, avg, uniform
-parser.add_argument('--alpha', type=float, default=0.5,
-                    help='Prior knowledge guidance weight for Dish-TS. Paper: searched 0 to 1. Default=0.5')
-parser.add_argument('--no-scale', action='store_true',
-                    help='Disable StandardScaler on input data. Keep this OFF '
-                         '(scaled) to match paper MSE scale. Use --no-scale to '
-                         'reproduce old raw-scale results.')
+# CONET initialization: 'avg' is both the default in the paper ablation and what
+# the official repo prefers.  'standard' and 'uniform' are kept for ablation.
+parser.add_argument('--dish_init', type=str, default='avg',
+                    choices=['standard', 'avg', 'uniform'])
+# Prior loss (alpha) — disabled by default to match the OFFICIAL Dish-TS repo.
+#
+#   --prior none     (default): L = MSE only  -->  reproduce official Dish-TS baseline
+#   --prior paper            : L = MSE + alpha * (phih - true_horizon_mean)^2
+#                              (paper-style "horizon-level supervision")
+#   --prior legacy           : L = MSE + alpha * (pred_mean - phih)^2
+#                              (older self-consistency variant used in early
+#                               reproductions; in practice this tends to PUSH
+#                               forecasts toward the unreliable phih, so alpha>0
+#                               usually INCREASES MSE — useful to verify effect).
+parser.add_argument('--alpha', type=float, default=0.0,
+                    help='Prior-knowledge guidance weight for Dish-TS. '
+                         'Default 0.0 (= official repo: no prior loss).')
+parser.add_argument('--prior', type=str, default='none',
+                    choices=['none', 'paper', 'paper-phi-only', 'legacy'],
+                    help='Which form of prior loss to use when alpha>0. '
+                         "'none' disables prior loss (official Dish-TS repo behaviour); "
+                         "'paper' supervises HoriCoNet with the true horizon mean "
+                         "(matches the paper text verbatim); 'paper-phi-only' is a "
+                         "refinement that keeps prior gradient on the HoriCoNet "
+                         "channel alone (BackCoNet trained purely by MSE), which is "
+                         "the implementation closest to the paper's design intent; "
+                         "'legacy' pushes forecast mean towards HoriCoNet estimate "
+                         "(harmful in practice, kept for reproducibility).")
+# --scale enables / disables global z-score preprocessing.
+#
+# Paper README: "we directly take the original data for training/evaluation ...
+# and do NOT use preprocessing techniques (e.g., z-score normalization, min-max
+# normalization) to process time series dataset."  Therefore we default to
+# scale=False; pass --scale explicitly if you want a pre-standardised comparison.
+parser.add_argument('--scale', action='store_true',
+                    help='Enable z-score StandardScaler on the data. '
+                         'Without this flag the model operates on raw values, '
+                         'matching the paper default.')
 parser.add_argument('--figure3', action='store_true',
                     help='Append a row to results/figure3_runs.csv (used by '
                          'alpha sensitivity sweep scripts). Off by default so '
@@ -145,9 +178,10 @@ if DATA in ('ETTm2', 'ETTh1', 'ETTh2', 'ETTm1', 'ILI'):
     val_ratio, test_ratio = 0.2, 0.2
 else:
     val_ratio, test_ratio = 0.1, 0.2
-train_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='train', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features, scale_data=not args.no_scale)
+train_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='train', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features, scale_data=args.scale)
 # Share the StandardScaler fitted on train across val / test so all splits
 # live in the same Z-normalised space (see utils/dataset.py docstring).
+# (Fitted scaler is None when --scale is not passed.)
 _scaler = getattr(train_dataset, '_scaler', None)
 val_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='val', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features, scaler=_scaler)
 test_dataset = TSForecastDataset(data_path=f'./data/{DATA}.csv', flag='test', size=(args.seq_len, args.label_len, args.pred_len), split=(val_ratio, test_ratio), features=args.features, scaler=_scaler)
@@ -184,6 +218,95 @@ early_stopping = EarlyStopping(patience=args.patience, verbose=True, dump=False)
 loss_fn = nn.MSELoss()
 
 
+def add_prior_loss(loss, forecast, phih, target_horizon, alpha, prior, nm=None):
+    """Optional prior term for Dish-TS.
+
+    The OFFICIAL Dish-TS repo does NOT add a prior loss at all.  We therefore
+    default to prior='none'.  The two other variants are provided for
+    ablation studies (they are NOT paper defaults):
+
+      - 'paper' : aligns the horizon-level estimate phih against the TRUE
+          horizon-window mean.  This is the closest reading of "use prediction
+          window mean as prior soft-label" from the paper text, and is what
+          alpha-sweep figures show (monotonically better results as alpha grows).
+      - 'legacy': aligns the model forecast MEAN against phih.  Empirically
+          this pushes forecasts toward whatever phih predicts, which is itself
+          derived from the lookback window; alpha>0 therefore usually INCREASES
+          test MSE on most datasets.  Kept only for reproducibility of earlier
+          self-consistency experiments.
+
+    Parameters
+    ----------
+    loss : base MSE loss (already computed over the prediction horizon).
+    forecast : [B, H, D] tensor of forecasts (only used by 'legacy' prior).
+    phih : [B, 1, D] horizon-level tensor produced by HoriCoNet.
+    target_horizon : [B, H, D] true-value tensor for the forecast window.
+    alpha : weight. 0.0 disables the prior entirely regardless of `prior`.
+    prior : 'none' | 'paper' | 'paper-phi-only' | 'legacy'
+    nm    : the DishTS module that owns `phih`. Required by 'paper-phi-only',
+            so that the prior gradient is restricted to the HORICONET channel
+            (reduce_mlayer[:, :, 1]) while leaving the BACKCONET channel
+            (reduce_mlayer[:, :, 0]) trained purely by the base MSE loss.
+
+    Returns
+    -------
+    loss + (alpha * prior_term)
+
+    Notes on 'paper-phi-only'
+    --------------------------
+    The official Dish-TS module stores the BackCoNet and HoriCoNet coefficients
+    in a single trainable Parameter of shape [n_series, lookback, 2].  A plain
+    `alpha * (phih - true_mean)^2` loss therefore sends gradient to both
+    channels, which couples the two levels and is the likely reason our earlier
+    runs saw short-window MSE go *up* as alpha grows.
+
+    To recover the paper's intended behaviour ("HoriCoNet only is supervised by
+    the horizon mean"), we compute phi_h again from a VIEW of reduce_mlayer
+    where the BackCoNet column is detached (`.detach()`).  The resulting tensor
+    is differentiable only through the HoriCoNet column, so the prior term
+    supervises HoriCoNet only.
+    """
+    if prior == 'none' or alpha <= 0 or phih is None:
+        return loss
+
+    if prior == 'paper-phi-only':
+        # Re-derive phi_h while freezing the BackCoNet channel.
+        assert nm is not None, (
+            "prior='paper-phi-only' requires the DishTS module passed in."
+        )
+        reduce_mlayer = nm.reduce_mlayer  # [D, L, 2]
+        # Column 0 (Back) → frozen; column 1 (Hori) → trainable by prior.
+        rm_prior = torch.stack(
+            [reduce_mlayer[:, :, 0].detach(), reduce_mlayer[:, :, 1]],
+            dim=2,
+        )  # same shape as reduce_mlayer, only column 1 keeps gradients for the prior term
+        if hasattr(nm, '_last_batch_x') and nm._last_batch_x is not None:
+            x_transpose = nm._last_batch_x.permute(2, 0, 1)
+            theta = torch.bmm(x_transpose, rm_prior).permute(1, 2, 0)
+            if nm.activate:
+                theta = F.gelu(theta)
+            phih_hori = theta[:, 1:, :]
+        else:
+            # Fallback: if we couldn't cache the input, fall back to full
+            # gradient (same as 'paper').  Rarely triggered in practice.
+            phih_hori = phih
+        true_mean = torch.mean(target_horizon, dim=1, keepdim=True)  # [B, 1, D]
+        prior_term = torch.mean(torch.pow(phih_hori - true_mean, 2))
+        return loss + alpha * prior_term
+
+    if prior == 'paper':
+        # L_prior = alpha * mean( (phih - mean(truth_horizon))^2 )
+        true_mean = torch.mean(target_horizon, dim=1, keepdim=True)  # [B,1,D]
+        prior_term = torch.mean(torch.pow(phih - true_mean, 2))
+    elif prior == 'legacy':
+        # Old self-consistency form: L_prior = alpha * mean( (mean(pred)-phih)^2 )
+        pred_mean = torch.mean(forecast, dim=1, keepdim=True)
+        prior_term = torch.mean(torch.pow(pred_mean - phih, 2))
+    else:
+        raise ValueError(f'Unknown --prior={prior}')
+    return loss + alpha * prior_term
+
+
 def get_init_batch(batch):
     batch_x, batch_y = batch
     # non_blocking=True allows H2D transfer to overlap with CPU compute
@@ -197,7 +320,7 @@ def get_init_batch(batch):
 
 max_epochs = args.train_epochs
 for epoch in range(max_epochs):
-    # --- train (loss accumulated on GPU, one .item() at epoch end) ---
+    # --- train -----------------------------------------------------------
     train_loss_sum = torch.zeros(1, device=device)
     train_n = 0
     unify_model.train()
@@ -205,20 +328,19 @@ for epoch in range(max_epochs):
         optimizer.zero_grad()
         batch_x, batch_y, dec_inp = get_init_batch(batch)
         forecast = unify_model(batch_x, dec_inp)
-        # base loss: MSE
-        loss = loss_fn(forecast, batch_y[:, -args.pred_len:, :])
-        # Paper: prior knowledge guidance for Dish-TS
-        # Loss = MSE + alpha * (mean(pred) - phih)^2
-        if args.norm == 'dishts' and args.alpha > 0:
-            phih = unify_model.nm.phih  # [B, 1, D] - learned horizon level
-            pred_mean = torch.mean(forecast, dim=1, keepdim=True)  # [B, 1, D]
-            prior_loss = torch.mean(torch.pow(pred_mean - phih, 2))
-            loss = loss + args.alpha * prior_loss
+        target_horizon = batch_y[:, -args.pred_len:, :]
+        loss = loss_fn(forecast, target_horizon)
+        # Optional Dish-TS prior loss.  The phih tensor is only available when
+        # norm='dishts' (it is written during the DishTS.forward 'forward' pass).
+        nm = getattr(unify_model, 'nm', None)
+        phih = getattr(nm, 'phih', None)
+        loss = add_prior_loss(loss, forecast, phih, target_horizon,
+                              alpha=args.alpha, prior=args.prior, nm=nm)
         train_loss_sum = train_loss_sum + loss.detach()
         train_n = train_n + 1
         loss.backward()
         optimizer.step()
-    # --- validate (loss accumulated on GPU, one .item() at epoch end) ---
+    # --- validate --------------------------------------------------------
     val_loss_sum = torch.zeros(1, device=device)
     val_n = 0
     with torch.no_grad():
@@ -226,12 +348,10 @@ for epoch in range(max_epochs):
         for batch in val_loader:
             batch_x, batch_y, dec_inp = get_init_batch(batch)
             forecast = unify_model(batch_x, dec_inp)
+            # For early-stopping we evaluate the plain MSE in the same space
+            # as test metrics.  Prior loss is a training regulariser only and
+            # is intentionally NOT evaluated here.
             loss = loss_fn(forecast, batch_y[:, -args.pred_len:, :])
-            if args.norm == 'dishts' and args.alpha > 0:
-                phih = unify_model.nm.phih
-                pred_mean = torch.mean(forecast, dim=1, keepdim=True)
-                prior_loss = torch.mean(torch.pow(pred_mean - phih, 2))
-                loss = loss + args.alpha * prior_loss
             val_loss_sum = val_loss_sum + loss.detach()
             val_n = val_n + 1
     train_loss_avg = (train_loss_sum / train_n).item()
@@ -276,7 +396,9 @@ print(f"[train] per-column MSE: {per_col_str}")
 print("=" * 80)
 print(f"DATA={DATA}  MODEL={MODEL}  NORM={args.norm}  SEED={args.seed}  "
       f"seq_len={args.seq_len}  label_len={args.label_len}  pred_len={args.pred_len}  "
-      f"batch_size={args.batch_size}  lr={args.lr}  alpha={args.alpha}")
+      f"batch_size={args.batch_size}  lr={args.lr}  "
+      f"alpha={args.alpha}  prior={args.prior}  "
+      f"dish_init={args.dish_init}  scale={args.scale}  patience={args.patience}")
 print(f"  MSE={mse:.6f}  MAE={mae:.6f}  RMSE={rmse:.6f}  MAPE={mape:.6f}  MSPE={mspe:.6f}")
 print("=" * 80)
 
@@ -317,10 +439,17 @@ if args.figure3:
 
     # --- Figure 3: cumulative CSV of (dataset, seq_len, pred_len, model, norm, alpha, MSE, ...)
     f3_csv = os.path.join(RESULTS_DIR, "figure3_runs.csv")
+    # The "alpha" column only has a physical meaning under norm == 'dishts'.
+    # For 'none' / 'revin' we write 0.0 so aggregate scripts (which do pivot
+    # over the alpha column) don't accidentally group under 0.5 / the
+    # dishts default.
+    reported_alpha = args.alpha if args.norm == 'dishts' else 0.0
     f3_values = [DATA, args.seq_len, args.pred_len, MODEL, args.norm,
-                 args.alpha, args.seed, mse, mae, rmse, mape, mspe, timestamp]
+                 reported_alpha, args.seed, mse, mae, rmse, mape, mspe,
+                 args.dish_init, args.scale, args.prior, timestamp]
     f3_columns = ["dataset", "seq_len", "pred_len", "model", "norm",
-                  "alpha", "seed", "MSE", "MAE", "RMSE", "MAPE", "MSPE", "timestamp"]
+                  "alpha", "seed", "MSE", "MAE", "RMSE", "MAPE", "MSPE",
+                  "dish_init", "scaled", "prior", "timestamp"]
     assert len(f3_values) == len(f3_columns), (
         f"figure3_runs: {len(f3_values)} values vs {len(f3_columns)} columns"
     )
@@ -347,15 +476,16 @@ if args.figure3:
             pred_series = np.concatenate([np.full_like(lb, np.nan), pred0], axis=0)
 
             f4_filename = (f"figure4_{DATA}_{MODEL}_{args.norm}_"
-                          f"sq{args.seq_len}_pd{args.pred_len}_alpha{args.alpha}_"
+                          f"sq{args.seq_len}_pd{args.pred_len}_alpha{reported_alpha}_"
                           f"seed{args.seed}.csv")
             f4_file = os.path.join(FIGURES_DIR, f4_filename)
             out_rows = []
             for t in range(full_len):
                 row = {"timestep": t, "dataset": DATA, "model": MODEL,
                        "norm": args.norm, "seq_len": args.seq_len,
-                       "pred_len": args.pred_len, "alpha": args.alpha,
-                       "seed": args.seed}
+                       "pred_len": args.pred_len, "alpha": reported_alpha,
+                       "seed": args.seed, "dish_init": args.dish_init,
+                       "scaled": args.scale, "prior": args.prior}
                 for c in range(preds.shape[-1]):
                     row[f"gt_{c}"] = ground_truth[t, c]
                     row[f"pred_{c}"] = pred_series[t, c]

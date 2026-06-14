@@ -1,28 +1,29 @@
 """
 Time Series Forecasting Dataset Loader
 ======================================
-Loads CSV-formatted time series data for training/validation/testing.
+Loads CSV-formatted time series data for training / validation / testing.
 
 Expected CSV format:
-  date,feature_1,feature_2,...,feature_N
-  2016-07-01 00:00:00,41.13,12.48,...,38.66
-  ...
+  date, feature_1, feature_2, ..., feature_N
+  2016-07-01 00:00:00, 41.13, 12.48, ..., 38.66
 
 The 'date' column is automatically excluded from input features.
 Data is split chronologically (no shuffle) into train/val/test sets.
 
-StandardScaler is fitted on training data only and applied to all splits,
-so that metrics (MSE/MAE) match the scale reported in the original Dish-TS
-and Autoformer papers.  If scikit-learn is not installed, the scaler is
-skipped with a warning (metrics will be on raw-data scale).
-
-To disable scaling (e.g. for Dish-TS raw-value experiments), pass
-``scale_data=False`` to the constructor.
+StandardScaler: fitted on training data only, applied to all splits.
+NOTE: by default this module DOES NOT fit a StandardScaler — matching
+the official Dish-TS / Autoformer paper ("we directly take the original
+data for training/evaluation ... and do NOT use preprocessing techniques
+such as z-score normalization / min-max normalization").  Pass
+`scale_data=True` (or use --scale from train.py) if you want a
+pre-standardised baseline for comparison.
 
 Dataset sources:
-  - ETTm2/ETTh1: https://github.com/zhouhaoyi/ETDataset
-  - ECL/WTH/ILI: https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy
+  - ETTm2 / ETTh1: https://github.com/zhouhaoyi/ETDataset
+  - ECL / WTH / ILI: https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy
 """
+
+import warnings
 
 import pandas as pd
 import numpy as np
@@ -33,27 +34,27 @@ try:
     _HAS_SKLEARN = True
 except ImportError:
     _HAS_SKLEARN = False
-    import warnings
     warnings.warn(
         "scikit-learn is not installed.  Input data will NOT be standardized "
         "to z-score space; MSE values will be on raw-data scale and cannot be "
-        "directly compared with paper tables.  Install scikit-learn to fix: "
-        "pip install scikit-learn>=0.24.0"
+        "directly compared with paper tables that assume z-score preprocessing."
     )
 
 
 class TSForecastDataset(Dataset):
     def __init__(self, data_path='ETTh1.csv', flag='train',
                  size=(96, 48, 96), split=(0.1, 0.2),
-                 features='M', scaler=None, scale_data=True):
+                 features='M', scaler=None, scale_data=False):
         self.seq_len, self.label_len, self.pred_len = (
             size[0], size[1], size[2])
         self.set_type = {'train': 0, 'val': 1, 'test': 2}[flag]
         self.ratio_vali, self.ratio_test = split[0], split[1]
         self.features = features
         self._scaler = scaler  # shared across train/val/test
-        self.scale_data = (scale_data and scaler is None
-                           and _HAS_SKLEARN)  # fit only if no scaler provided
+        # Default behaviour (paper-default): scale_data=False.  A scaler is
+        # only fitted when (a) the caller explicitly sets scale_data=True AND
+        # (b) no pre-fitted scaler is passed in AND (c) sklearn is available.
+        self.scale_data = bool(scale_data) and scaler is None and _HAS_SKLEARN
         self.__read_data__(data_path)
 
     def __read_data__(self, data_path):

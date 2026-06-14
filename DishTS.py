@@ -32,6 +32,9 @@ class DishTS(nn.Module):
             return batch_y
 
     def preget(self, batch_x):
+        # Cache the raw input so external code (e.g. paper-phi-only prior)
+        # can re-derive phi_h from the HoriCoNet channel alone.
+        self._last_batch_x = batch_x
         x_transpose = batch_x.permute(2,0,1) 
         theta = torch.bmm(x_transpose, self.reduce_mlayer).permute(1,2,0)
         if self.activate:

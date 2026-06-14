@@ -3,13 +3,21 @@
 Reads `results/figure3_runs.csv` (written by train.py after every run)
 and compares with the paper's reported values from `paper_results/table*.csv`.
 
+Two evaluation spaces are considered:
+  - "raw"  : results produced without `--scale` (DEFAULT, matches paper
+             "do not use z-score normalization").
+  - "z"    : results produced with `--scale` (preprocessing added for
+             comparison purposes only — MSE is on a z-score scale and is
+             NOT directly comparable with the paper tables).
+
 Produces `results/paper_vs_mine.csv` and a console summary with direction-consistency flags.
 
 Usage
 -----
     python3 repro_figures/compare_paper.py                          # uses figure3_runs.csv
     python3 repro_figures/compare_paper.py --input results/paper_summary.csv
-    python3 repro_figures/compare_paper.py --alpha 0.5              # filter to specific alpha
+    python3 repro_figures/compare_paper.py --alpha 0.0              # filter to specific alpha
+    python3 repro_figures/compare_paper.py --prior paper            # only consider runs with paper-style prior
 """
 from __future__ import annotations
 
@@ -25,11 +33,15 @@ sys.path.insert(0, ROOT)
 NAME_MAP = {"ECL": "Electricity", "WTH": "Weather", "ETTh1": "ETTh1", "ETTm2": "ETTm2"}
 
 # Columns in figure3_runs.csv vs paper_summary.csv — both are supported.
-F3_COLS  = ["dataset", "seq_len", "pred_len", "model", "norm", "alpha",
-            "MSE", "MAE", "RMSE", "MAPE", "MSPE", "timestamp"]
-PS_COLS  = ["data", "model", "norm", "seed", "seq_len", "label_len",
-            "pred_len", "batch_size", "alpha", "MSE", "MAE", "RMSE",
-            "MAPE", "MSPE", "log"]
+# NOTE: figure3_runs.csv was extended in the 2026/06 refactor with three new
+# columns:  dish_init, scaled, prior.  We read them if present but do not
+# require them (so the script is still compatible with older files).
+F3_COLS = ["dataset", "seq_len", "pred_len", "model", "norm", "alpha",
+           "seed", "MSE", "MAE", "RMSE", "MAPE", "MSPE",
+           "dish_init", "scaled", "prior", "timestamp"]
+PS_COLS = ["data", "model", "norm", "seed", "seq_len", "label_len",
+           "pred_len", "batch_size", "alpha", "MSE", "MAE", "RMSE",
+           "MAPE", "MSPE", "log"]
 
 
 def _deduce_format(path: str) -> str:
@@ -47,6 +59,15 @@ def main() -> None:
                     help="Path to results CSV (default: results/figure3_runs.csv)")
     ap.add_argument("--alpha", type=float, default=None,
                     help="Filter to a specific alpha value (default: use all rows).")
+    ap.add_argument("--prior", type=str, default=None,
+                    choices=["none", "paper", "paper-phi-only", "legacy"],
+                    help="Filter by prior type (default: all).")
+    ap.add_argument("--dish-init", type=str, default=None,
+                    help="Filter by dish_init (default: all).")
+    ap.add_argument("--only-scaled", action="store_true",
+                    help="Only consider rows where --scale was used (z-score space).")
+    ap.add_argument("--only-raw", action="store_true",
+                    help="Only consider rows where --scale was NOT used (paper default).")
     args = ap.parse_args()
 
     if not os.path.exists(args.input):
@@ -60,27 +81,62 @@ def main() -> None:
     if fmt == "ps":
         mine = mine.rename(columns={"data": "dataset"})
 
-    # If user specified --alpha (e.g. 0.5 for the main Table 2/3 runs)
+    # If figure3_runs.csv was written by the OLD train.py it may not have
+    # "dish_init" / "scaled" / "prior" columns — add fake ones so the filter
+    # code below still works.
+    for col in ("dish_init", "scaled", "prior"):
+        if col not in mine.columns:
+            mine[col] = None
+
+    # --- row-level filters -------------------------------------------------
     if args.alpha is not None and "alpha" in mine.columns:
         mine = mine[mine["alpha"] == args.alpha].copy()
         print(f"[filtered] alpha = {args.alpha}  →  {len(mine)} rows")
     else:
         print(f"[input]   {os.path.basename(args.input)}  →  {len(mine)} rows")
 
-    # Group by (dataset, model, norm, pred_len) and average across seeds/alphas
+    if args.prior is not None:
+        mine = mine[mine["prior"].astype(str) == args.prior].copy()
+        print(f"[filtered] prior = {args.prior}  →  {len(mine)} rows")
+    if args.dish_init is not None:
+        mine = mine[mine["dish_init"].astype(str) == args.dish_init].copy()
+        print(f"[filtered] dish_init = {args.dish_init}  →  {len(mine)} rows")
+    if args.only_scaled:
+        mine = mine[mine["scaled"].astype(str).str.lower().isin(("1", "true"))].copy()
+        print(f"[filtered] only --scale=True  →  {len(mine)} rows")
+    elif args.only_raw:
+        # rows where scale_data is False (paper default).  Be permissive:
+        # treat missing / "0" / "False" / empty-string as "raw".
+        mine = mine[~mine["scaled"].astype(str).str.lower().isin(("1", "true"))].copy()
+        print(f"[filtered] only --scale=False (raw, paper default)  →  {len(mine)} rows")
+
+    if mine.empty:
+        print("ERROR: no rows left after filtering.")
+        sys.exit(2)
+
+    # --- seed/alpha averaging ------------------------------------------------
     if "seed" in mine.columns and mine["seed"].nunique() > 1:
         print(f"[seeds]   {mine['seed'].nunique()} unique seeds detected → averaging across seeds")
 
-    mean = mine.groupby(["dataset", "model", "norm", "pred_len"], as_index=False)["MSE"].mean()
+    group_cols = ["dataset", "model", "norm", "pred_len"]
+    # If "scaled" / "prior" / "dish_init" are meaningful (non-trivial), also
+    # group by them.
+    for col in ("scaled", "prior", "dish_init"):
+        if mine[col].astype(str).nunique(dropna=False) > 1:
+            group_cols.append(col)
+            print(f"[group]   also grouping by '{col}' ({mine[col].nunique()} distinct values)")
+    mean = mine.groupby(group_cols, as_index=False)["MSE"].mean()
 
     # Load paper reference tables
     t2 = pd.read_csv(os.path.join(ROOT, "paper_results", "table2_multivariate.csv"))
     t3 = pd.read_csv(os.path.join(ROOT, "paper_results", "table3_revin_comparison.csv"))
 
     # Pivot: one row per (dataset, model, pred_len), columns = norm
-    mean_pivot = mean.pivot_table(index=["dataset", "model", "pred_len"],
+    idx_cols = [c for c in group_cols if c != "norm"]
+    mean_pivot = mean.pivot_table(index=idx_cols,
                                   columns="norm", values="MSE").reset_index()
-    mean_pivot = mean_pivot[mean_pivot["model"] == "Autoformer"].reset_index(drop=True)
+    if "model" in mean_pivot.columns:
+        mean_pivot = mean_pivot[mean_pivot["model"] == "Autoformer"].reset_index(drop=True)
 
     compare_rows = []
     for _, row in mean_pivot.iterrows():
@@ -125,19 +181,25 @@ def main() -> None:
     # --- pretty print ---
     cols_show = ["dataset", "pred_len", "my_revin", "my_dishts",
                  "paper_revin", "paper_dishts", "consistent_dir_revin_vs_dishts"]
+    cols_show = [c for c in cols_show if c in comp.columns]
     print()
     print(comp[cols_show].round(4).to_string(index=False))
 
     # --- direction summary ---
-    print("\nDish-TS vs RevIN direction consistency (per dataset):")
-    for dset in comp["dataset"].unique():
-        sub = comp[comp["dataset"] == dset].dropna(subset=["consistent_dir_revin_vs_dishts"])
-        if sub.empty:
-            continue
-        n = len(sub)
-        ok = int(sub["consistent_dir_revin_vs_dishts"].sum())
-        status = "✓ PASS" if ok == n else f"❌ {n-ok} MISMATCH" + ("(ES)" if n-ok > 0 else "")
-        print(f"  {dset:8s}: {ok}/{n} cells match paper direction  {status}")
+    if "consistent_dir_revin_vs_dishts" in comp.columns:
+        print("\nDish-TS vs RevIN direction consistency (per dataset):")
+        for dset in comp["dataset"].unique():
+            sub = comp[comp["dataset"] == dset].dropna(subset=["consistent_dir_revin_vs_dishts"])
+            if sub.empty:
+                continue
+            n = len(sub)
+            ok = int(sub["consistent_dir_revin_vs_dishts"].sum())
+            n_mismatch = n - ok
+            if n_mismatch == 0:
+                status = "PASS (direction matches paper)"
+            else:
+                status = f"{n_mismatch} MISMATCH(ES)"
+            print(f"  {dset:8s}: {ok}/{n} cells match paper direction  {status}")
 
     # --- scale summary ---
     print("\nScale factor (my MSE / paper MSE):")

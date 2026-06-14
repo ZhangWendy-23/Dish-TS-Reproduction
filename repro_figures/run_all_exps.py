@@ -1,19 +1,30 @@
-"""Re-run the full experimental suite (Tables 2 & 3) with StandardScaler.
+"""Reproduce the Dish-TS experiment suite on GPU.
 
-This script re-runs every (dataset, model, norm, pred_len, seed) combination
-that was executed previously, but with the StandardScaler data preprocessing
-enabled so that MSE values match the scale reported in the Dish-TS paper.
+There are two phases:
+  A) ``--phase baseline`` — the paper-default configuration: raw
+     data (no StandardScaler), dish_init='avg', train_epochs=50,
+     patience=7, Autoformer backbone, alpha sweep for dishts
+     under three prior-loss variants (none / paper / legacy).
+     This is the default phase.
+  B) ``--phase scaled``  — same jobs but with ``--scale``
+     (z-score preprocessing).  Useful to check which paper tables
+     were reported in z-score space; NOT the paper default.
 
-Before running, it backs up the old ``results/paper_summary.csv`` (raw-scale
-MSE) and clears the current results so that new scaled values are not mixed
-with old raw-scale values.
+Use ``--dry-run`` to preview the generated commands before running
+the real jobs.  All runs log to ``logs/<name>.log`` and append one
+row per run to ``results/figure3_runs.csv``.
 
-Usage
------
+Examples
+--------
+    # default: phase A (raw scale, 3 seeds × many configs)
     python3 repro_figures/run_all_exps.py --gpu 0
-    python3 repro_figures/run_all_exps.py --gpu 0 --seeds 2023 2024 2025  # default
-    python3 repro_figures/run_all_exps.py --gpu 0 --dry-run               # print only
-    python3 repro_figures/run_all_exps.py --gpu 0 --no-auto-backup        # skip backup
+
+    # smaller probe first
+    python3 repro_figures/run_all_exps.py --gpu 0 --seeds 2023 \
+        --datasets ETTm2 --pred-lens 24 --train-epochs 5
+
+    # phase B (z-scale reference)
+    python3 repro_figures/run_all_exps.py --gpu 0 --phase scaled
 """
 from __future__ import annotations
 
@@ -29,116 +40,125 @@ TRAIN = os.path.join(ROOT, "train.py")
 LOG_DIR = os.path.join(ROOT, "logs")
 RESULTS_DIR = os.path.join(ROOT, "results")
 
+# ---------- fixed defaults (match the paper / official repo as closely as possible) ------
+DEFAULT_SEQ_LEN = 96
+DEFAULT_BATCH_SIZE = 128
+DEFAULT_TRAIN_EPOCHS = 50
+DEFAULT_PATIENCE = 7
+DEFAULT_SEEDS = [2023, 2024, 2025]
 
-# ---------- experiment matrix (paper Tables 2 & 3) ----------
+# Datasets / horizons we care about (paper Tables 2/3-ish).
+# ETTm2 is the most heavily tested dataset in the paper; the
+# others are used for cross-dataset sanity.
+DEFAULT_DATASETS = ["ETTm2", "ETTh1", "ECL", "WTH"]
+DEFAULT_PRED_LENS = {
+    "ETTm2": [24, 96, 168, 336],
+    "ETTh1": [24, 168],
+    "ECL":   [24, 168],
+    "WTH":   [24, 168],
+}
 
-# Each entry: (dataset, model, pred_len, norms_to_test)
-STAGE1 = [
-    # --- Table 2 multivariate & Table 3 RevIN comparison ---
-    ("ECL",   "Autoformer", [24, 168],           ["dishts", "revin"]),
-    ("ETTh1", "Autoformer", [24, 168],           ["dishts", "revin"]),
-    ("ETTm2", "Autoformer", [24, 96, 168],       ["dishts", "revin", "none"]),
-    ("WTH",   "Autoformer", [24, 168],           ["dishts", "revin"]),
-]
+# Baseline norm methods.  For dishts we always include alpha=0
+# ("official repo equivalent") as the baseline, and we sweep
+# alpha > 0 only with the --prior variants configured below.
+BASELINE_NORMS = ["none", "revin", "dishts"]
 
-# Long-horizon (Table 4) — only if explicitly requested via --long-horizon
-STAGE2_LONG = [
-    ("ETTh1", "Autoformer", [336], ["dishts", "revin"]),
-    ("ETTm2", "Autoformer", [336], ["dishts", "revin"]),
-    ("WTH",   "Autoformer", [336], ["dishts", "revin"]),
-    ("ECL",   "Autoformer", [336], ["dishts", "revin"]),
-]
+# Alpha values to sweep ONLY for the dishts + --prior variants.
+# Chosen to be dense enough to see the shape of the loss vs. alpha
+# curve while staying computationally reasonable.
+ALPHA_GRID = [0.0, 0.1, 0.25, 0.5, 0.75, 1.0]
 
-DEFAULT_ALPHA = 0.5
-BATCH_SIZE = 128
-PATIENCE = 15
-SEQ_LEN = 96
+# Three "prior loss" variants.  Their semantic is explained in
+# train.py — briefly:
+#   - none   : no prior loss (matches official Dish-TS repo)
+#   - paper  : align horizon CONET to the TRUE horizon mean
+#              (matches the reading of "prediction window mean"
+#               that the paper likely intended)
+#   - legacy : align the model forecast MEAN to the horizon CONET
+#              (older reading; empirically makes alpha>0 worse)
+PRIOR_VARIANTS = ["none", "paper", "legacy"]
 
 
+# ---------------- command-line interface -------------------
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--gpu", type=int, default=0)
-    ap.add_argument("--seeds", type=int, nargs="+",
-                    default=[2023, 2024, 2025])
-    ap.add_argument("--alpha", type=float, default=DEFAULT_ALPHA)
-    ap.add_argument("--batch_size", type=int, default=BATCH_SIZE)
-    ap.add_argument("--patience", type=int, default=PATIENCE)
-    ap.add_argument("--seq_len", type=int, default=SEQ_LEN)
-    ap.add_argument("--long-horizon", action="store_true",
-                    help="Also run pred_len=336 experiments (Table 4).")
-    ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--no-auto-backup", action="store_true",
-                    help="Skip backing up old paper_summary.csv.")
-    ap.add_argument("--no-scale", action="store_true",
-                    help="Disable StandardScaler (use raw data scale).")
+    ap.add_argument("--gpu", type=int, default=0,
+                    help="GPU id (passed to train.py --gpu).")
+    ap.add_argument("--phase", type=str, default="baseline",
+                    choices=["baseline", "scaled"],
+                    help="baseline = raw data (paper default); "
+                         "scaled = StandardScaler pre-processing.")
+    ap.add_argument("--datasets", type=str, nargs="+",
+                    default=DEFAULT_DATASETS,
+                    help="Subset of datasets to run. Default: all 4.")
+    ap.add_argument("--pred-lens", type=int, nargs="+", default=None,
+                    help="Override per-dataset prediction lengths "
+                         "(default is paper default per dataset).")
+    ap.add_argument("--seeds", type=int, nargs="+", default=DEFAULT_SEEDS)
+    ap.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE)
+    ap.add_argument("--seq-len", type=int, default=DEFAULT_SEQ_LEN)
+    ap.add_argument("--train-epochs", type=int, default=DEFAULT_TRAIN_EPOCHS)
+    ap.add_argument("--patience", type=int, default=DEFAULT_PATIENCE)
+    ap.add_argument("--dish-init", type=str, default="avg",
+                    choices=["standard", "avg", "uniform"])
+    ap.add_argument("--dry-run", action="store_true",
+                    help="Print generated commands but do not run them.")
     args = ap.parse_args()
 
-    # -------- backup old results --------
-    summary_path = os.path.join(RESULTS_DIR, "paper_summary.csv")
-    if not args.dry_run and not args.no_auto_backup:
-        _backup_old_results(summary_path)
+    scale_flag = args.phase == "scaled"
 
-    # -------- build job list --------
-    matrix = list(STAGE1)
-    if args.long_horizon:
-        matrix.extend(STAGE2_LONG)
-
-    jobs: list[list[str]] = []
-    for data, model, pred_lens, norms in matrix:
+    # ---------- build job list ----------
+    jobs: list[dict] = []
+    for data in args.datasets:
+        pred_lens = args.pred_lens or DEFAULT_PRED_LENS.get(data, [24, 168])
         for pl in pred_lens:
-            for norm in norms:
+            # ---- baselines (no "prior loss": --prior none --alpha 0.0) ----
+            for norm in BASELINE_NORMS:
                 for seed in args.seeds:
-                    log_name = _log_filename(data, model, norm, seed,
-                                             args.seq_len, pl, args.alpha)
-                    jobs.append([
-                        sys.executable, TRAIN,
-                        "--data", data,
-                        "--model", model,
-                        "--norm", norm,
-                        "--seq_len", str(args.seq_len),
-                        "--pred_len", str(pl),
-                        "--alpha", str(args.alpha),
-                        "--batch_size", str(args.batch_size),
-                        "--patience", str(args.patience),
-                        "--seed", str(seed),
-                        "--gpu", str(args.gpu),
-                    ] + (["--no-scale"] if args.no_scale else []))
+                    kwargs = dict(norm=norm, alpha=0.0, prior="none")
+                    jobs.append(dict(data=data, pl=pl, seed=seed, **kwargs))
+            # ---- dishts alpha sweep for each prior variant ----
+            for prior in PRIOR_VARIANTS:
+                for alpha in ALPHA_GRID:
+                    # (alpha=0 under prior=X is equivalent to prior=none
+                    #  because prior loss is gated on alpha>0; but we keep
+                    #  the explicit row for clarity, deduplication is done
+                    #  at reporting time.)
+                    for seed in args.seeds:
+                        jobs.append(dict(
+                            data=data, pl=pl, seed=seed,
+                            norm="dishts", alpha=alpha, prior=prior,
+                        ))
 
-    # -------- print summary --------
-    t0 = datetime.now()
     total = len(jobs)
-    print(f"[{t0:%Y-%m-%d %H:%M}] Full repro experimental suite: {total} runs")
-    print(f"  datasets:  {sorted(set(j[3] for j in jobs))}")
-    print(f"  norms:     {sorted(set(j[7] for j in jobs))}")
-    print(f"  pred_lens: {sorted(set(int(j[11]) for j in jobs))}")
-    print(f"  seeds:     {args.seeds}")
-    print(f"  alpha:     {args.alpha}")
-    print(f"  StandardScaler: {'OFF' if args.no_scale else 'ON'}")
+    t0 = datetime.now()
+    print(f"[{t0:%Y-%m-%d %H:%M}] Phase: {args.phase}  "
+          f"(StandardScaler = {scale_flag})")
+    print(f"  datasets:    {args.datasets}")
+    print(f"  pred_lens:   {args.pred_lens or 'per-dataset paper default'}")
+    print(f"  seeds:       {args.seeds}")
+    print(f"  dish_init:   {args.dish_init}")
+    print(f"  train_epoch: {args.train_epochs}  patience: {args.patience}")
+    print(f"  total jobs:  {total}")
     print()
     if args.dry_run:
         print("DRY RUN — commands would be:")
-        for cmd in jobs:
-            print("  " + " ".join(cmd))
+        for j in jobs:
+            print("  " + " ".join(_job_to_cmd(args, j, scale_flag)))
         return
 
-    # -------- execute --------
+    # ---------- execute ----------
     os.makedirs(LOG_DIR, exist_ok=True)
     os.makedirs(RESULTS_DIR, exist_ok=True)
     n_failed = 0
-    for i, cmd in enumerate(jobs):
-        # Extract values from the command list (fixed-index format)
-        data  = cmd[3]
-        model = cmd[5]
-        norm  = cmd[7]
-        seq   = int(cmd[9])
-        pl    = int(cmd[11])
-        alpha = float(cmd[13])
-        seed  = int(cmd[19])
-        log_file = os.path.join(LOG_DIR,
-                                _log_filename(data, model, norm, seed,
-                                              seq, pl, alpha))
-        meta = f"data={data} norm={norm} pred_len={pl} seed={seed}"
-        print(f"\n[{i+1}/{total}] {meta}")
+    for i, job in enumerate(jobs):
+        cmd = _job_to_cmd(args, job, scale_flag)
+        meta = (f"data={job['data']} norm={job['norm']} "
+                f"pred_len={job['pl']} seed={job['seed']} "
+                f"alpha={job['alpha']} prior={job['prior']}")
+        log_file = _log_filename(phase_suffix="scaled" if scale_flag else "raw",
+                                 **job)
+        print(f"[{i+1}/{total}] {meta}")
         print(f"  log: {log_file}")
         try:
             with open(log_file, "w") as f:
@@ -157,25 +177,41 @@ def main() -> None:
 
     elapsed = datetime.now() - t0
     print(f"\n{'='*60}")
-    print(f"Done. {total - n_failed}/{total} succeeded "
-          f"({n_failed} failed) in {elapsed}")
-    print(f"Results: {summary_path}")
-    print(f"Logs:    {LOG_DIR}")
+    print(f"Done. {total - n_failed}/{total} succeeded ({n_failed} failed) in {elapsed}")
+    print(f"Results CSV: {os.path.join(RESULTS_DIR, 'figure3_runs.csv')}")
+    print(f"Logs:        {LOG_DIR}")
 
 
-def _log_filename(data: str, model: str, norm: str, seed: int,
-                  seq_len: int, pred_len: int, alpha: float) -> str:
-    return f"{data}_{model}_{norm}_s{seq_len}_p{pred_len}_seed{seed}.log"
+# ---------------- helpers -------------------
+def _job_to_cmd(args_ns, job: dict, scale_flag: bool) -> list[str]:
+    cmd = [
+        sys.executable, TRAIN,
+        "--data", job["data"],
+        "--model", "Autoformer",
+        "--norm", job["norm"],
+        "--seq_len", str(args_ns.seq_len),
+        "--pred_len", str(job["pl"]),
+        "--label_len", str(max(48, job["pl"] // 2)),
+        "--batch_size", str(args_ns.batch_size),
+        "--train_epochs", str(args_ns.train_epochs),
+        "--patience", str(args_ns.patience),
+        "--seed", str(job["seed"]),
+        "--gpu", str(args_ns.gpu),
+        "--alpha", str(job["alpha"]),
+        "--prior", job["prior"],
+        "--dish_init", args_ns.dish_init,
+        "--figure3",
+    ]
+    if scale_flag:
+        cmd.append("--scale")
+    return cmd
 
 
-def _backup_old_results(summary_path: str) -> None:
-    """Move old paper_summary.csv to a timestamped backup."""
-    if not os.path.exists(summary_path):
-        return
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup = os.path.join(RESULTS_DIR, f"paper_summary_rawScale_backup_{ts}.csv")
-    os.rename(summary_path, backup)
-    print(f"[backup] old raw-scale results → {backup}")
+def _log_filename(*, phase_suffix: str, data: str, pl: int,
+                  seed: int, norm: str, alpha: float,
+                  prior: str, **_) -> str:
+    return (f"{data}_Autoformer_{norm}_s96_p{pl}_seed{seed}_"
+            f"alpha{alpha}_prior{prior}_{phase_suffix}.log")
 
 
 if __name__ == "__main__":
