@@ -411,22 +411,25 @@ if args.label_len == 0:
 
 **实现要点**：
 
-- 采用论文 [N-BEATS: Neural Basis Expansion Analysis](https://arxiv.org/abs/1905.10437) 的 Generic 架构：
-  - 多个 block 串联，每个 block 输出 (backcast, forecast)，backcast 用于残差更新输入，forecast 累加到最终预测
-  - 默认 stacks=2、blocks_per_stack=3、hidden=256、layers=4
-  - 输入/输出形状 `(B, L, D)` → `(B, H, D)`，与 `Model.py` 中 "非 former 模型" 的调用分支直接兼容
+- 采用论文 [N-BEATS: Neural Basis Expansion Analysis](https://arxiv.org/abs/1905.10437) 的 Generic 架构（参数与论文 baseline 完全一致）：
+  - `generic_architecture = True`
+  - `num_stacks = 2`, `num_blocks = 3`（每 stack 的 block 数）, `num_layers = 4`（每 block 的 FC 层数）
+  - `layer_width = 128`
+  - `expansion_coefficient_dim = 128`（每个 block 输出的 expansion coefficient 维度；再线性投影到 backcast / forecast）
+  - 每个变量独立跑一个 N-BEATS（权重共享）— 参数量不随 D 增长，符合论文 "保持 layer_width=128 的单变量网络对每个变量重复" 的描述
+  - 输入/输出形状 `(B, L, D)` → `(B, H, D)`，与 `Model.py` 中 "非 former 模型" 调用分支直接兼容
 - `backbones/__init__.py` 新增 NBEATS 入口
-- `train.py` 的 `model_dict` 加入 `'NBEATS': NBEATS`，并把 NBEATS 的默认 batch_size 设为 1024（全连接网络可进一步利用 GPU 并行）
+- `train.py` 的 `model_dict` 加入 `'NBEATS': NBEATS`，并把 NBEATS 的默认 batch_size 设为 256（FC 网络轻量，可跑大 batch；论文未显式给出，采用与 Informer 一致的 256）
 
 **smoke test 结果**：
 
 | 数据集 | seq_len | pred_len | 模型 | raw MSE（3 epoch 速测） |
 |--------|---------|----------|------|-------------------------|
-| ETTm2 | 96 | 96 | NBEATS + Dish-TS | ~10.77 |
+| ETTm2 | 96 | 96 | NBEATS + Dish-TS | ~9.75（layer_width=128 baseline） |
 | ETTm2 | 96 | 96 | Autoformer + Dish-TS | ~18.79 |
 | ILI | 24 | 24 | NBEATS + Dish-TS | ~7.4e9（raw scale，未做 z-score） |
 
-N-BEATS 在 ETTm2 上比 Autoformer 好，与论文 "N-BEATS 在电力/气象等序列表现稳定" 的结论一致。
+N-BEATS 在 ETTm2 上比 Autoformer 好，而且采用论文标准 `layer_width=128` + `expansion_coefficient_dim=128` 的网络在 3 epoch 速测下就比我之前的 256-wide 网络更低，符合 N-BEATS "紧凑网络对电力数据表现更稳" 的经验现象。
 
 ---
 

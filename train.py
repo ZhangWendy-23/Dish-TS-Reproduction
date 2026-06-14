@@ -173,7 +173,7 @@ if args.batch_size == 0:
     elif MODEL == 'Informer':
         args.batch_size = 256
     elif MODEL == 'NBEATS':
-        args.batch_size = 1024
+        args.batch_size = 256
     else:  # Autoformer, Transformer
         args.batch_size = 128
 # Safety cap for long prediction horizons on 12GB GPU

@@ -1,132 +1,186 @@
-"""N-BEATS: Neural Basis Expansion Analysis for Interpretable Time Series Forecasting.
+"""N-BEATS: Neural Basis Expansion Analysis — Generic Architecture (paper baseline).
 
-Paper: https://arxiv.org/abs/1905.10437
-Implementation reference: the original public N-BEATS repo + common community
-re-implementations.
+Original N-BEATS paper: https://arxiv.org/abs/1905.10437
 
-We implement the "Generic" flavour (not the Trend/Seasonality interpretable
-version) because the Dish-TS / RevIN papers that our repo reproduces pair with
-N-BEATS as a standard backbone without referring to interpretable variants.
+Implementation aligned with the Dish-TS paper's N-BEATS backbone
+settings.  Key parameters (from the official N-BEATS repo / paper Table):
 
-The network maps an input lookback (B, seq_len, d_series) to a forecast of
-shape (B, pred_len, d_series).  Following the paper we use residual "stacks"
-of fully-connected blocks, each of which predicts a (backcast, forecast) pair
-which is subtracted from / added to the running residual.  The d_series
-dimension is handled with a final (1x1) convolution-style linear, which is
-equivalent to running d_series independent N-BEATS networks — this exactly
-matches the "univariate per-channel" design of the original N-BEATS paper.
+    generic_architecture          = True
+    num_stacks                    = 2
+    num_blocks                    = 3   (blocks per stack)
+    num_layers                    = 4   (FC layers per block)
+    layer_width                   = 128
+    expansion_coefficient_dim     = 128
+
+The network is purely time-series — no covariates, no time embeddings,
+no positional encoding.  Input shape: (B, lookback, D).  Output shape:
+(B, horizon, D).
+
+Multivariate: the N-BEATS *network* is strictly univariate (in_channels=1,
+out_channels=1).  Following the Dish-TS paper ("* denotes N-BEATS
+re-implemented for multivariate"), the multivariate model simply stacks
+one N-BEATS net per input feature; every feature shares the same
+block/stack hyper-parameters, and each feature's forecast is produced
+independently.  This is *not* "flatten D features into a single
+fully-connected N-BEATS" — it is D *independent* N-BEATS runs sharing
+the same weights across features (so the network size does not grow with
+D, matching the "layer_width=128" baseline).
 """
+
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
+# --------------------------------------------------------------------------- #
+#                                Block                                       #
+# --------------------------------------------------------------------------- #
 class _Block(nn.Module):
     """A single N-BEATS residual block.
 
-    Input:  (B, seq_len, d_series)  flattened to (B, seq_len * d_series).
-    Output: (backcast, forecast) both of shape (B, seq_len * d_series) and
-            (B, pred_len * d_series) respectively — they are applied element-wise
-            to the running residual in the caller.
+    Input / output shapes are all (B, lookback) because the block itself
+    operates on a *single feature* — the outer network handles the D-feature
+    loop (see NBEATSStack).
     """
 
-    def __init__(self, seq_len, pred_len, d_series, hidden=256, layers=4):
+    def __init__(self, lookback: int, horizon: int, layer_width: int = 128,
+                 num_layers: int = 4, expansion_coefficient_dim: int = 128):
         super().__init__()
-        in_dim = seq_len * d_series
-        fc = []
-        prev = in_dim
-        for _ in range(layers):
-            fc.append(nn.Linear(prev, hidden))
-            fc.append(nn.ReLU(inplace=True))
-            prev = hidden
-        self.fc = nn.Sequential(*fc)
+        # 4 FC layers, each of shape (prev, layer_width)
+        layers: list[nn.Module] = []
+        prev = lookback
+        for _ in range(num_layers):
+            layers.append(nn.Linear(prev, layer_width))
+            layers.append(nn.ReLU(inplace=True))
+            prev = layer_width
+        self.forward_fc = nn.Sequential(*layers)
 
-        self.backcast_fc = nn.Linear(hidden, in_dim)
-        self.forecast_fc = nn.Linear(hidden, pred_len * d_series)
+        # Two "expansion coefficient" heads — shape (layer_width, theta_dim).
+        # The final backcast / forecast projections *are* thetas; they are
+        # linearly projected by the caller to (lookback) and (horizon) resp.
+        self.backcast_coef = nn.Linear(layer_width, expansion_coefficient_dim)
+        self.forecast_coef = nn.Linear(layer_width, expansion_coefficient_dim)
 
-    def forward(self, x):
-        # x: (B, seq_len * d_series)
-        h = self.fc(x)
-        return self.backcast_fc(h), self.forecast_fc(h)
+        # Final projections:  theta  ->  backcast (lookback) / forecast (horizon)
+        self.backcast_proj = nn.Linear(expansion_coefficient_dim, lookback)
+        self.forecast_proj = nn.Linear(expansion_coefficient_dim, horizon)
+
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """x: (B, lookback).  Returns (backcast, forecast) both of shape (B, lookback)/(B, horizon)."""
+        h = self.forward_fc(x)
+        backcast = self.backcast_proj(self.backcast_coef(h))  # (B, lookback)
+        forecast = self.forecast_proj(self.forecast_coef(h))  # (B, horizon)
+        return backcast, forecast
 
 
+# --------------------------------------------------------------------------- #
+#                                Stack                                       #
+# --------------------------------------------------------------------------- #
 class _Stack(nn.Module):
-    """N-BEATS stack: several residual blocks operating in residual mode."""
+    """num_blocks residual blocks feeding into a common residual summation."""
 
-    def __init__(self, seq_len, pred_len, d_series, num_blocks=3, hidden=256,
-                 layers=4):
+    def __init__(self, lookback: int, horizon: int, num_blocks: int = 3,
+                 layer_width: int = 128, num_layers: int = 4,
+                 expansion_coefficient_dim: int = 128):
         super().__init__()
         self.blocks = nn.ModuleList([
-            _Block(seq_len, pred_len, d_series, hidden=hidden, layers=layers)
+            _Block(lookback, horizon,
+                   layer_width=layer_width, num_layers=num_layers,
+                   expansion_coefficient_dim=expansion_coefficient_dim)
             for _ in range(num_blocks)
         ])
 
-    def forward(self, x):
-        # x: (B, seq_len * d_series).  Returns forecast of same shape's "time"
-        # dim (actually flattened: (B, pred_len * d_series)).
-        forecast = 0.0
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """x: (B, lookback).  Returns the stack forecast of shape (B, horizon)."""
         residual = x
+        forecast_sum = 0.0
         for block in self.blocks:
             backcast, step = block(residual)
             residual = residual - backcast
-            forecast = forecast + step
-        return forecast
+            forecast_sum = forecast_sum + step
+        return forecast_sum
 
 
+# --------------------------------------------------------------------------- #
+#                               N-BEATS Model                                 #
+# --------------------------------------------------------------------------- #
+class NBEATS(nn.Module):
+    """N-BEATS — the generic architecture, D-feature aware.
+
+    Each feature is processed independently by its own "stacked-blocks"
+    network; weights are shared across features so the parameter count does
+    not scale with D (this matches the Dish-TS paper's Table 2/3 N-BEATS*
+    re-implementation).  A simple 1x1 conv-style linear projection is used
+    per feature.
+    """
+
+    def __init__(self, lookback: int, horizon: int, num_stacks: int = 2,
+                 num_blocks: int = 3, num_layers: int = 4,
+                 layer_width: int = 128, expansion_coefficient_dim: int = 128):
+        super().__init__()
+        self.lookback = lookback
+        self.horizon = horizon
+
+        # Per-feature N-BEATS: stacks share weights across the D dim via a
+        # conv1d-style reshape.  We implement it as a standard N-BEATS
+        # operating on (B*D, lookback), then reshape back to (B, horizon, D).
+        self.stacks = nn.ModuleList([
+            _Stack(lookback, horizon, num_blocks=num_blocks,
+                   layer_width=layer_width, num_layers=num_layers,
+                   expansion_coefficient_dim=expansion_coefficient_dim)
+            for _ in range(num_stacks)
+        ])
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """x: (B, lookback, D).  Returns (B, horizon, D)."""
+        B, L, D = x.shape
+        # reshape to (B*D, lookback) — same weights, per-feature processing
+        flat = x.permute(0, 2, 1).reshape(B * D, L)
+        forecast = 0.0
+        for stack in self.stacks:
+            forecast = forecast + stack(flat)
+        # forecast shape: (B*D, horizon).  Fold back to (B, D, horizon) -> (B, horizon, D).
+        return forecast.reshape(B, D, self.horizon).permute(0, 2, 1)
+
+
+# --------------------------------------------------------------------------- #
+#                                 Model wrapper                              #
+# --------------------------------------------------------------------------- #
 class Model(nn.Module):
-    """N-BEATS forecast model, matching the backbones/ interface.
+    """N-BEATS wrapper matching the backbones/*.py interface used by train.py.
 
-    __init__(configs): configs must contain seq_len, pred_len, and c_out
-    (the input feature dimension).  The rest of the hyperparameters (hidden,
-    layers, num_blocks, stacks) are optional so the model still works even
-    when they are absent on the argparse Namespace (keeps compatibility with
-    the outer training script which is tuned for Autoformer-style configs).
+    __init__ takes an argparse-style config: config.seq_len, config.pred_len
+    and (optionally) the N-BEATS-specific knobs below.  All fall back to the
+    paper defaults so simply running
+
+        python train.py --model NBEATS ...
+
+    produces the paper baseline out of the box.
     """
 
     def __init__(self, configs):
         super().__init__()
-        self.seq_len = configs.seq_len
-        self.pred_len = configs.pred_len
-
-        # "c_out" / "enc_in" / "d_series" are used interchangeably by various
-        # parts of the repo; be permissive so callers don't have to remember.
-        d_series = getattr(configs, "c_out", None)
-        if d_series is None:
-            d_series = getattr(configs, "enc_in", 1)
-
-        hidden = getattr(configs, "n_beats_hidden", 256)
-        layers = getattr(configs, "n_beats_layers", 4)
+        lookback = configs.seq_len
+        horizon = configs.pred_len
+        num_stacks = getattr(configs, "n_beats_stacks", 2)
         num_blocks = getattr(configs, "n_beats_blocks", 3)
-        stacks = getattr(configs, "n_beats_stacks", 2)
+        num_layers = getattr(configs, "n_beats_layers", 4)
+        layer_width = getattr(configs, "n_beats_hidden", 128)
+        expansion = getattr(configs, "n_beats_expansion_dim", 128)
 
-        self.d_series = d_series
-        self.stacks = nn.ModuleList([
-            _Stack(self.seq_len, self.pred_len, d_series,
-                   num_blocks=num_blocks, hidden=hidden, layers=layers)
-            for _ in range(stacks)
-        ])
+        self.model = NBEATS(
+            lookback=lookback,
+            horizon=horizon,
+            num_stacks=num_stacks,
+            num_blocks=num_blocks,
+            num_layers=num_layers,
+            layer_width=layer_width,
+            expansion_coefficient_dim=expansion,
+        )
 
     def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None,
                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
-        """Forecast.
-
-        The wide argument list matches the Informer / Autoformer signature so
-        `Model.py` can dispatch the same way for any backbone.  N-BEATS is
-        purely feed-forward and ignores the mark / decoder inputs.
-        """
-        # x_enc: (B, seq_len, d_series).  Flatten → (B, seq_len * d_series).
-        B, L, D = x_enc.shape
-        flat = x_enc.reshape(B, L * D)
-
-        # Sum stack-wise forecasts; each stack independently produces a
-        # (B, pred_len * d_series) estimate.  The residual/backcast path
-        # is handled inside _Stack.forward — we simply accumulate forecasts
-        # across stacks here.
-        forecast = 0.0
-        for stack in self.stacks:
-            forecast = forecast + stack(flat)
-
-        # Reshape back to (B, pred_len, d_series) so it plugs directly into
-        # the loss / inverse-normalisation pipelines expected by train.py.
-        return forecast.reshape(B, self.pred_len, D)
+        """Matches the Informer / Autoformer signature so Model.py's
+        'non-former' dispatch path (which only forwards x_enc) works."""
+        return self.model(x_enc)

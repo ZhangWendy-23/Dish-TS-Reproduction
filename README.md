@@ -264,8 +264,22 @@ Run the same experiment with N-BEATS backbone:
 
 ```bash
 python3 train.py --data ETTm2 --model NBEATS --norm dishts \
-    --seq_len 96 --pred_len 96 --alpha 0.0 --prior none --gpu 0 --seed 2023
+    --seq_len 96 --pred_len 96 --alpha 0.0 --prior none \
+    --gpu 0 --seed 2023
 ```
+
+The `--model NBEATS` backbone uses the paper's **N-BEATS Generic Architecture** baseline out of the box:
+
+| Hyper-parameter           | Value |
+|---------------------------|-------|
+| generic_architecture      | True  |
+| num_stacks                | 2     |
+| num_blocks                | 3     |
+| num_layers                | 4     |
+| layer_width               | 128   |
+| expansion_coefficient_dim | 128   |
+
+No covariates, time embeddings, or positional encoding are used — only the raw univariate (or multivariate, per-feature) time series.  See `backbones/NBEATS.py` for the full implementation.
 
 ### Experiment Matrix Reference
 
