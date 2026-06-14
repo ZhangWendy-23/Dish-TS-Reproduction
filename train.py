@@ -455,6 +455,20 @@ if args.figure3:
     )
     f3_df = pd.DataFrame([f3_values], columns=f3_columns)
     if os.path.exists(f3_csv):
+        # --- header check: don't silently append to a CSV produced by a
+        # different train.py version (different column set → impossible to
+        # compare rows).
+        with open(f3_csv, "r", encoding="utf-8") as fh:
+            existing_header = [c.strip() for c in fh.readline().split(",")]
+        if existing_header != f3_columns:
+            raise RuntimeError(
+                f"Refusing to append to {f3_csv}: existing CSV uses a "
+                f"different header than the current code.  Expected "
+                f"{len(f3_columns)} columns {f3_columns}; got "
+                f"{len(existing_header)} columns {existing_header}.  "
+                f"Run repair_figure3_csv.py once to normalize the file, or "
+                f"rename it out of the way."
+            )
         f3_df.to_csv(f3_csv, mode="a", header=False, index=False)
     else:
         f3_df.to_csv(f3_csv, mode="w", header=True, index=False)
