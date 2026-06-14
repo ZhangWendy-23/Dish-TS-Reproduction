@@ -1,0 +1,32 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+epoch:0, train_loss:33.01081, val_loss:13.69173
+epoch:1, train_loss:27.62047, val_loss:16.11619
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:26.84949, val_loss:15.87862
+EarlyStopping counter: 2 out of 7 with 2
+epoch:3, train_loss:27.21357, val_loss:21.56553
+EarlyStopping counter: 3 out of 7 with 3
+epoch:4, train_loss:27.99688, val_loss:27.07159
+EarlyStopping counter: 4 out of 7 with 4
+epoch:5, train_loss:27.11608, val_loss:15.46989
+EarlyStopping counter: 5 out of 7 with 5
+epoch:6, train_loss:26.77975, val_loss:21.97500
+EarlyStopping counter: 6 out of 7 with 6
+epoch:7, train_loss:26.74327, val_loss:16.76300
+EarlyStopping counter: 7 out of 7 with 7
+Early stopping with best_score:13.691734313964844
+[train] per-column MSE: 25.259 6.537 23.909 3.378 2.892 0.484 25.600
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=96  batch_size=128  lr=0.001  alpha=0.75  prior=paper  dish_init=avg  scale=False  patience=7
+  MSE=12.592920  MAE=2.287120  RMSE=3.548650  MAPE=10009290.000000  MSPE=5188812804194304.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha features      MSE     MAE    RMSE       MAPE         MSPE
+ETTm2 Autoformer dishts  2024       96         48        96         128   0.75        M 12.59292 2.28712 3.54865 10009290.0 5.188813e+15
+[train] appended 1 row to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd96_alpha0.75_seed2024.csv
+# data=ETTm2 norm=dishts pl=96 seed=2024 alpha=0.75 prior=paper
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm dishts --seq_len 96 --pred_len 96 --label_len 48 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.75 --prior paper --dish_init avg --figure3
+

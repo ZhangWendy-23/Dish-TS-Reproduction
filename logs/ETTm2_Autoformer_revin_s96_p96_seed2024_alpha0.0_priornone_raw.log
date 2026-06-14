@@ -1,0 +1,39 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+epoch:0, train_loss:18.38080, val_loss:13.81378
+epoch:1, train_loss:16.28969, val_loss:13.99784
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:15.43427, val_loss:13.99442
+EarlyStopping counter: 2 out of 7 with 2
+epoch:3, train_loss:14.96807, val_loss:15.17288
+EarlyStopping counter: 3 out of 7 with 3
+epoch:4, train_loss:14.43892, val_loss:13.57861
+epoch:5, train_loss:13.78779, val_loss:14.35077
+EarlyStopping counter: 1 out of 7 with 5
+epoch:6, train_loss:13.27559, val_loss:14.72127
+EarlyStopping counter: 2 out of 7 with 6
+epoch:7, train_loss:12.96150, val_loss:14.67260
+EarlyStopping counter: 3 out of 7 with 7
+epoch:8, train_loss:12.58871, val_loss:15.13253
+EarlyStopping counter: 4 out of 7 with 8
+epoch:9, train_loss:12.49450, val_loss:16.08975
+EarlyStopping counter: 5 out of 7 with 9
+epoch:10, train_loss:11.98130, val_loss:14.36627
+EarlyStopping counter: 6 out of 7 with 10
+epoch:11, train_loss:11.82909, val_loss:14.80614
+EarlyStopping counter: 7 out of 7 with 11
+Early stopping with best_score:13.57861042022705
+[train] per-column MSE: 25.011 6.222 23.632 3.100 1.727 0.467 23.344
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=48  pred_len=96  batch_size=128  lr=0.001  alpha=0.0  prior=none  dish_init=avg  scale=False  patience=7
+  MSE=11.941040  MAE=2.216720  RMSE=3.455580  MAPE=9425381.000000  MSPE=4324452514922496.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha features      MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer revin  2024       96         48        96         128    0.0        M 11.94104 2.21672 3.45558 9425381.0 4.324453e+15
+[train] appended 1 row to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS/results/figures/figure4_ETTm2_Autoformer_revin_sq96_pd96_alpha0.0_seed2024.csv
+# data=ETTm2 norm=revin pl=96 seed=2024 alpha=0.0 prior=none
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm revin --seq_len 96 --pred_len 96 --label_len 48 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.0 --prior none --dish_init avg --figure3
+

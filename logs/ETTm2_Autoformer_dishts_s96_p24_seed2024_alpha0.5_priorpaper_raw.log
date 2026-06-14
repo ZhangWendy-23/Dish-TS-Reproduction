@@ -1,0 +1,34 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+epoch:0, train_loss:20.63083, val_loss:7.78289
+epoch:1, train_loss:15.25495, val_loss:7.78133
+epoch:2, train_loss:14.54423, val_loss:7.51185
+epoch:3, train_loss:14.41722, val_loss:8.10690
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:13.99596, val_loss:8.09725
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:13.87341, val_loss:8.16307
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:13.61850, val_loss:7.91728
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:13.52576, val_loss:7.85435
+EarlyStopping counter: 5 out of 7 with 7
+epoch:8, train_loss:13.36983, val_loss:8.05024
+EarlyStopping counter: 6 out of 7 with 8
+epoch:9, train_loss:13.17634, val_loss:7.94541
+EarlyStopping counter: 7 out of 7 with 9
+Early stopping with best_score:7.511852741241455
+[train] per-column MSE: 14.785 4.642 13.282 2.269 2.321 0.488 8.093
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5  prior=paper  dish_init=avg  scale=False  patience=7
+  MSE=6.555290  MAE=1.695690  RMSE=2.560330  MAPE=8196793.500000  MSPE=3698830398717952.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha features     MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer dishts  2024       96         48        24         128    0.5        M 6.55529 1.69569 2.56033 8196793.5 3.698830e+15
+[train] appended 1 row to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd24_alpha0.5_seed2024.csv
+# data=ETTm2 norm=dishts pl=24 seed=2024 alpha=0.5 prior=paper
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm dishts --seq_len 96 --pred_len 24 --label_len 48 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.5 --prior paper --dish_init avg --figure3
+

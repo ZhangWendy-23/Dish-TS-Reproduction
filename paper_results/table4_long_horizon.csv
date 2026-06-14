@@ -1,4 +1,4 @@
-dataset,horizon,backbone_mse,dishts_mse
+dataset,horizon,nbeats_mse,nbeats_dishts_mse
 Electricity,336,1.7429,1.3361
 Electricity,420,1.7859,1.4507
 Electricity,540,1.7720,1.4107

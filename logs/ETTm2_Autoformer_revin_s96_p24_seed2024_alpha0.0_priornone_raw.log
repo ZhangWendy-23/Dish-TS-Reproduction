@@ -1,0 +1,49 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+epoch:0, train_loss:10.94111, val_loss:8.82054
+epoch:1, train_loss:8.34455, val_loss:8.01021
+epoch:2, train_loss:7.59667, val_loss:8.65309
+EarlyStopping counter: 1 out of 7 with 2
+epoch:3, train_loss:7.33809, val_loss:8.26269
+EarlyStopping counter: 2 out of 7 with 3
+epoch:4, train_loss:7.20362, val_loss:8.00074
+epoch:5, train_loss:6.91211, val_loss:7.76455
+epoch:6, train_loss:6.75688, val_loss:7.86514
+EarlyStopping counter: 1 out of 7 with 6
+epoch:7, train_loss:6.64750, val_loss:8.38466
+EarlyStopping counter: 2 out of 7 with 7
+epoch:8, train_loss:6.73641, val_loss:7.51964
+epoch:9, train_loss:6.62830, val_loss:7.59679
+EarlyStopping counter: 1 out of 7 with 9
+epoch:10, train_loss:6.83084, val_loss:7.30962
+epoch:11, train_loss:6.42309, val_loss:7.55032
+EarlyStopping counter: 1 out of 7 with 11
+epoch:12, train_loss:6.28674, val_loss:8.16723
+EarlyStopping counter: 2 out of 7 with 12
+epoch:13, train_loss:6.13914, val_loss:7.60630
+EarlyStopping counter: 3 out of 7 with 13
+epoch:14, train_loss:6.30094, val_loss:7.45923
+EarlyStopping counter: 4 out of 7 with 14
+epoch:15, train_loss:5.96938, val_loss:7.75243
+EarlyStopping counter: 5 out of 7 with 15
+epoch:16, train_loss:5.76776, val_loss:7.33816
+EarlyStopping counter: 6 out of 7 with 16
+epoch:17, train_loss:5.71668, val_loss:7.35002
+EarlyStopping counter: 7 out of 7 with 17
+Early stopping with best_score:7.309621810913086
+[train] per-column MSE: 16.103 4.868 14.782 2.389 1.397 0.450 9.093
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=revin  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.0  prior=none  dish_init=avg  scale=False  patience=7
+  MSE=7.012880  MAE=1.743090  RMSE=2.648180  MAPE=7153186.000000  MSPE=2843843875569664.000000
+================================================================================
+ data      model  norm  seed  seq_len  label_len  pred_len  batch_size  alpha features     MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer revin  2024       96         48        24         128    0.0        M 7.01288 1.74309 2.64818 7153186.0 2.843844e+15
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Dish-TS/train.py", line 472, in <module>
+    raise RuntimeError(
+RuntimeError: Refusing to append to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv: existing CSV uses a different header than the current code.  Expected 17 columns ['dataset', 'seq_len', 'pred_len', 'model', 'norm', 'alpha', 'seed', 'MSE', 'MAE', 'RMSE', 'MAPE', 'MSPE', 'dish_init', 'scaled', 'prior', 'features', 'timestamp']; got 16 columns ['dataset', 'seq_len', 'pred_len', 'model', 'norm', 'alpha', 'seed', 'MSE', 'MAE', 'RMSE', 'MAPE', 'MSPE', 'dish_init', 'scaled', 'prior', 'timestamp'].  Run repair_figure3_csv.py once to normalize the file, or rename it out of the way.
+# data=ETTm2 norm=revin pl=24 seed=2024 alpha=0.0 prior=none
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm revin --seq_len 96 --pred_len 24 --label_len 48 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.0 --prior none --dish_init avg --figure3
+

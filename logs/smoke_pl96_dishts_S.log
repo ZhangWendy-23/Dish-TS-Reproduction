@@ -1,0 +1,17 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+epoch:0, train_loss:20.85680, val_loss:13.01817
+epoch:1, train_loss:17.17462, val_loss:12.73308
+epoch:2, train_loss:16.93451, val_loss:14.00036
+EarlyStopping counter: 1 out of 2 with 2
+[train] per-column MSE: 18.789
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2025  seq_len=96  label_len=48  pred_len=96  batch_size=32  lr=0.001  alpha=0.25  prior=paper-phi-only  dish_init=avg  scale=False  patience=2
+  MSE=18.788879  MAE=3.194860  RMSE=4.334610  MAPE=0.262810  MSPE=51.092651
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha features       MSE     MAE    RMSE    MAPE      MSPE
+ETTm2 Autoformer dishts  2025       96         48        96          32   0.25        S 18.788879 3.19486 4.33461 0.26281 51.092651
+[train] appended 1 row to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd96_alpha0.25_seed2025.csv

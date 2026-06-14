@@ -1,0 +1,36 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+epoch:0, train_loss:10.83362, val_loss:8.83635
+epoch:1, train_loss:6.35558, val_loss:8.15545
+epoch:2, train_loss:5.86009, val_loss:7.89331
+epoch:3, train_loss:6.70080, val_loss:9.03935
+EarlyStopping counter: 1 out of 7 with 3
+epoch:4, train_loss:6.68401, val_loss:9.80887
+EarlyStopping counter: 2 out of 7 with 4
+epoch:5, train_loss:6.32401, val_loss:8.44358
+EarlyStopping counter: 3 out of 7 with 5
+epoch:6, train_loss:6.26223, val_loss:8.56129
+EarlyStopping counter: 4 out of 7 with 6
+epoch:7, train_loss:6.13387, val_loss:8.91564
+EarlyStopping counter: 5 out of 7 with 7
+epoch:8, train_loss:5.97909, val_loss:8.39661
+EarlyStopping counter: 6 out of 7 with 8
+epoch:9, train_loss:6.04817, val_loss:8.20559
+EarlyStopping counter: 7 out of 7 with 9
+Early stopping with best_score:7.893313407897949
+[train] per-column MSE: 16.446 4.457 13.936 2.214 1.918 0.476 7.633
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.75  prior=none  dish_init=avg  scale=False  patience=7
+  MSE=6.726880  MAE=1.703520  RMSE=2.593620  MAPE=7944501.500000  MSPE=3400067910205440.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha features     MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer dishts  2024       96         48        24         128   0.75        M 6.72688 1.70352 2.59362 7944501.5 3.400068e+15
+Traceback (most recent call last):
+  File "/root/autodl-tmp/Dish-TS/train.py", line 472, in <module>
+    raise RuntimeError(
+RuntimeError: Refusing to append to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv: existing CSV uses a different header than the current code.  Expected 17 columns ['dataset', 'seq_len', 'pred_len', 'model', 'norm', 'alpha', 'seed', 'MSE', 'MAE', 'RMSE', 'MAPE', 'MSPE', 'dish_init', 'scaled', 'prior', 'features', 'timestamp']; got 16 columns ['dataset', 'seq_len', 'pred_len', 'model', 'norm', 'alpha', 'seed', 'MSE', 'MAE', 'RMSE', 'MAPE', 'MSPE', 'dish_init', 'scaled', 'prior', 'timestamp'].  Run repair_figure3_csv.py once to normalize the file, or rename it out of the way.
+# data=ETTm2 norm=dishts pl=24 seed=2024 alpha=0.75 prior=none
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm dishts --seq_len 96 --pred_len 24 --label_len 48 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.75 --prior none --dish_init avg --figure3
+

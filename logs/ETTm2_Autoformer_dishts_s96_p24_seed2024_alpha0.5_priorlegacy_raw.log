@@ -1,0 +1,39 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+epoch:0, train_loss:16.49368, val_loss:9.47781
+epoch:1, train_loss:11.36453, val_loss:9.43996
+epoch:2, train_loss:10.60211, val_loss:9.01722
+epoch:3, train_loss:10.48590, val_loss:8.89499
+epoch:4, train_loss:10.08251, val_loss:8.61448
+epoch:5, train_loss:10.12319, val_loss:8.53938
+epoch:6, train_loss:9.86296, val_loss:8.19249
+epoch:7, train_loss:9.70033, val_loss:8.16089
+epoch:8, train_loss:9.58156, val_loss:8.50144
+EarlyStopping counter: 1 out of 7 with 8
+epoch:9, train_loss:9.53865, val_loss:8.63419
+EarlyStopping counter: 2 out of 7 with 9
+epoch:10, train_loss:9.52885, val_loss:8.39374
+EarlyStopping counter: 3 out of 7 with 10
+epoch:11, train_loss:10.05278, val_loss:8.95482
+EarlyStopping counter: 4 out of 7 with 11
+epoch:12, train_loss:10.13294, val_loss:8.59369
+EarlyStopping counter: 5 out of 7 with 12
+epoch:13, train_loss:10.56618, val_loss:8.91465
+EarlyStopping counter: 6 out of 7 with 13
+epoch:14, train_loss:10.49094, val_loss:9.44474
+EarlyStopping counter: 7 out of 7 with 14
+Early stopping with best_score:8.160890579223633
+[train] per-column MSE: 14.674 4.600 13.219 2.259 12.780 0.877 6.945
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=48  pred_len=24  batch_size=128  lr=0.001  alpha=0.5  prior=legacy  dish_init=avg  scale=False  patience=7
+  MSE=7.908730  MAE=1.988180  RMSE=2.812250  MAPE=7860947.500000  MSPE=3675647238995968.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha features     MSE     MAE    RMSE      MAPE         MSPE
+ETTm2 Autoformer dishts  2024       96         48        24         128    0.5        M 7.90873 1.98818 2.81225 7860947.5 3.675647e+15
+[train] appended 1 row to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd24_alpha0.5_seed2024.csv
+# data=ETTm2 norm=dishts pl=24 seed=2024 alpha=0.5 prior=legacy
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm dishts --seq_len 96 --pred_len 24 --label_len 48 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.5 --prior legacy --dish_init avg --figure3
+
