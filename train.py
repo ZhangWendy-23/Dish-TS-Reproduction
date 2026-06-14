@@ -411,10 +411,12 @@ print("=" * 80)
 df = pd.DataFrame([[DATA, MODEL, args.norm, args.seed,
                      args.seq_len, args.label_len, args.pred_len,
                      args.batch_size, args.alpha,
+                     args.features,
                      mse, mae, rmse, mape, mspe]],
                    columns=['data', 'model', 'norm', 'seed',
                             'seq_len', 'label_len', 'pred_len',
                             'batch_size', 'alpha',
+                            'features',
                             'MSE', 'MAE', 'RMSE', 'MAPE', 'MSPE'])
 # defensive: make sure the column list matches the data list exactly
 assert len(df.columns) == len(df.values[0]), (
@@ -452,10 +454,10 @@ if args.figure3:
     reported_alpha = args.alpha if args.norm == 'dishts' else 0.0
     f3_values = [DATA, args.seq_len, args.pred_len, MODEL, args.norm,
                  reported_alpha, args.seed, mse, mae, rmse, mape, mspe,
-                 args.dish_init, args.scale, args.prior, timestamp]
+                 args.dish_init, args.scale, args.prior, args.features, timestamp]
     f3_columns = ["dataset", "seq_len", "pred_len", "model", "norm",
                   "alpha", "seed", "MSE", "MAE", "RMSE", "MAPE", "MSPE",
-                  "dish_init", "scaled", "prior", "timestamp"]
+                  "dish_init", "scaled", "prior", "features", "timestamp"]
     assert len(f3_values) == len(f3_columns), (
         f"figure3_runs: {len(f3_values)} values vs {len(f3_columns)} columns"
     )

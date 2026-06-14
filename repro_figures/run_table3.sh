@@ -36,9 +36,12 @@ cd "$PROJ_ROOT"
 
 MODEL=Autoformer
 DISH_INIT=avg
+FEATURES="${FEATURES:-M}"        # M = multivariate (Table 2/3); S = univariate (Table 1)
 SEQ_LEN=0            # 0 means "auto-align to pred_len" (paper L=H)
+LABEL_LEN=0          # 0 means auto-clamp to min(seq_len, pred_len), floor 48
 TRAIN_EPOCHS=100
 PATIENCE=7
+LR="${LR:-1e-3}"
 GPU=0
 
 mkdir -p logs results
@@ -77,24 +80,26 @@ for DATA in "${DATASETS[@]}"; do
         for s in "${SEEDS[@]}"; do
             # --- plain Autoformer (norm = none) ---
             i=$((i + 1))
-            log="logs/${DATA}_${MODEL}_none_seq${p}_pred${p}_seed${s}_raw.log"
-            echo "[$i/$total] plain Autoformer  data=$DATA  pred=$p  seed=$s"
+            log="logs/${DATA}_${MODEL}_none_seq${p}_pred${p}_seed${s}_${FEATURES}_lr${LR}_raw.log"
+            echo "[$i/$total] plain Autoformer  data=$DATA  pred=$p  seed=$s  features=$FEATURES  lr=$LR"
             python3 -u train.py \
                 --data "$DATA" --model "$MODEL" --norm none \
-                --seq_len "$SEQ_LEN" --pred_len "$p" --label_len 0 \
-                --batch_size "$BATCH_SIZE" \
+                --features "$FEATURES" \
+                --seq_len "$SEQ_LEN" --pred_len "$p" --label_len "$LABEL_LEN" \
+                --batch_size "$BATCH_SIZE" --lr "$LR" \
                 --train_epochs "$TRAIN_EPOCHS" --patience "$PATIENCE" \
                 --seed "$s" --gpu "$GPU" --figure3 \
                 >"$log" 2>&1
 
             # --- RevIN baseline ---
             i=$((i + 1))
-            log="logs/${DATA}_${MODEL}_revin_seq${p}_pred${p}_seed${s}_raw.log"
-            echo "[$i/$total] RevIN  data=$DATA  pred=$p  seed=$s"
+            log="logs/${DATA}_${MODEL}_revin_seq${p}_pred${p}_seed${s}_${FEATURES}_lr${LR}_raw.log"
+            echo "[$i/$total] RevIN  data=$DATA  pred=$p  seed=$s  features=$FEATURES  lr=$LR"
             python3 -u train.py \
                 --data "$DATA" --model "$MODEL" --norm revin \
-                --seq_len "$SEQ_LEN" --pred_len "$p" --label_len 0 \
-                --batch_size "$BATCH_SIZE" \
+                --features "$FEATURES" \
+                --seq_len "$SEQ_LEN" --pred_len "$p" --label_len "$LABEL_LEN" \
+                --batch_size "$BATCH_SIZE" --lr "$LR" \
                 --train_epochs "$TRAIN_EPOCHS" --patience "$PATIENCE" \
                 --seed "$s" --gpu "$GPU" --figure3 \
                 >"$log" 2>&1
@@ -102,13 +107,14 @@ for DATA in "${DATASETS[@]}"; do
             # --- Dish-TS with alpha sweep (prior=paper-phi-only) ---
             for a in "${ALPHAS[@]}"; do
                 i=$((i + 1))
-                log="logs/${DATA}_${MODEL}_dishts_seq${p}_pred${p}_seed${s}_alpha${a}_priorPaperPhiOnly_raw.log"
-                echo "[$i/$total] Dish-TS(paper-phi-only)  data=$DATA  pred=$p  alpha=$a  seed=$s"
+                log="logs/${DATA}_${MODEL}_dishts_seq${p}_pred${p}_seed${s}_alpha${a}_priorPaperPhiOnly_${FEATURES}_lr${LR}_raw.log"
+                echo "[$i/$total] Dish-TS(paper-phi-only)  data=$DATA  pred=$p  alpha=$a  seed=$s  features=$FEATURES  lr=$LR"
                 python3 -u train.py \
                     --data "$DATA" --model "$MODEL" --norm dishts \
                     --alpha "$a" --prior paper-phi-only --dish_init "$DISH_INIT" \
-                    --seq_len "$SEQ_LEN" --pred_len "$p" --label_len 0 \
-                    --batch_size "$BATCH_SIZE" \
+                    --features "$FEATURES" \
+                    --seq_len "$SEQ_LEN" --pred_len "$p" --label_len "$LABEL_LEN" \
+                    --batch_size "$BATCH_SIZE" --lr "$LR" \
                     --train_epochs "$TRAIN_EPOCHS" --patience "$PATIENCE" \
                     --seed "$s" --gpu "$GPU" --figure3 \
                     >"$log" 2>&1

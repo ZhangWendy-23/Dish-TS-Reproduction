@@ -80,7 +80,7 @@ SCALE_PER_DATASET = {
 # require them (so the script is still compatible with older files).
 F3_COLS = ["dataset", "seq_len", "pred_len", "model", "norm", "alpha",
            "seed", "MSE", "MAE", "RMSE", "MAPE", "MSPE",
-           "dish_init", "scaled", "prior", "timestamp"]
+           "dish_init", "scaled", "prior", "features", "timestamp"]
 PS_COLS = ["data", "model", "norm", "seed", "seq_len", "label_len",
            "pred_len", "batch_size", "alpha", "MSE", "MAE", "RMSE",
            "MAPE", "MSPE", "log"]
@@ -110,13 +110,16 @@ def main() -> None:
                     help="Only consider rows where --scale was used (z-score space).")
     ap.add_argument("--only-raw", action="store_true",
                     help="Only consider rows where --scale was NOT used (paper default).")
-    ap.add_argument("--apply-paper-scale", type=str, default="none",
-                    choices=["none", "univariate", "multivariate", "per-dataset"],
+    ap.add_argument("--apply-paper-scale", type=str, default="auto",
+                    choices=["none", "auto", "univariate", "multivariate", "per-dataset"],
                     help="Multiplicative scale applied to my raw MSE/MAE before comparing "
-                         "with paper tables (default: none).  'multivariate' uses "
-                         "1e-8 MSE / 1e-3 MAE across datasets; 'univariate' uses "
-                         "per-dataset factors from Table 1; 'per-dataset' always uses "
-                         "per-dataset factors (1e-1 for ETT etc).")
+                         "with paper tables.  'multivariate' uses 1e-8 MSE / 1e-3 MAE across "
+                         "datasets (Table 2/3 default); 'univariate' uses per-dataset factors "
+                         "from Table 1 (e.g. Electricity 1e-6/1e-2, ETT 1e-1/1e-1, "
+                         "Weather 1e-2/1e-1, Illness 1e-11/1e-5); 'per-dataset' always uses "
+                         "per-dataset factors; 'auto' picks 'multivariate' when rows "
+                         "contain features==M and 'univariate' when features==S (useful for "
+                         "mixed CSVs); 'none' disables scaling.")
     args = ap.parse_args()
 
     if not os.path.exists(args.input):
@@ -174,19 +177,44 @@ def main() -> None:
     # values.  This only matters because mean(scale*x) == scale*mean(x); for
     # other stats we'd need to be more careful.
     if args.apply_paper_scale != "none":
-        if args.apply_paper_scale == "univariate":
+        has_features = "features" in mine.columns
+        if args.apply_paper_scale == "auto":
+            if has_features:
+                features_values = mine["features"].astype(str).unique()
+                if set(features_values).issubset({"S", "nan", "None", ""}):
+                    # All rows are univariate (or unknown — safer to assume
+                    # univariate)
+                    table = SCALE["univariate"]
+                    _mode = "auto -> univariate (all features==S)"
+                elif set(features_values).issubset({"M", "nan", "None", ""}):
+                    table = SCALE["multivariate"]
+                    _mode = "auto -> multivariate (all features==M)"
+                else:
+                    # Mixed — use per-dataset fallback
+                    table = SCALE_PER_DATASET
+                    _mode = "auto -> per-dataset fallback (mixed features)"
+            else:
+                # No features column at all — match prior default behaviour
+                # (multivariate 1e-8/1e-3, which was the default for Table 2/3).
+                table = SCALE["multivariate"]
+                _mode = "auto -> multivariate (no features column, default Table 2/3)"
+        elif args.apply_paper_scale == "univariate":
             table = SCALE["univariate"]
+            _mode = "univariate"
         elif args.apply_paper_scale == "multivariate":
             table = SCALE["multivariate"]
+            _mode = "multivariate"
         else:  # per-dataset
             table = SCALE_PER_DATASET
-        mine["_mse_scale"] = mine["dataset"].map(lambda d: table.get(NAME_MAP.get(d, d), (1.0, 1.0))[0])
-        mine["_mae_scale"] = mine["dataset"].map(lambda d: table.get(NAME_MAP.get(d, d), (1.0, 1.0))[1])
+            _mode = "per-dataset"
+        mine["_mse_scale"] = mine["dataset"].map(
+            lambda d: table.get(NAME_MAP.get(d, d), (1.0, 1.0))[0])
+        mine["_mae_scale"] = mine["dataset"].map(
+            lambda d: table.get(NAME_MAP.get(d, d), (1.0, 1.0))[1])
         mine["MSE"] = mine["MSE"] * mine["_mse_scale"]
         if "MAE" in mine.columns:
             mine["MAE"] = mine["MAE"] * mine["_mae_scale"]
-        print(f"[scale]   apply paper linear scale: {args.apply_paper_scale} "
-              f"(e.g. ETT raw MSE * {table['ETTm2'][0]})")
+        print(f"[scale]   mode={_mode};  e.g. ETT raw MSE * {table['ETTm2'][0]}")
 
     # --- seed/alpha averaging ------------------------------------------------
     if "seed" in mine.columns and mine["seed"].nunique() > 1:
