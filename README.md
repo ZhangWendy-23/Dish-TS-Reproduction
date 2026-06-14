@@ -238,10 +238,19 @@ python3 repro_figures/plot_figure3.py --input results/figure3_runs.csv \
     --output results/figures/figure3_ETTm2.png
 ```
 
-### Long-Horizon (Table 4, pred_len=336)
+### Long-Horizon Forecasting (Table 4 — N-BEATS, L=96, H=336..720)
 
 ```bash
-python3 repro_figures/run_all_exps.py --gpu 0 --long-horizon
+# N-BEATS with fixed lookback L=96 and growing horizon H (336..720).
+# Compares plain N-BEATS vs N-BEATS + Dish-TS.
+bash repro_figures/run_table4.sh
+```
+
+### Lookback Length Ablation (Table 5 — N-BEATS, H=48, L=48..240)
+
+```bash
+# N-BEATS with fixed horizon H=48, varying lookback length L.
+bash repro_figures/run_table5.sh
 ```
 
 ### Single Experiment
@@ -251,15 +260,21 @@ python3 train.py --data ETTm2 --model Autoformer --norm dishts \
     --seq_len 96 --pred_len 96 --alpha 0.5 --gpu 0 --seed 2023
 ```
 
+Run the same experiment with N-BEATS backbone:
+
+```bash
+python3 train.py --data ETTm2 --model NBEATS --norm dishts \
+    --seq_len 96 --pred_len 96 --alpha 0.0 --prior none --gpu 0 --seed 2023
+```
+
 ### Experiment Matrix Reference
 
-| Table | Description | Datasets | Norms | pred_len | Seeds | Script |
-|-------|-------------|----------|-------|----------|-------|--------|
-| 2 & 3 | Multivariate + RevIN vs Dish-TS | ECL, ETTh1, ETTm2, WTH | dishts, revin, none | 24, 96, 168 | 3 | `run_all_exps.py` |
-| 2 & 3 | Long-horizon (p336) | ECL, ETTh1, ETTm2, WTH | dishts, revin | 336 | 3 | `run_all_exps.py --long-horizon` |
-| Figure 3 | Alpha sensitivity | ETTm2 | dishts | 24, 96, 168, 336 | 3 | `ettm2_alpha_sweep.py` |
-| Figure 1 | Distribution shift | Any dataset | — | — | — | `plot_figure1.py` (no training) |
-| Figure 4 | Forecast comparison | ETTm2 | none, revin, dishts | 96 | 1 | `plot_figure4.py` (from CSV) |
+| Table | Description | Datasets | Backbone | Norms | pred_len | Seeds | Script |
+|-------|-------------|----------|----------|-------|----------|-------|--------|
+| 2 & 3 | Multivariate + RevIN vs Dish-TS | ECL, ETTh1, ETTm2, WTH | Autoformer | dishts, revin, none | 24, 96, 168 | 3 | `run_table3.sh` |
+| 4 | Long-horizon (L=96, H=336..720) | ECL, ETTh1 | N-BEATS | none, dishts | 336, 420, 540, 600, 720 | 3 | `run_table4.sh` |
+| 5 | Lookback length (H=48, L=48..240) | ECL, ETTh1 | N-BEATS | none, dishts | 48 | 3 | `run_table5.sh` |
+| Fig. 3 | Alpha sensitivity | ETTm2 | Autoformer | dishts | 24, 96, 168, 336 | 3 | `run_paper_phi_only.sh` |
 
 ### Preventing SSH Disconnection
 
@@ -368,7 +383,7 @@ nvidia-smi
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
 | `--data` | str | `ETTm2` | Dataset: `ETTm2`, `ETTh1`, `ECL`, `WTH`, `ILI` |
-| `--model` | str | `Transformer` | Forecast model: `Autoformer`, `Informer`, `Transformer` |
+| `--model` | str | `Transformer` | Forecast model: `Autoformer`, `Informer`, `Transformer`, `NBEATS` (N-BEATS, used in paper Tables 4 & 5) |
 | `--norm` | str | `none` | Normalization: `none`, `revin`, `dishts` |
 | `--features` | str | `M` | Feature mode: `M` (multivariate), `S` (univariate, Table 1) |
 | `--seq_len` | int | `96` | Input/history window length |

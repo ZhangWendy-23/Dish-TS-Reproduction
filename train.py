@@ -39,7 +39,7 @@ from utils import setup_seed
 from utils.dataset import TSForecastDataset
 from utils.earlystop import EarlyStopping
 from utils.metric import get_metrics
-from backbones import Autoformer, Informer, Transformer
+from backbones import Autoformer, Informer, Transformer, NBEATS
 from DishTS import DishTS
 from REVIN import RevIN
 from Model import Model
@@ -81,7 +81,8 @@ parser.add_argument('--features', type=str, default='M',
 # forecast model — paper evaluates Informer, Autoformer, N-BEATS.  We default
 # to Autoformer because that is the backbone used in the paper's "RevIN vs
 # Dish-TS" comparative figures (Table 3).
-parser.add_argument('--model', type=str, default='Autoformer')
+parser.add_argument('--model', type=str, default='Autoformer',
+                    help='Forecast backbone. Paper uses Autoformer (Table 2/3), Informer, and NBEATS (Tables 4/5).')
 parser.add_argument('--batch_size', type=int, default=128,
                     help='Paper settings (explicit): Informer=256, Autoformer=128, Transformer=128; ECL=64 for all models because of its 321 series; reduce to 64 when pred_len>168 to avoid OOM on 12GB GPUs. 0=use heuristic auto-selection (legacy).')
 parser.add_argument('--lr', type=float, default=1e-3,
@@ -171,6 +172,8 @@ if args.batch_size == 0:
         args.batch_size = 64
     elif MODEL == 'Informer':
         args.batch_size = 256
+    elif MODEL == 'NBEATS':
+        args.batch_size = 1024
     else:  # Autoformer, Transformer
         args.batch_size = 128
 # Safety cap for long prediction horizons on 12GB GPU
@@ -206,7 +209,7 @@ test_loader  = DataLoader(dataset=test_dataset,  shuffle=False, **_loader_kwargs
 n_series = train_dataset.N
 args = update_args_from_model_params(args, n_series)
 # set forecast models
-model_dict = {'Autoformer': Autoformer, 'Transformer': Transformer, 'Informer': Informer}
+model_dict = {'Autoformer': Autoformer, 'Transformer': Transformer, 'Informer': Informer, 'NBEATS': NBEATS}
 # set norm models
 norm_dict = {'revin': RevIN, 'dishts': DishTS}
 forecast_model = model_dict[MODEL].Model(args)

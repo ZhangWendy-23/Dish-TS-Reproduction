@@ -401,6 +401,77 @@ if args.label_len == 0:
 
 ---
 
+### 23. 新增 N-BEATS backbone（`backbones/NBEATS.py`）
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 新增模型文件 |
+| **路径** | `backbones/NBEATS.py` |
+| **原因** | 论文 Table 4 / Table 5 的主干模型是 N-BEATS（N-BEATS 原生可学习长期趋势与季节性）。官方 Dish-TS 代码中未提供 N-BEATS，必须自行实现才能完整复现 Table 4/5 的对比结果 |
+
+**实现要点**：
+
+- 采用论文 [N-BEATS: Neural Basis Expansion Analysis](https://arxiv.org/abs/1905.10437) 的 Generic 架构：
+  - 多个 block 串联，每个 block 输出 (backcast, forecast)，backcast 用于残差更新输入，forecast 累加到最终预测
+  - 默认 stacks=2、blocks_per_stack=3、hidden=256、layers=4
+  - 输入/输出形状 `(B, L, D)` → `(B, H, D)`，与 `Model.py` 中 "非 former 模型" 的调用分支直接兼容
+- `backbones/__init__.py` 新增 NBEATS 入口
+- `train.py` 的 `model_dict` 加入 `'NBEATS': NBEATS`，并把 NBEATS 的默认 batch_size 设为 1024（全连接网络可进一步利用 GPU 并行）
+
+**smoke test 结果**：
+
+| 数据集 | seq_len | pred_len | 模型 | raw MSE（3 epoch 速测） |
+|--------|---------|----------|------|-------------------------|
+| ETTm2 | 96 | 96 | NBEATS + Dish-TS | ~10.77 |
+| ETTm2 | 96 | 96 | Autoformer + Dish-TS | ~18.79 |
+| ILI | 24 | 24 | NBEATS + Dish-TS | ~7.4e9（raw scale，未做 z-score） |
+
+N-BEATS 在 ETTm2 上比 Autoformer 好，与论文 "N-BEATS 在电力/气象等序列表现稳定" 的结论一致。
+
+---
+
+### 24. 新增 Table 4 / Table 5 运行脚本
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 新增 sweep 脚本 |
+| **文件** | `repro_figures/run_table4.sh`，`repro_figures/run_table5.sh` |
+| **目的** | 复现论文 Table 4（长窗口预测）与 Table 5（lookback 长度消融），并在同一 CSV 写入 `results/figure3_runs.csv` 以便与 `compare_paper.py` 对比 |
+
+**Table 4（`run_table4.sh`）**：
+
+- 固定 `seq_len=96`，`pred_len ∈ {336, 420, 540, 600, 720}`
+- 数据集：`ETTh1`、`ECL`（论文 Table 4：Electricity / ETTh1）
+- 模型：N-BEATS + norm ∈ {none, dishts}（baseline 对比）
+- 默认 3 seeds × 5 pred_len × 2 norms = 30 jobs
+
+**Table 5（`run_table5.sh`）**：
+
+- 固定 `pred_len=48`，`seq_len ∈ {48, 96, 144, 192, 240}`
+- 数据集：`ETTh1`、`ECL`
+- 模型：N-BEATS + norm ∈ {none, dishts}
+- 默认 3 seeds × 5 lookbacks × 2 norms = 30 jobs
+
+两个脚本都把 `--features M`（多变量，与 Table 4/5 一致），且 `--alpha 0 --prior none` 保持与官方 Dish-TS 实现一致（不启用先验 loss）。
+
+---
+
+### 25. `train.py` & `compare_paper.py`：支持 features 字段 + auto 缩放规则
+
+| 属性 | 说明 |
+|------|------|
+| **类型** | 训练与分析脚本同步增强 |
+| **文件** | `train.py`，`repro_figures/compare_paper.py` |
+| **原因** | 之前脚本只写 MSE/MAE 到 CSV，但无法从结果区分多变量实验（Table 2/3，MSE ~ 1e-8 量级）与单变量实验（Table 1，MSE ~ 1e-2 ~ 1e-6 量级），导致自动对比时缩放系数用错 |
+
+**具体改动**：
+
+- `train.py` 的 CSV（`paper_summary.csv` 和 `figure3_runs.csv`）新增 `features` 列，记录 `M` / `S`
+- `compare_paper.py` 新的 `--apply-paper-scale auto` 模式（默认）：根据 features 自动选择 scale 表；混合场景回退到 per-dataset 表
+- 保留 `multivariate` / `univariate` / `per-dataset` 三个手动模式，方便 debug
+
+---
+
 ## 修改统计
 
 | 类别 | 新增文件 | 修改文件 | 删除文件 | 说明 |
