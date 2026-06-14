@@ -6,16 +6,30 @@ import torch.nn.functional as F
 class DishTS(nn.Module):
     def __init__(self, args):
         super().__init__()
-        init = args.dish_init #'standard', 'avg' or 'uniform'
+        init = args.dish_init  # 'standard'/'avg'/'uniform' (DishTS code)
+                               # 'norm' and 'uni' are accepted as aliases
+                               # matching the column names in the paper's
+                               # Table 6 ablation.
+        _ALIAS = {'norm': 'standard', 'uni': 'uniform',
+                  'avg': 'avg', 'standard': 'standard', 'uniform': 'uniform'}
+        if init not in _ALIAS:
+            raise ValueError(
+                f"Unknown --dish_init='{init}'. Choices: avg/norm/uni "
+                "(paper names) or standard/uniform (legacy)."
+            )
+        init = _ALIAS[init]
         activate = True
-        n_series = args.n_series # number of series
-        lookback = args.seq_len # lookback length
+        n_series = args.n_series  # number of series
+        lookback = args.seq_len  # lookback length
         if init == 'standard':
-            self.reduce_mlayer = nn.Parameter(torch.rand(n_series, lookback, 2)/lookback)
+            self.reduce_mlayer = nn.Parameter(torch.rand(n_series, lookback, 2) / lookback)
         elif init == 'avg':
-            self.reduce_mlayer = nn.Parameter(torch.ones(n_series, lookback, 2)/lookback)
+            self.reduce_mlayer = nn.Parameter(torch.ones(n_series, lookback, 2) / lookback)
         elif init == 'uniform':
-            self.reduce_mlayer = nn.Parameter(torch.ones(n_series, lookback, 2)/lookback+torch.rand(n_series, lookback, 2)/lookback)
+            self.reduce_mlayer = nn.Parameter(
+                torch.ones(n_series, lookback, 2) / lookback
+                + torch.rand(n_series, lookback, 2) / lookback
+            )
         self.gamma, self.beta = nn.Parameter(torch.ones(n_series)), nn.Parameter(torch.zeros(n_series))
         self.activate = activate
 

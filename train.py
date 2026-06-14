@@ -59,18 +59,29 @@ def update_args_from_model_params(args, n_series):
 parser = argparse.ArgumentParser(description='Parameters')
 parser.add_argument('--seed', type=int, default=2023)
 parser.add_argument('--output_file', type=str, default='forecast.csv')
-# forecast — paper default: seq_len=96, label_len=max(48, pred_len//2)
-# IMPORTANT: label_len is additionally clamped to <= seq_len and <= pred_len
-#            to avoid negative r_begin in __getitem__ (pred_len=336 crashes otherwise).
-parser.add_argument('--seq_len', type=int, default=96)
+# forecast — paper default: L = H (lookback == horizon), see Section 4.
+# IMPORTANT: seq_len=0 is a special sentinel meaning "use pred_len" (i.e. the
+# paper's "常规实验 L=H").  You can still set seq_len explicitly for ablation
+# experiments like Table 4 (L fixed, H grows) and Table 5 (H fixed, L grows).
+parser.add_argument('--seq_len', type=int, default=0,
+                    help='Lookback length. Paper default for Tables 1-3 is L=H, '
+                         'i.e. --seq_len 0 (auto-sets seq_len=pred_len).')
+# label_len: paper default is 48 (decoder warm-start length). 0 means "auto"
+# (clamped to min(seq_len, pred_len), with lower bound 48 — this is the
+# legacy Dish-TS default; passing 0 is therefore equivalent to the paper).
 parser.add_argument('--label_len', type=int, default=0,
-                    help='Paper: label_len = max(48, pred_len//2); 0=auto (clamped to seq_len, pred_len)')
+                    help='Decoder warm-start length. Paper: 48. '
+                         '0 = auto (clamped to min(seq_len, pred_len), lower bound 48).')
 parser.add_argument('--pred_len', type=int, default=96)
 # data
 parser.add_argument('--data', type=str, default='ETTm2')
-parser.add_argument('--features', type=str, default='M')
-# forecast model
-parser.add_argument('--model', type=str, default='Transformer')
+parser.add_argument('--features', type=str, default='M',
+                    help='"M" = multivariate (paper default for Table 2/3), '
+                         '"S" = univariate (Table 1 ablation).')
+# forecast model — paper evaluates Informer, Autoformer, N-BEATS.  We default
+# to Autoformer because that is the backbone used in the paper's "RevIN vs
+# Dish-TS" comparative figures (Table 3).
+parser.add_argument('--model', type=str, default='Autoformer')
 parser.add_argument('--batch_size', type=int, default=128,
                     help='Paper settings (explicit): Informer=256, Autoformer=128, Transformer=128; ECL=64 for all models because of its 321 series; reduce to 64 when pred_len>168 to avoid OOM on 12GB GPUs. 0=use heuristic auto-selection (legacy).')
 parser.add_argument('--lr', type=float, default=1e-3,
@@ -83,10 +94,12 @@ parser.add_argument('--gpu', type=int, default=0)
 # shift / normalization model
 parser.add_argument('--norm', type=str, default='none')  # none, revin, dishts
 parser.add_argument('--affine', type=int, default=1)     # revin: use affine (1=yes, 0=no)
-# CONET initialization: 'avg' is both the default in the paper ablation and what
-# the official repo prefers.  'standard' and 'uniform' are kept for ablation.
+# CONET initialization — the paper Table 6 ablation uses names 'avg',
+# 'norm' (standard normal) and 'uni' (uniform U[0,1]).  We accept those names
+# as primary keys and additionally keep 'standard' and 'uniform' as backwards
+# compatible aliases so older scripts still work.
 parser.add_argument('--dish_init', type=str, default='avg',
-                    choices=['standard', 'avg', 'uniform'])
+                    choices=['standard', 'avg', 'uniform', 'norm', 'uni'])
 # Prior loss (alpha) — disabled by default to match the OFFICIAL Dish-TS repo.
 #
 #   --prior none     (default): L = MSE only  -->  reproduce official Dish-TS baseline
@@ -137,21 +150,17 @@ device = torch.device(f'cuda:{GPU}' if torch.cuda.is_available() else 'cpu')
 # Informer: 256, Autoformer: 128, Transformer: 128
 # Special case: Electricity (ECL) -> 64 for all models (many series x long sequences)
 # Long horizon (pred_len > 168): reduced to avoid OOM — safely capped at 64 for 12GB GPU
+# === Paper's "lookback == horizon" convention (Tables 1-3) ===
+# If the user passes --seq_len 0 we auto-set lookback = prediction length.
+# This is applied BEFORE the label_len auto-clamp so label_len sees the
+# real lookback value (not 0).
+if args.seq_len == 0:
+    args.seq_len = args.pred_len
+
+# === Paper default: label_len = 48 (decoder warm-start length) ===
+# Clamp to <= seq_len and <= pred_len to guarantee the decoder warm-start
+# slice fits inside both the lookback window and the forecast window.
 if args.label_len == 0:
-    # Paper: label_len = max(48, pred_len//2)
-    #
-    # Additionally we MUST clamp label_len <= min(seq_len, pred_len).  Why?
-    #   1) seq_y in TSForecastDataset.__getitem__ spans
-    #        [s_end - label_len, s_end - label_len + label_len + pred_len]
-    #      which requires s_end - label_len >= 0  →  label_len <= s_end <= seq_len.
-    #   2) dec_inp in get_init_batch below slices batch_y[:, :label_len, :];
-    #      label_len must therefore not exceed the batch_y lookback region,
-    #      which is at most seq_len because we pass label_len as the decoder "warm start".
-    #
-    # Without this clamp pred_len=336 with seq_len=96 used to produce
-    #    RuntimeError: stack expects each tensor to be equal size,
-    #      but got [504, 7] at entry 0 and [0, 7] at entry 18
-    # because __getitem__ returned a 0-length seq_y for the last rows of the dataset.
     upper = min(args.seq_len, args.pred_len)
     args.label_len = min(upper, max(48, args.pred_len // 2))
 
@@ -270,28 +279,25 @@ def add_prior_loss(loss, forecast, phih, target_horizon, alpha, prior, nm=None):
         return loss
 
     if prior == 'paper-phi-only':
-        # Re-derive phi_h while freezing the BackCoNet channel.
+        # Re-derive phi_h while keeping BackCoNet channel frozen.
         assert nm is not None, (
             "prior='paper-phi-only' requires the DishTS module passed in."
         )
-        reduce_mlayer = nm.reduce_mlayer  # [D, L, 2]
-        # Column 0 (Back) → frozen; column 1 (Hori) → trainable by prior.
-        rm_prior = torch.stack(
-            [reduce_mlayer[:, :, 0].detach(), reduce_mlayer[:, :, 1]],
-            dim=2,
-        )  # same shape as reduce_mlayer, only column 1 keeps gradients for the prior term
-        if hasattr(nm, '_last_batch_x') and nm._last_batch_x is not None:
-            x_transpose = nm._last_batch_x.permute(2, 0, 1)
-            theta = torch.bmm(x_transpose, rm_prior).permute(1, 2, 0)
-            if nm.activate:
-                theta = F.gelu(theta)
-            phih_hori = theta[:, 1:, :]
-        else:
-            # Fallback: if we couldn't cache the input, fall back to full
-            # gradient (same as 'paper').  Rarely triggered in practice.
-            phih_hori = phih
+        rm = nm.reduce_mlayer  # [D, L, 2]
+        # Only the HoriCoNet column carries gradients for the prior term.
+        # This exactly mirrors the paper's verbal description: "the horizon
+        # level estimate phi_h is guided by the true horizon mean; the
+        # BackCoNet level phi_l is trained only by the base MSE".
+        rm_prior = rm.detach().clone()
+        rm_prior[:, :, 1] = rm[:, :, 1]  # Hori channel: live gradient
+        x_transpose = nm._last_batch_x.permute(2, 0, 1)  # [D, B, L]
+        theta = torch.bmm(x_transpose, rm_prior).permute(1, 2, 0)
+        if nm.activate:
+            theta = torch.nn.functional.gelu(theta)
+        phih_prior = theta[:, 1:, :]  # [B, 1, D] for each horizon dim
+
         true_mean = torch.mean(target_horizon, dim=1, keepdim=True)  # [B, 1, D]
-        prior_term = torch.mean(torch.pow(phih_hori - true_mean, 2))
+        prior_term = torch.mean(torch.pow(phih_prior - true_mean, 2))
         return loss + alpha * prior_term
 
     if prior == 'paper':
