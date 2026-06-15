@@ -539,7 +539,8 @@ N-BEATS 在 ETTm2 上比 Autoformer 好，而且采用论文标准 `layer_width=
 | 26 | `requirements.txt` 补加 `scikit-learn>=0.24.0`；修复 `dataset.py` 中 `sklearn` import 为可选（未安装时自动回退 raw 模式 + 警告）；修正 README 中 pip install 命令 | 2026-06-11 13:35:00 |
 | 27 | 新建 `repro_figures/run_all_exps.py`（63-run 一键重跑 Table 2 & 3，含 `--long-horizon` 和自动备份旧 CSV）；新建 `repro_figures/compare_paper.py`（自动对比你的结果 vs 论文 Table 2/3）；新建 `repro_figures/parse_logs.py`（从旧日志解析 MSE 补写 CSV）；新建 `smoke_test.py`（离线参数/环境校验，无需 GPU） | 2026-06-11 13:38:00 |
 | 28 | README 全面更新：CLI Arguments 表格修正（`--batch_size 128`、`--patience 15`、`--label_len` 新公式、`--train_epochs`）；Data Splits 新增 StandardScaler 说明；Batch Size Rules 简化重写；实验指南替换为当前一键工作流（Quick Start → Compare → Alpha → Long-Horizon → Single Cmd）；Project Structure 补充新目录/脚本 | 2026-06-11 14:00:00 |
+| 29 | **Phase 1 & 2a 实验完成 (ETTm2 alpha 扫描)**：新增 4 个 sweep 脚本 (`run_phase2a.sh` / `run_phase2b.sh` / `run_sanity.sh` / `run_baselines_none_revin.sh`) + 2 个分析脚本 (`check_phase2a.py` / `compare_phase2b.py`)；`run_phase2a.sh` 支持 `PATIENCE` / `MAX_EPOCHS` 环境变量覆盖；新增 `results/experiment_report.md` 实验报告；关键发现：**pred_len 越长，alpha 越大越有益**（pred_len=168: alpha=0.25 比 alpha=0.0 低 7.4%；pred_len=336: alpha=1.0 最优），与论文 Figure 3 趋势一致；ETTm2 pred_len=168 论文对比 ratio=1.01×；0 NaN/异常数据 | 2026-06-15 18:00:00 |
 
 ---
 
-*最后更新: 2026-06-11 14:00:00 CST*
+*最后更新: 2026-06-15 18:00:00 CST*

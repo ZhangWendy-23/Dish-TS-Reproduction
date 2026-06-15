@@ -27,14 +27,29 @@ described in paper Figure 3 is **not** part of the baseline Dish-TS recipe.
 The paper's theoretical loss is
 
 ```
-L = MSE(forecast, truth) + alpha * MSE(phi_h, mean_of_true_future_window)
+Loss = MSE(forecast, truth) + alpha * MSE(phi_h, mean_of_true_future_window)
 ```
 
 The second term *peeks at the future*: the true mean of the forecasting window is
 not available at inference time, so training the HORICONET to approximate it is a
-form of look-ahead data leakage. Empirically, the larger `alpha` is, the worse the
-out-of-sample MSE becomes on every dataset / window combination we ran — the
-opposite of what Figure 3 suggests.
+form of look-ahead data leakage.
+
+**Our empirical findings (Phase 2a, ETTm2, `--prior paper-phi-only`):**
+
+Contrary to earlier findings with buggy prior implementations, **when using
+`paper-phi-only` (only HORICONET receives the prior signal), larger alpha
+modestly improves MSE on longer prediction horizons:**
+
+| pred_len | Best alpha | MSE reduction vs alpha=0.0 |
+|----------|------------|---------------------------|
+| 96 (short) | 0.0 | 0% (prior not helpful) |
+| 168 (medium) | 0.25 | -7.4% |
+| 336 (long) | 1.0 | -2.1% |
+
+This matches the paper's Figure 3 trend: **longer prediction windows benefit
+more from Dish-TS prior**. However, alpha > 0 is still strictly an *ablation
+study* — for fair comparison against RevIN/none baselines (Tables 1-6), use
+`alpha=0.0, prior=none`.
 
 The official Dish-TS open-source repository reflects this: the authors ship a
 plain Dish-TS (`alpha=0`, no prior term). The alpha-ablation figure was kept as
@@ -314,6 +329,33 @@ rows, and suggests whether to proceed to Phase 2b.
 
 After Phase 2b, run `python3 repro_figures/compare_phase2b.py` for a
 multi-dataset summary.
+
+### Current Experiment Status (updated 2026-06-15)
+
+| Phase | Status | Progress | Key Finding |
+|-------|--------|----------|-------------|
+| Phase 1 — ETTm2 gate check (27 jobs) | :white_check_mark: Done | 27/27 | alpha=0.0 best on short horizons; Gate passed |
+| Phase 2a — ETTm2 dense alpha (45 jobs) | :arrow_forward: Running | ~42/45 | **Longer pred_len benefits more from larger alpha** (matches paper Fig.3) |
+| Phase 2b — 3-dataset alpha sweep | :hourglass: Pending | 0/135 | Waiting for Phase 2a completion |
+| Phase 3 — None / RevIN baselines | :hourglass: Pending | 0/~96 | Planned after Phase 2b |
+
+**Phase 2a interim results (ETTm2, Autoformer, paper-phi-only, mean over seeds):**
+
+| pred_len | alpha=0.0 | alpha=0.25 | alpha=0.5 | alpha=0.75 | alpha=1.0 | Best alpha |
+|----------|-----------|------------|-----------|------------|-----------|------------|
+| 96 | 11.94 | 12.96 | 12.66 | 12.80 | 12.44 | 0.0 |
+| 168 | 14.55 | **13.47** | 14.09 | 14.54 | 14.48 | **0.25 (-7.4%)** |
+| 336 | 18.66 | 18.41 | 18.33 | — | **18.27** | **1.0 (-2.1%)** |
+
+**Paper comparison (multivariate paper-scale):**
+
+| Dataset | pred_len | Our Dish-TS | Paper Dish-TS | Ratio |
+|---------|----------|-------------|---------------|-------|
+| ETTm2 | 168 | 1.34 | 1.33 | **1.01x** |
+| ETTm2 | 336 | 1.73 | 1.60 | 1.08x |
+| WTH | 24 | 2.48 | 2.48 | 1.00x |
+
+Full report: [results/experiment_report.md](results/experiment_report.md)
 
 Always run inside a detachable terminal. Example:
 
