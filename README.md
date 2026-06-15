@@ -141,13 +141,17 @@ Dish-TS-Reproduction/
 ├── repro_figures/                # Experiment and analysis scripts
 │   ├── run_all.sh                # (1) Runs every sweep in sequence
 │   ├── run_sanity.sh             # (1b) Phase 1 — ETTm2 gate check (27 jobs)
-│   ├── run_table2.sh             # (2) Table 2 / Table 3 main comparison
+│   ├── run_phase2a.sh            # (2a) Phase 2a — ETTm2 dense alpha (45 jobs)
+│   ├── run_phase2b.sh            # (2b) Phase 2b — 3 datasets × 5 alphas (135 jobs)
+│   ├── run_table2.sh             # (3) Table 2 / Table 3 main comparison
 │   ├── run_table3.sh             # (2b) RevIN vs Dish-TS (Table 3 only)
 │   ├── run_table4.sh             # (3) Table 4 — long-horizon, L=96 fixed
 │   ├── run_table5.sh             # (4) Table 5 — lookback length ablation
 │   ├── run_table6.sh             # (5) Table 6 — CONET init ablation
 │   ├── run_figure3.sh            # (6) Figure 3 — alpha sensitivity (★)
 │   ├── run_baselines_none_revin.sh # (7) Phase 3 — none / revin comparison
+│   ├── check_phase2a.py          # Post-run quality check for Phase 2a
+│   ├── compare_phase2b.py        # Post-run summary for Phase 2b (multi-dataset)
 │   ├── compare_paper.py          # Quantitative "ours vs paper" tables
 │   ├── parse_logs.py             # Legacy log → CSV converter (if needed)
 │   ├── plot_figure1.py           # Distribution-shift visualisation
@@ -264,20 +268,34 @@ to `results/figure3_runs.csv`.
 ### Step 2b — Recommended 3-Phase End-to-End Checklist
 
 The three scripts below form a self-contained end-to-end workflow that
-moves from a small sanity check → full sweep → comparison baselines,
-so that you always run on the SAME checkout you just pulled.
+moves from a small sanity check → a dense ETTm2 diagnostic sweep → a
+multi-dataset sweep → comparison baselines, so that you always run on
+the SAME checkout you just pulled.
+
+The split of "Phase 2" into **Phase 2a / Phase 2b** is important:
+Phase 2a costs ~1.5 hours and is used to decide whether the
+multi-dataset sweep of Phase 2b (135 jobs, ~6–9 h) is worth running.
 
 Run them exactly in this order, on a single 3090 with the latest code:
 
 | Phase | What | Jobs | GPU time | Script |
 |---|---|---|---|---|
-| **Phase 1 — Single-dataset sanity check | ETTm2 × Autoformer × `paper-phi-only × {96, 168, 336} × {0.0, 0.5, 1.0} × 3 seeds | 27 | ~30–60 min | `bash repro_figures/run_sanity.sh` |
-| **Phase 2 — Figure 3 full 4-dataset sweep | **4 datasets × Autoformer × `paper-phi-only` × 4 horizons × 4 alphas × 3 seeds | 192 | ~20 h | `bash repro_figures/run_figure3.sh` |
-| **Phase 3 — None / RevIN baselines** | **4 datasets × Autoformer × {none, revin} × 4 horizons × 3 seeds | 96 | ~8 h | `bash repro_figures/run_baselines_none_revin.sh` |
+| **Phase 1** — Single-dataset gate check | ETTm2 × Autoformer × `paper-phi-only` × {96, 168, 336} × {0.0, 0.5, 1.0} × 3 seeds | 27 | ~30–60 min | `bash repro_figures/run_sanity.sh` |
+| **Phase 2a** — ETTm2 denser alpha sweep | ETTm2 × Autoformer × `paper-phi-only` × {96, 168, 336} × {0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 45 | ~60–90 min | `bash repro_figures/run_phase2a.sh` |
+| **Phase 2b** — 3-dataset alpha sweep | ECL, ETTh1, WTH × Autoformer × `paper-phi-only` × {96, 168, 336} × {0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 135 | ~6–9 h | `DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh` |
+| **Phase 3** — None / RevIN baselines | 4 datasets × Autoformer × {none, revin} × 4 horizons × 3 seeds | 96 | ~8 h | `bash repro_figures/run_baselines_none_revin.sh` |
 
-**Gate rule: only proceed from Phase 1 → Phase 2 if alpha=0.0 is the best
-(or very close to it). If it is not, something in the current code has
-regressed and running the longer Phase 2 sweep on old output is meaningless.
+**Gate rule: only proceed from Phase 1 → Phase 2a if alpha=0.0 is not
+worse than alpha>0 on any horizon. A regression at this stage usually
+means the latest checkout of `DishTS.py` has diverged; investigate
+before burning GPU time on the larger sweeps.**
+
+After Phase 2a, run `python3 repro_figures/check_phase2a.py`. It prints
+a (pred_len × alpha) summary table, reports NaN / out-of-scale MSE
+rows, and suggests whether to proceed to Phase 2b.
+
+After Phase 2b, run `python3 repro_figures/compare_phase2b.py` for a
+multi-dataset summary.
 
 Always run inside a detachable terminal. Example:
 
@@ -291,8 +309,12 @@ bash repro_figures/run_sanity.sh 2>&1 | tee logs/phase1_master.log
 Then, once Phase 1 passes:
 
 ```bash
-screen -U -S dishts-phase2
-bash repro_figures/run_figure3.sh 2>&1 | tee logs/phase2_master.log
+screen -U -S dishts-phase2a
+bash repro_figures/run_phase2a.sh 2>&1 | tee logs/phase2a_master.log
+
+# after check_phase2a.py:
+screen -U -S dishts-phase2b
+bash repro_figures/run_phase2b.sh 2>&1 | tee logs/phase2b_master.log
 ```
 
 And finally:
@@ -322,8 +344,19 @@ with the single shell command that generates it.
 | **Table 6** — CONET initialisation | ETTh1, WTH | Autoformer, N-BEATS | dishts (avg, norm, uni) | 24, 96, 168 | 3 | ~4 h | `bash repro_figures/run_table6.sh` |
 | **Figure 3** — Alpha sensitivity | ECL, ETTh1, ETTm2, WTH | Autoformer | dishts | 24, 96, 168, 336 | 3 | ~12 h | `bash repro_figures/run_figure3.sh` |
 | **Phase 1 — Sanity check** (gate step) | ETTm2 | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | ~30–60 min | `bash repro_figures/run_sanity.sh` |
+| **Phase 2a — Denser alpha sweep** (ETTm2 only) | ETTm2 | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | ~60–90 min | `bash repro_figures/run_phase2a.sh` |
+| **Phase 2b — 3-dataset alpha sweep** | ECL, ETTh1, WTH | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | ~6–9 h | `DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh` |
 | **Phase 3 — None / RevIN baselines** | ECL, ETTh1, ETTm2, WTH | Autoformer | none, revin | 24, 96, 168, 336 | 3 | ~8 h | `bash repro_figures/run_baselines_none_revin.sh` |
 | **Everything (one command)** | — | — | — | — | — | ~72 h | `bash repro_figures/run_all.sh` |
+
+**Post-run analysis scripts.**
+
+| Script | Purpose |
+|---|---|
+| `python3 repro_figures/check_phase2a.py` | ETTm2 Phase 2a quality check; counts rows, flags NaN / out-of-scale MSE, prints (pred_len × alpha) mean±std MSE table and "best alpha per pred_len" vs alpha=0.0. |
+| `python3 repro_figures/compare_phase2b.py --input results/figure3_runs.csv` | Multi-dataset summary of Phase 2b; prints one table per dataset. |
+| `python3 repro_figures/compare_paper.py --apply-paper-scale multivariate` | Full "ours vs paper" comparison on Table 2 scope. Uses the linear-scale conversion documented in the "Data preprocessing" note below. |
+| `python3 repro_figures/plot_figure3.py --input results/figure3_runs.csv` | Draw the Figure 3 alpha-vs-MSE curve (one PNG per dataset). |
 
 **Recommended order** — run the shorter sweeps first to validate the pipeline,
 then proceed to the longest ones:
@@ -331,20 +364,29 @@ then proceed to the longest ones:
 ```bash
 # (A) Phase 1 gate — sanity check (~30-60 min, stops if regresses)
 bash repro_figures/run_sanity.sh
+python3 repro_figures/check_phase2a.py          # actually works for Phase 1 too
 
-# (B) Phase 2 — Figure 3 alpha sweep (~20 h on 1x3090)
-bash repro_figures/run_figure3.sh
+# (B) Phase 2a — ETTm2 dense alpha sweep (~1.5 h)
+bash repro_figures/run_phase2a.sh
+python3 repro_figures/check_phase2a.py
 
-# (C) Phase 3 — comparison baselines (~8 h)
+# (C) Phase 2b — 3-dataset alpha sweep (~6-9 h)
+DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh
+python3 repro_figures/compare_phase2b.py
+
+# (D) Phase 3 — comparison baselines (~8 h)
 bash repro_figures/run_baselines_none_revin.sh
 
-# (D) The full comparison tables (Tables 1-6, if reproducing the paper)
+# (E) Full comparison tables (Tables 1-6, if reproducing the paper)
 bash repro_figures/run_table2.sh       # Table 2/3 — the paper's main result
 bash repro_figures/run_table6.sh       # Table 6 — CONET init ablation
 
-# (E) N-BEATS ablations (≈8 h)
+# (F) N-BEATS ablations (≈8 h)
 bash repro_figures/run_table4.sh       # Table 4
 bash repro_figures/run_table5.sh       # Table 5
+
+# (G) Figure 3 plotting
+python3 repro_figures/plot_figure3.py --input results/figure3_runs.csv
 ```
 
 **Sub-setting a sweep.** All `run_table*.sh` scripts honour a
