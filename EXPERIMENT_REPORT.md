@@ -30,9 +30,9 @@
 |---|---|---|---|---|
 | Phase 0 — Smoke Test | ETTm2 × Autoformer × dishts × pred_len=24 × seed=2023 × alpha=0.0 | 1 | ~2 分钟 | 验证 pipeline 无错 |
 | Phase 1 — Gate Check | ETTm2 × Autoformer × dishts × {24,96,168,336} × alpha=0.0 × 3 seeds | 12 | ~10 分钟 | 验证基线 Dish-TS 有效 |
-| Phase 2a — ETTm2 alpha 扫掠 | ETTm2 × Autoformer × dishts × prior=paper-phi-only × {96,168,336} × alpha={0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | ~45 | ~60–90 分钟 | 分析 alpha 对 MSE 的影响 |
-| Phase 2b — 多数据集 alpha 扫掠 | ECL, ETTh1, WTH × Autoformer × dishts × prior=paper-phi-only × 4 预测窗口 × 6 alpha × 3 seeds | ~135 | ~6–9 小时 | 判断 Figure 3 趋势是否跨数据集一致 |
-| Phase 3 — none / revin 基线 | 4 数据集 × Autoformer × {none, revin, dishts} × {24,96,168,336} × alpha=0.0 × 3 seeds | 144 | ~8 小时 | 生成 Table 2 / 3 对比数据 |
+| Phase 2a — ETTm2 alpha 扫掠 | ETTm2 × Autoformer × dishts × prior=paper-phi-only × {96,168,336} × alpha={0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 45 | ~60–90 分钟 | 分析 alpha 对 MSE 的影响 |
+| Phase 2b — 多数据集 alpha 扫掠 | ECL, ETTh1, WTH × Autoformer × dishts × prior=paper-phi-only × {96,168,336} × alpha={0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 135 | ~6–9 小时 | 判断 Figure 3 趋势是否跨数据集一致 |
+| Phase 3 — none / revin 基线 | 4 数据集 × Autoformer × {none, revin} × {24,96,168,336} × alpha=0.0 × 3 seeds | 96（本脚本新增；dishts 复用 Phase 2a 的 alpha=0.0 结果） | ~8 小时 | 生成 Table 2 / 3 对比数据 |
 
 ### 2.2 参数约定
 
@@ -115,11 +115,11 @@ python3 repro_figures/plot_figure3.py
 |---|---|---|---|---|
 | Phase 0 (Smoke Test) | ✅ 完成 | 2026-06-14 | 1 | 单个 pred_len=24 验证 |
 | Phase 1 (Gate Check) | ✅ 完成 | 2026-06-14 | ~12 | ETTm2 alpha=0.0 baseline 验证 |
-| Phase 2a (ETTm2 alpha 扫掠) | ✅ 完成 | 2026-06-15 | ~45 / 45 | 3 pred_len × 5 alpha × 3 seeds，**关键结论见 §4** |
-| Phase 2b (多数据集 alpha 扫掠) | ⏳ 待执行 | — | 0 | 需运行 ECL / ETTh1 / WTH |
-| Phase 3 (none / revin 基线) | 🟡 部分完成 | 2026-06-15 | 少量 | ETTm2 有少量数据，ratio ≈ 0.9–1.2；需补全 4 数据集 |
-| Figure 3 PNG | ⏳ 待生成 | — | — | 等 Phase 2b 完成后统一生成 |
-| Table 2 / 3 对比 | 🟡 初步 | 2026-06-15 | — | 已有 ETTm2 数据，ratio ≈ 1.0×；ETTm2 pred_len=168 ratio = **1.01×**（几乎完全匹配） |
+| Phase 2a (ETTm2 alpha 扫掠) | ✅ 完成 | 2026-06-15 | **45 / 45** | 3 pred_len × 5 alpha × 3 seeds，**质量检查通过（45 cells 完整，0 NaN）**；核心结论见 §4 |
+| Phase 2b (多数据集 alpha 扫掠) | ⏳ 待执行 | — | 0 | 需运行 ECL / ETTh1 / WTH；脚本：`bash repro_figures/run_phase2b.sh` |
+| Phase 3 (none / revin 基线) | 🟡 部分完成 | 2026-06-15 | 少量 | ETTm2 有少量数据，需补全 4 数据集；脚本：`bash repro_figures/run_baselines_none_revin.sh` |
+| Figure 3 PNG | ⏳ 待生成 | — | — | 等 Phase 2b 完成后 `python3 repro_figures/plot_figure3.py` |
+| Table 2 / 3 对比 | 🟡 初步 | 2026-06-15 | — | 已有 ETTm2，ratio ≈ 1.0×；ETTm2 pred_len=168 ratio = **1.01×**（几乎完全匹配） |
 
 **`results/figure3_runs.csv` 累计数据：**
 
@@ -254,23 +254,24 @@ norm=revin:
 |---|---|
 | 运行 | `bash repro_figures/run_phase2b.sh` |
 | 数据集 | ECL, ETTh1, WTH |
-| 配置 | Autoformer, dishts, prior=paper-phi-only, 4 horizons × 5 alphas × 3 seeds |
+| 配置 | Autoformer, dishts, prior=paper-phi-only, {96,168,336} × 5 alphas × 3 seeds |
 | 预计时间 | 6–9 小时（单 GPU） |
-| 预计 jobs | ~135 |
-| 检查 | 运行完毕后：`python3 repro_figures/check_phase2a.py`（验证 seed 数）和 `python3 repro_figures/compare_phase2b.py`（跨数据集汇总） |
+| 预计 jobs | 135 |
+| 检查 | 运行完毕后：`wc -l results/figure3_runs.csv`（核对行数）和 `python3 repro_figures/compare_phase2b.py`（跨数据集汇总） |
 | 目标 | 验证 Figure 3 "pred_len 越长 alpha 越大越有帮助" 的趋势是否跨数据集一致 |
 
-### 6.2 Phase 3（none / revin / dishts 基线完整）
+### 6.2 Phase 3（none / revin 基线，与 Phase 2a 的 dishts alpha=0.0 形成完整对比）
 
 | 项目 | 计划 |
 |---|---|
 | 运行 | `bash repro_figures/run_baselines_none_revin.sh` |
 | 数据集 | ETTm2, ECL, ETTh1, WTH |
-| 配置 | Autoformer, {none, revin, dishts}, alpha=0.0, prior=none, 4 horizons × 3 seeds |
+| 配置（本脚本新增） | Autoformer, {none, revin}, alpha=0.0, prior=none, {24,96,168,336} × 3 seeds |
+| 配置（复用 Phase 2a） | Autoformer, dishts, alpha=0.0, prior=none, {96,168,336} × 3 seeds |
 | 预计时间 | ~8 小时（单 GPU） |
-| 预计 jobs | 144 |
+| 预计新增 jobs | 96（4 datasets × 2 norms × 4 horizons × 3 seeds） |
 | 检查 | `python3 repro_figures/compare_paper.py --apply-paper-scale multivariate` |
-| 目标 | 生成论文 Table 2 / 3 完整对比数据，确认 dishts 在所有数据集上优于 revin |
+| 目标 | 生成论文 Table 2 / 3 完整对比数据（none vs revin vs dishts） |
 
 ### 6.3 图表生成
 
@@ -295,7 +296,7 @@ norm=revin:
 | 日期 | 内容 |
 |---|---|
 | 2026-06-14 | 完成环境搭建；Smoke Test 通过；完成 Phase 1 gate check；启动 Phase 2a sweep |
-| 2026-06-15 | Phase 2a 完成；确认 **"pred_len 越长 alpha 越大越有益"**；ETTm2 pred_len=168 **ratio=1.01×** 几乎完全匹配论文；整理实验报告 |
+| 2026-06-15 | Phase 2a 完成（45/45，0 NaN）；确认 **"pred_len 越长 alpha 越大越有益"**；ETTm2 pred_len=168 **ratio=1.01×** 几乎完全匹配论文；整理实验报告；进入 Phase 2b 准备 |
 
 ---
 

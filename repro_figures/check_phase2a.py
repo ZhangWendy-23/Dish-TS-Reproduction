@@ -28,8 +28,8 @@ CSV = ROOT / "results" / "figure3_runs.csv"
 
 TARGET_DATASET = "ETTm2"
 TARGET_NORM = "dishts"
-TARGET_ALPHAS = {0.0, 0.5, 1.0}
-TARGET_PREDS = {24, 96, 168, 336}
+TARGET_ALPHAS = {0.0, 0.25, 0.5, 0.75, 1.0}
+TARGET_PREDS = {96, 168, 336}
 
 # MSE above this value is flagged as "unreasonably large" for the
 # ETTm2 dataset at the default raw scale.
