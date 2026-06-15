@@ -298,14 +298,15 @@ alpha-vs-MSE curve.
 
 | Script | Default patience | Default max_epochs | Override env vars |
 |---|---|---|---|
-| `repro_figures/run_phase2a.sh` | **3** | **50** | `PATIENCE=5 MAX_EPOCHS=100 bash ...` |
-| `repro_figures/run_phase2b.sh` | **5** | **70** | `PATIENCE=3 MAX_EPOCHS=50 bash ...` |
+| `repro_figures/run_phase2a.sh` | **7** | **100** | `PATIENCE=3 MAX_EPOCHS=50 bash ...` (shorter, exploratory) |
+| `repro_figures/run_phase2b.sh` | **7** | **100** | `PATIENCE=5 MAX_EPOCHS=70 bash ...` (shorter, exploratory) |
 | `repro_figures/run_baselines_none_revin.sh` | **7** | **100** | Do not change — keep matching the Table 2 config. |
 | `repro_figures/run_table*.sh` | **7** | **100** | Do not change. |
 
-Set the env variables *at call time* on the 3090, e.g.
-`PATIENCE=5 MAX_EPOCHS=70 bash repro_figures/run_phase2a.sh` to run
-Phase 2a at the same fidelity as Phase 2b.
+Set the env variables *at call time* on the 3090 only when you
+explicitly want a shorter sweep, e.g.
+`PATIENCE=3 MAX_EPOCHS=50 bash repro_figures/run_phase2a.sh`
+for a quicker ETTm2-only exploration before the full run.
 
 After Phase 2a, run `python3 repro_figures/check_phase2a.py`. It prints
 a (pred_len × alpha) summary table, reports NaN / out-of-scale MSE

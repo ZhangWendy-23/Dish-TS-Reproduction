@@ -36,11 +36,12 @@ ALPHAS=(0.0 0.25 0.5 0.75 1.0)
 DATASETS=(${DATASETS:-ECL ETTh1 WTH})
 
 # --- speed-vs-fidelity knobs ---
-# Phase 2b = confirmatory sweep on ECL/ETTh1/WTH. A bit less aggressive
-# than Phase 2a, but still faster than the "patience=7 / max_epochs=100"
-# comparison baselines used for Tables 2/3.
-PATIENCE="${PATIENCE:-5}"
-MAX_EPOCHS="${MAX_EPOCHS:-70}"
+# Defaults match the main comparison configuration (patience=7,
+# max_epochs=100) so Phase 2b dishts numbers are directly comparable
+# with the Phase 3 none/revin baselines and the numbers in Table 2/3.
+# Override at call time: `PATIENCE=5 MAX_EPOCHS=70 bash repro_figures/run_phase2b.sh`.
+PATIENCE="${PATIENCE:-7}"
+MAX_EPOCHS="${MAX_EPOCHS:-100}"
 
 mkdir -p logs results
 

@@ -48,12 +48,12 @@ PREDS=(96 168 336)
 ALPHAS=(0.0 0.25 0.5 0.75 1.0)
 
 # --- speed-vs-fidelity knobs ---
-# Phase 2a is a qualitative trend-analysis sweep, so we intentionally
-# use a tighter early-stop and fewer epochs than the comparison baselines.
-# Keep PHASE-3 and run_table*.sh at --patience=7 / --train_epochs=100 so
-# the "Table 2" numbers remain comparable to the main experiments.
-PATIENCE="${PATIENCE:-3}"
-MAX_EPOCHS="${MAX_EPOCHS:-50}"
+# Phase 2a defaults match the main comparison configuration used for
+# Tables 2/3 (patience=7, max_epochs=100). You can still override at
+# call time, e.g. `PATIENCE=3 MAX_EPOCHS=50 bash repro_figures/run_phase2a.sh`
+# to do a shorter qualitative sweep.
+PATIENCE="${PATIENCE:-7}"
+MAX_EPOCHS="${MAX_EPOCHS:-100}"
 
 mkdir -p logs results
 
