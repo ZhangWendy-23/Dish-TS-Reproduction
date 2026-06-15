@@ -47,6 +47,14 @@ SEEDS=(2023 2024 2025)
 PREDS=(96 168 336)
 ALPHAS=(0.0 0.25 0.5 0.75 1.0)
 
+# --- speed-vs-fidelity knobs ---
+# Phase 2a is a qualitative trend-analysis sweep, so we intentionally
+# use a tighter early-stop and fewer epochs than the comparison baselines.
+# Keep PHASE-3 and run_table*.sh at --patience=7 / --train_epochs=100 so
+# the "Table 2" numbers remain comparable to the main experiments.
+PATIENCE="${PATIENCE:-3}"
+MAX_EPOCHS="${MAX_EPOCHS:-50}"
+
 mkdir -p logs results
 
 MASTER_LOG="logs/phase2a_master.log"
@@ -57,6 +65,7 @@ njobs=$(( ${#PREDS[@]} * ${#ALPHAS[@]} * ${#SEEDS[@]} ))
 {
     echo "[phase2a] dataset=$DATASET backbone=Autoformer norm=dishts prior=paper-phi-only"
     echo "[phase2a] horizons=${PREDS[*]}   alphas=${ALPHAS[*]}   seeds=${SEEDS[*]}"
+    echo "[phase2a] patience=$PATIENCE max_epochs=$MAX_EPOCHS (faster sweep — see run_phase2b.sh for tighter config)"
     echo "[phase2a] TOTAL=$njobs jobs"
     echo "[phase2a] GPU=$GPU  cwd=$PROJ_ROOT"
 } | tee -a "$MASTER_LOG"
@@ -71,14 +80,14 @@ for PL in "${PREDS[@]}"; do
         for seed in "${SEEDS[@]}"; do
             log="logs/fig3_${DATASET}_Autoformer_paper-phi-only_PL${PL}_alpha${alpha}_seed${seed}.log"
             {
-                echo "[phase2a] ($((done+1))/$njobs) pl=$PL alpha=$alpha seed=$seed bs=128 -> $log"
+                echo "[phase2a] ($((done+1))/$njobs) pl=$PL alpha=$alpha seed=$seed bs=128 patience=$PATIENCE max_epochs=$MAX_EPOCHS -> $log"
             } | tee -a "$MASTER_LOG"
 
             python3 -u train.py \
                 --data "$DATASET" --model Autoformer --norm dishts \
                 --alpha "$alpha" --prior paper-phi-only --dish_init avg \
                 --seq_len "$PL" --pred_len "$PL" --label_len 48 \
-                --batch_size 128 --lr 1e-3 --train_epochs 100 --patience 7 \
+                --batch_size 128 --lr 1e-3 --train_epochs "$MAX_EPOCHS" --patience "$PATIENCE" \
                 --features M --seed "$seed" --gpu "$GPU" --figure3 \
                 >> "$log" 2>&1
             rc=$?

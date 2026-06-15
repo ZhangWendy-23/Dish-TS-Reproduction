@@ -35,6 +35,13 @@ PREDS=(96 168 336)
 ALPHAS=(0.0 0.25 0.5 0.75 1.0)
 DATASETS=(${DATASETS:-ECL ETTh1 WTH})
 
+# --- speed-vs-fidelity knobs ---
+# Phase 2b = confirmatory sweep on ECL/ETTh1/WTH. A bit less aggressive
+# than Phase 2a, but still faster than the "patience=7 / max_epochs=100"
+# comparison baselines used for Tables 2/3.
+PATIENCE="${PATIENCE:-5}"
+MAX_EPOCHS="${MAX_EPOCHS:-70}"
+
 mkdir -p logs results
 
 MASTER_LOG="logs/phase2b_master.log"
@@ -45,6 +52,7 @@ total=$(( total_per_ds * ${#DATASETS[@]} ))
 {
     echo "[phase2b] datasets=${DATASETS[*]}"
     echo "[phase2b] horizons=${PREDS[*]}   alphas=${ALPHAS[*]}   seeds=${SEEDS[*]}"
+    echo "[phase2b] patience=$PATIENCE max_epochs=$MAX_EPOCHS"
     echo "[phase2b] TOTAL=$total jobs ($total_per_ds per dataset)"
     echo "[phase2b] GPU=$GPU  cwd=$PROJ_ROOT"
 } | tee -a "$MASTER_LOG"
@@ -60,14 +68,14 @@ for DATA in "${DATASETS[@]}"; do
             for seed in "${SEEDS[@]}"; do
                 log="logs/fig3_${DATA}_Autoformer_paper-phi-only_PL${PL}_alpha${alpha}_seed${seed}.log"
                 {
-                    echo "[phase2b] ($((done+1))/$total) data=$DATA pl=$PL alpha=$alpha seed=$seed bs=$bs -> $log"
+                    echo "[phase2b] ($((done+1))/$total) data=$DATA pl=$PL alpha=$alpha seed=$seed bs=$bs patience=$PATIENCE max_epochs=$MAX_EPOCHS -> $log"
                 } | tee -a "$MASTER_LOG"
 
                 python3 -u train.py \
                     --data "$DATA" --model Autoformer --norm dishts \
                     --alpha "$alpha" --prior paper-phi-only --dish_init avg \
                     --seq_len "$PL" --pred_len "$PL" --label_len 48 \
-                    --batch_size "$bs" --lr 1e-3 --train_epochs 100 --patience 7 \
+                    --batch_size "$bs" --lr 1e-3 --train_epochs "$MAX_EPOCHS" --patience "$PATIENCE" \
                     --features M --seed "$seed" --gpu "$GPU" --figure3 \
                     >> "$log" 2>&1
                 rc=$?

@@ -290,6 +290,23 @@ worse than alpha>0 on any horizon. A regression at this stage usually
 means the latest checkout of `DishTS.py` has diverged; investigate
 before burning GPU time on the larger sweeps.**
 
+**Speed / fidelity tradeoff.** Phase 2a and 2b are *qualitative trend*
+experiments, not final comparison tables, so they use tighter early-stop
+than the `patience=7 / max_epochs=100` baseline used for Tables 2/3.
+This roughly halves sweep time without materially changing the
+alpha-vs-MSE curve.
+
+| Script | Default patience | Default max_epochs | Override env vars |
+|---|---|---|---|
+| `repro_figures/run_phase2a.sh` | **3** | **50** | `PATIENCE=5 MAX_EPOCHS=100 bash ...` |
+| `repro_figures/run_phase2b.sh` | **5** | **70** | `PATIENCE=3 MAX_EPOCHS=50 bash ...` |
+| `repro_figures/run_baselines_none_revin.sh` | **7** | **100** | Do not change — keep matching the Table 2 config. |
+| `repro_figures/run_table*.sh` | **7** | **100** | Do not change. |
+
+Set the env variables *at call time* on the 3090, e.g.
+`PATIENCE=5 MAX_EPOCHS=70 bash repro_figures/run_phase2a.sh` to run
+Phase 2a at the same fidelity as Phase 2b.
+
 After Phase 2a, run `python3 repro_figures/check_phase2a.py`. It prints
 a (pred_len × alpha) summary table, reports NaN / out-of-scale MSE
 rows, and suggests whether to proceed to Phase 2b.
