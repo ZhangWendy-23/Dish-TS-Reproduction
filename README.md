@@ -16,6 +16,24 @@
 
 ---
 
+## Document Roadmap — Which File to Read
+
+This repository has **three documents**, each with a clearly-separated purpose. Reading the right one saves time:
+
+| File | Purpose | Audience |
+|------|---------|----------|
+| **README.md** | **This file.** How to run experiments from scratch. Installation, commands, parameter reference, sweep scripts, troubleshooting. | Anyone wanting to reproduce paper results or run custom experiments. |
+| **IMPROVEMENTS.md** | Code changes we made relative to the original paper repository. New scripts, new modules, parameter differences. | Reviewers / developers who want to understand *what* changed and *why*. |
+| **EXPERIMENT_REPORT.md** | Our own experiment results. What experiments we ran, what we found, what is still pending. Includes Phase-by-Phase results and key findings (alpha trend, ETTm2 pred_len=168 ratio=1.01x, etc.). | Reviewers who want to see our data and conclusions. |
+
+**Reader-specific guidance:**
+
+- **I just want to reproduce the paper's numbers** → start with the Installation section below and follow the commands in this README.
+- **I want to understand what code changed vs the paper** → read [IMPROVEMENTS.md](IMPROVEMENTS.md).
+- **I want to see our experimental results and progress** → read [EXPERIMENT_REPORT.md](EXPERIMENT_REPORT.md).
+
+---
+
 ## :warning: The Alpha Rule — Read This Before Running Experiments
 
 **Short version:** For every *main comparison experiment* (Tables 1 – 6 and RevIN
@@ -210,7 +228,8 @@ Dish-TS-Reproduction/
 │   └── figures/                  # Plots and forecast-sample CSVs
 │
 └── logs/                         # Full per-run training logs
-└── IMPROVEMENTS.md               # Complete modification log vs original repo
+├── IMPROVEMENTS.md               # Complete modification log vs original repo
+└── EXPERIMENT_REPORT.md          # Phase-by-phase experiment results and findings
 ```
 
 ---
@@ -334,28 +353,29 @@ multi-dataset summary.
 
 | Phase | Status | Progress | Key Finding |
 |-------|--------|----------|-------------|
-| Phase 1 — ETTm2 gate check (27 jobs) | :white_check_mark: Done | 27/27 | alpha=0.0 best on short horizons; Gate passed |
-| Phase 2a — ETTm2 dense alpha (45 jobs) | :arrow_forward: Running | ~42/45 | **Longer pred_len benefits more from larger alpha** (matches paper Fig.3) |
-| Phase 2b — 3-dataset alpha sweep | :hourglass: Pending | 0/135 | Waiting for Phase 2a completion |
-| Phase 3 — None / RevIN baselines | :hourglass: Pending | 0/~96 | Planned after Phase 2b |
+| Phase 1 — ETTm2 gate check (27 jobs) | ✅ Done | 27/27 | alpha=0.0 best on short horizons; Gate passed |
+| Phase 2a — ETTm2 dense alpha sweep (45 jobs) | ✅ Done | 45/45 | **Longer pred_len benefits more from larger alpha** (matches paper Fig.3) |
+| Phase 2b — 3-dataset alpha sweep | ⏳ Pending | 0/135 | Waiting for Phase 2a completion |
+| Phase 3 — None / RevIN baselines | 🟡 Partial | partial | norm=dishts beats none/revin on pred_len ≥ 96 |
 
-**Phase 2a interim results (ETTm2, Autoformer, paper-phi-only, mean over seeds):**
+**Phase 2a interim results (ETTm2, Autoformer, paper-phi-only, mean over 3 seeds):**
 
 | pred_len | alpha=0.0 | alpha=0.25 | alpha=0.5 | alpha=0.75 | alpha=1.0 | Best alpha |
 |----------|-----------|------------|-----------|------------|-----------|------------|
-| 96 | 11.94 | 12.96 | 12.66 | 12.80 | 12.44 | 0.0 |
-| 168 | 14.55 | **13.47** | 14.09 | 14.54 | 14.48 | **0.25 (-7.4%)** |
-| 336 | 18.66 | 18.41 | 18.33 | — | **18.27** | **1.0 (-2.1%)** |
+| 96 (short) | 11.94 | 12.96 | 12.66 | 12.80 | 12.44 | 0.0 |
+| **168 (mid)** | 14.55 | **13.47** | 14.09 | 14.54 | 14.48 | **0.25 (−7.4%)** |
+| **336 (long)** | 18.66 | 18.41 | 18.33 | — | **18.27** | **1.0 (−2.1%)** |
 
-**Paper comparison (multivariate paper-scale):**
+**Paper-scale comparison (ours vs paper on Table 2 / 3 scope):**
 
-| Dataset | pred_len | Our Dish-TS | Paper Dish-TS | Ratio |
-|---------|----------|-------------|---------------|-------|
-| ETTm2 | 168 | 1.34 | 1.33 | **1.01x** |
-| ETTm2 | 336 | 1.73 | 1.60 | 1.08x |
-| WTH | 24 | 2.48 | 2.48 | 1.00x |
+| Dataset | pred_len | Our Dish-TS | Paper Dish-TS | Ratio ours/paper |
+|---------|----------|-------------|---------------|------------------|
+| ETTm2 | 24 | 0.76 | 0.65 | 1.17× |
+| **ETTm2** | **168** | **1.34** | **1.33** | **1.01× ✅** |
+| ETTm2 | 336 | 1.73 | 1.60 | 1.08× |
+| WTH | 24 | 2.48 | 2.48 | **1.00× ✅** |
 
-Full report: [results/experiment_report.md](results/experiment_report.md)
+Full report: [EXPERIMENT_REPORT.md](EXPERIMENT_REPORT.md) — see §4 (Results) and §4.3 (alpha conclusion).
 
 Always run inside a detachable terminal. Example:
 

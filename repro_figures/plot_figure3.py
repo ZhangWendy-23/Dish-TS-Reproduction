@@ -1,143 +1,188 @@
-"""Plot a "Figure 3 -- MSE vs lookback/pred_len per alpha" style plot.
-
-Reads a CSV produced by train.py (results/figure3_runs.csv), which has columns:
-
-    dataset, seq_len, pred_len, model, norm, alpha, MSE, MAE, timestamp
-
-The script aggregates the rows, picks a dataset / model / norm group, and plots
-MSE (or MSE z-score) against the prediction horizon for each alpha.
+"""Figure 3 — alpha-sensitivity curves.
 
 Usage
 -----
-    # Use defaults (dataset=ETTm2, model=Autoformer, norm=dists)
-    python3 repro_figures/plot_figure3.py --input results/figure3_runs.csv
+    python3 repro_figures/plot_figure3.py [--input CSV] [--output DIR]
 
-    # Fully specified:
-    python3 repro_figures/plot_figure3.py \
-        --input results/figure3_runs.csv \
-        --dataset ETTm2 --model Autoformer --norm dishts \
-        --output results/figures/figure3_ETTm2.png \
-        --zscore
+Reads ``results/figure3_runs.csv`` and produces per-dataset PNG figures
+showing mean MSE across seeds as a function of alpha, one subplot per
+``pred_len``.  The target visual style is a close match to the paper's
+Figure 3 so the image can be dropped directly into a reproduction report.
 
-    # Overlay paper reference from `paper_results/table3_revin_comparison.csv`
-    # or similar reference CSVs:
-    python3 repro_figures/plot_figure3.py \
-        --input results/figure3_runs.csv \
-        --paper paper_results/table3_revin_comparison.csv \
-        --output results/figures/figure3_ETTm2_with_paper.png
-
-Outputs
--------
-    <output>.png
+Output files
+------------
+results/figures/figure3_<dataset>.png
+    One PNG per dataset present in the CSV.  Contains one subplot per
+    prediction horizon, with alpha on the x-axis and mean MSE on the
+    y-axis.  Error bars show +/-1 standard deviation across seeds.
+results/figures/figure3_summary.csv
+    Machine-readable copy of the plotted data, useful when assembling
+    a LaTeX table.
 """
 from __future__ import annotations
 
 import argparse
-import os
+import csv
+import math
 import sys
+from collections import defaultdict
+from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT)
-
-DEFAULT_PALETTE = [
-    "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",
-    "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",
-]
+ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_CSV = ROOT / "results" / "figure3_runs.csv"
+DEFAULT_OUT = ROOT / "results" / "figures"
 
 
-def _load(path: str) -> pd.DataFrame:
-    df = pd.read_csv(path)
-    # Normalise column names: allow either "pred_len" or "horizon"
-    rename_map = {}
-    for col in df.columns:
-        if col.lower() in ("horizon", "window", "length") and "pred_len" not in df.columns:
-            rename_map[col] = "pred_len"
-    if rename_map:
-        df = df.rename(columns=rename_map)
-    return df
+def _load_rows(csv_path: Path) -> list[dict]:
+    with open(csv_path, newline="") as fh:
+        return list(csv.DictReader(fh))
 
 
-def plot_alpha_sensitivity(df: pd.DataFrame, dataset: str, model: str, norm: str,
-                           zscore: bool, title: str) -> plt.Figure:
-    sub = df[(df["dataset"] == dataset) & (df["model"] == model) & (df["norm"] == norm)].copy()
-    if sub.empty:
-        raise ValueError(
-            f"No rows for dataset={dataset} / model={model} / norm={norm}. "
-            f"Available: {df[['dataset', 'model', 'norm']].drop_duplicates().to_string(index=False)}"
-        )
-    sub = sub.sort_values("alpha")
-    alphas = sorted(sub["alpha"].unique())
+def _aggregate(rows: list[dict]) -> dict:
+    """Return a dict {(dataset, pred_len, alpha): {'mean':float,'std':float,'n':int}}."""
+    raw: dict[tuple[str, int, float], list[float]] = defaultdict(list)
+    for r in rows:
+        if r.get("norm") != "dishts":
+            continue
+        try:
+            ds = r["dataset"]
+            pl = int(r["pred_len"])
+            al = float(r["alpha"])
+            mse = float(r["MSE"])
+        except (KeyError, ValueError, TypeError):
+            continue
+        if math.isnan(mse) or math.isinf(mse):
+            continue
+        raw[(ds, pl, al)].append(mse)
 
-    # One line per alpha: x = pred_len, y = MSE (or z-score).
-    # To handle multiple runs at same (alpha, pred_len), take the mean.
-    grouped = sub.groupby(["alpha", "pred_len"], as_index=False)["MSE"].mean()
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    palette = DEFAULT_PALETTE[:max(1, len(alphas))]
-
-    y_col = "MSE"
-    if zscore:
-        mu, sd = grouped["MSE"].mean(), grouped["MSE"].std()
-        if sd > 0:
-            grouped["MSE_z"] = (grouped["MSE"] - mu) / sd
-            y_col = "MSE_z"
-
-    # Get unique pred_len values for x-axis ticks
-    all_preds = sorted(grouped["pred_len"].unique())
-
-    for idx, alpha in enumerate(alphas):
-        seg = grouped[grouped["alpha"] == alpha].sort_values("pred_len")
-        ax.plot(seg["pred_len"], seg[y_col], marker="o", linewidth=2.0,
-                color=palette[idx], label=f"alpha = {alpha:g}")
-
-    ax.set_xlabel("Prediction Horizon (pred_len)")
-    ax.set_ylabel("MSE (z-score)" if zscore else "MSE")
-    ax.set_title(title)
-    ax.set_xticks(all_preds)  # use actual pred_len values, not auto ticks
-    ax.set_xticklabels([str(int(p)) for p in all_preds])
-    ax.grid(True, alpha=0.3)
-    ax.legend(title="alpha", loc="best", fontsize=10)
-    fig.tight_layout()
-    return fig
+    agg: dict[tuple[str, int, float], dict[str, float]] = {}
+    for key, vals in raw.items():
+        n = len(vals)
+        mean = sum(vals) / n
+        var = sum((v - mean) ** 2 for v in vals) / n
+        agg[key] = {"mean": mean, "std": math.sqrt(var), "n": n}
+    return agg
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--input", default=os.path.join(ROOT, "results", "figure3_runs.csv"),
-                    help="CSV of runs, one row per (dataset, model, norm, alpha, pred_len, MSE).")
-    ap.add_argument("--dataset", default="ETTm2", help="Dataset to plot.")
-    ap.add_argument("--model", default="Autoformer", help="Backbone model.")
-    ap.add_argument("--norm", default="dishts", help="Norm method to plot (typically dishts).")
-    ap.add_argument("--output", default=None,
-                    help="Output PNG path (default: results/figures/figure3_<dataset>.png).")
-    ap.add_argument("--zscore", action="store_true",
-                    help="Normalise MSE to z-score (original paper Figure 3 uses z-score).")
-    ap.add_argument("--title", default=None)
-    args = ap.parse_args()
+def _summary_csv(agg: dict, out_dir: Path) -> Path:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "figure3_summary.csv"
+    with open(out_path, "w", newline="") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(["dataset", "pred_len", "alpha", "mean_MSE", "std_MSE", "n_seeds"])
+        for key in sorted(agg):
+            ds, pl, al = key
+            writer.writerow([ds, pl, al, f"{agg[key]['mean']:.8g}",
+                             f"{agg[key]['std']:.8g}", agg[key]["n"]])
+    return out_path
 
-    df = _load(args.input)
-    title = (args.title
-             or f"Figure 3 style -- {args.dataset} / {args.model} / norm={args.norm}")
-    fig = plot_alpha_sensitivity(df, args.dataset, args.model, args.norm,
-                                 args.zscore, title)
 
-    if args.output is None:
-        out_dir = os.path.join(ROOT, "results", "figures")
-        os.makedirs(out_dir, exist_ok=True)
-        out_png = os.path.join(out_dir, f"figure3_{args.dataset}.png")
-    else:
-        out_png = args.output
-    os.makedirs(os.path.dirname(os.path.abspath(out_png)), exist_ok=True)
-    fig.savefig(out_png, dpi=150, bbox_inches="tight")
-    plt.close(fig)
-    print(f"[plot_figure3] saved -> {out_png}")
+def _plot(agg: dict, out_dir: Path) -> list[Path]:
+    datasets = sorted({k[0] for k in agg})
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Prefer matplotlib; fall back gracefully if unavailable.
+    try:
+        import matplotlib
+        matplotlib.use("Agg")  # headless
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("[plot_figure3] matplotlib not available; producing text-only summary.",
+              file=sys.stderr)
+        return []
+
+    produced: list[Path] = []
+    for ds in datasets:
+        # Collect relevant keys for this dataset.
+        preds = sorted({k[1] for k in agg if k[0] == ds})
+        ncols = min(2, len(preds))
+        nrows = (len(preds) + ncols - 1) // ncols
+        fig, axes = plt.subplots(nrows, ncols, figsize=(4 * ncols + 1, 3 * nrows + 1),
+                                 sharey=False)
+        if not isinstance(axes, list):
+            axes = [axes]
+        axes_flat = [a for row in axes for a in row] if nrows > 1 else axes
+        fig.suptitle(f"Figure 3 — alpha sensitivity ({ds})", fontsize=12)
+
+        for ax, pred_len in zip(axes_flat, preds):
+            alphas = sorted({k[2] for k in agg if k[0] == ds and k[1] == pred_len})
+            means = [agg[(ds, pred_len, a)]["mean"] for a in alphas]
+            stds = [agg[(ds, pred_len, a)]["std"] for a in alphas]
+            ax.errorbar(alphas, means, yerr=stds, marker="o", capsize=4, color="k",
+                        linestyle="--", alpha=0.6)
+            ax.plot(alphas, means, marker="s", color="#1f77b4", linewidth=2)
+            ax.set_xlabel("alpha")
+            ax.set_ylabel("MSE (mean over seeds)")
+            ax.set_title(f"pred_len = {pred_len}")
+            ax.grid(True, which="both", ls="--", alpha=0.3)
+            for x, y, s in zip(alphas, means, [agg[(ds, pred_len, a)]["n"] for a in alphas]):
+                ax.annotate(f"n={s}", (x, y), textcoords="offset points",
+                            xytext=(0, 10), ha="center", fontsize=8)
+        for ax in axes_flat[len(preds):]:
+            ax.set_visible(False)
+
+        fig.tight_layout(rect=(0, 0, 1, 0.96))
+        out_path = out_dir / f"figure3_{ds}.png"
+        fig.savefig(out_path, dpi=140)
+        plt.close(fig)
+        produced.append(out_path)
+    return produced
+
+
+def _print_summary(agg: dict) -> None:
+    datasets = sorted({k[0] for k in agg})
+    print(f"{'dataset':>10} {'pred_len':>9} {'alpha':>6} {'n':>3} {'mean_MSE':>12} {'std_MSE':>12}")
+    for ds in datasets:
+        preds = sorted({k[1] for k in agg if k[0] == ds})
+        for pl in preds:
+            alphas = sorted({k[2] for k in agg if k[0] == ds and k[1] == pl})
+            for al in alphas:
+                stats = agg[(ds, pl, al)]
+                print(f"{ds:>10} {pl:>9d} {al:>6.2f} {stats['n']:>3d} "
+                      f"{stats['mean']:>12.6f} {stats['std']:>12.6f}")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--input", default=str(DEFAULT_CSV),
+                        help=f"Path to figure3_runs.csv (default: {DEFAULT_CSV})")
+    parser.add_argument("--output", default=str(DEFAULT_OUT),
+                        help=f"Directory for plots (default: {DEFAULT_OUT})")
+    parser.add_argument("--no-plot", action="store_true",
+                        help="Skip matplotlib plots; print text summary only")
+    args = parser.parse_args()
+
+    csv_path = Path(args.input)
+    if not csv_path.exists():
+        print(f"[plot_figure3] ERROR: {csv_path} does not exist", file=sys.stderr)
+        return 2
+    rows = _load_rows(csv_path)
+    agg = _aggregate(rows)
+    if not agg:
+        print("[plot_figure3] No dishts rows found in the CSV — "
+              "run Phase 2a first.", file=sys.stderr)
+        return 1
+
+    print("=" * 80)
+    print("Figure 3 — alpha-sensitivity summary")
+    print("=" * 80)
+    _print_summary(agg)
+
+    out_dir = Path(args.output)
+    summary_path = _summary_csv(agg, out_dir)
+    print(f"\nWrote summary CSV: {summary_path}")
+
+    if not args.no_plot:
+        paths = _plot(agg, out_dir)
+        if paths:
+            print("Wrote PNG:")
+            for p in paths:
+                print(f"  {p}")
+        else:
+            print("(matplotlib not available — no PNG produced.)")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

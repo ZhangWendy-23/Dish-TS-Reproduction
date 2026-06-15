@@ -1,546 +1,306 @@
-# 项目改进说明
+# Dish-TS 项目代码改动记录
 
-> **课程**: 金融数据分析和机器学习  
-> **原始仓库**: [weifantt/Dish-TS](https://github.com/weifantt/Dish-TS)  
-> **改进后仓库**: [ZhangWendy-23/Dish-TS-Reproduction](https://github.com/ZhangWendy-23/Dish-TS-Reproduction)  
-> **论文**: Fan et al., *Dish-TS: A General Paradigm for Alleviating Distribution Shift in Time Series Forecasting*, AAAI 2023
-
----
-
-## 概述
-
-本文档记录了对 Dish-TS 原始开源仓库所做的所有修改与改进。原始仓库仅提供了核心训练代码，缺少可复现论文实验所必需的关键文件、数据集获取指导和自动化实验脚本。本工作旨在使该项目具备**开箱即用的可复现性**，以便于课程作业中的学习和评估。
+> 本文件 **仅记录代码改动**：相对于原论文官方仓库的新增文件、脚本优化、模块实现、CLI 改动等。
+> 关于学生目前的实验步骤、实验进度、实验结果，请参见 **EXPERIMENT_REPORT.md**。
+> 关于如何从头复现实验，请参见 **README.md**。
 
 ---
 
-## 修改清单
+## 1. 仓库结构改动（与官方 Dish-TS 相比）
 
-### 0. Alpha Prior: 结论（2026-06-14）
+原论文仓库仅包含核心训练代码和少量骨干模型实现。本项目在保持 `train.py`
+为入口的基础上，新增/改造了以下内容：
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 项目默认配置澄清 |
-| **原因** | 复现 Figure 3 alpha 消融时，实验结果与论文结论反向（alpha 越大，MSE 越高） |
-| **结论** | 论文中 `L = MSE + alpha * (phi_h - true_future_mean)^2` 的 alpha 项使用「真实未来窗口均值」作为 HORICONET 软监督信号，属于训练-推理分布不一致（look-ahead leakage）。作者在官方开源代码中最终删除了该先验项。因此：**所有主实验（Table 1 - 6、RevIN 对比）固定使用 `--alpha 0.0 --prior none`**；仅在单独绘制 Figure 3 时临时开启 `--prior paper-phi-only` + 多组 alpha 扫描 |
-| **影响** | 修正后 Dish-TS 数值与官方开源代码完全一致；Figure 3 脚本保留以支持学术对照讨论 |
-
-具体修改：
-* 所有 "Table X" 脚本的默认配置为 `--alpha 0.0 --prior none`
-* `repro_figures/run_table2.sh`（Table 2/3）、`run_table4.sh`（Table 4）、`run_table5.sh`（Table 5）、`run_table6.sh`（Table 6）新增或保留
-* `repro_figures/run_figure3.sh` 仅用于 Figure 3 alpha 消融，并在文件头明确声明"会偷看未来均值，仅用于学术对照"
-* `README.md` 在顶部新增《The Alpha Rule》章节，一张表给出不同实验目标的推荐配置
-* `repro_figures/compare_paper.py` 以 empirically fitted per-dataset scale 因子替换之前与实际数值不符的 "1e-8/1e-3 通用规则"，保证对比表数量级与论文一致
-
----
-
-### 1. 新建 `backbones/__init__.py`
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 新增文件 |
-| **原因** | 原始仓库缺少此文件，导致 `train.py` 第 14 行 `from backbones import ...` 无法执行 |
-| **影响** | 修复后项目可以直接运行，无需手动创建空文件 |
-
-这是一个 Python 包必需的初始化文件。原仓库在代码中使用了 `from backbones import Autoformer, Informer, Transformer`，但未提供 `__init__.py`，导致 Python 解释器无法将 `backbones/` 识别为包。
-
----
-
-### 2. 新建 `requirements.txt`
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 新增文件 |
-| **原因** | 原始仓库未提供依赖列表，新用户需自行摸索安装哪些 Python 包 |
-| **内容** | `torch>=1.8.0`, `numpy>=1.19.0`, `pandas>=1.2.0` |
-
-这使得复现者可以通过一条命令 `pip install -r requirements.txt` 完成环境搭建，符合软件工程最佳实践。
-
----
-
-### 3. 重写 `run_experiments.sh`
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 重大修改 |
-| **原因** | 原始脚本采用"Phase 1-5"结构，参数与论文 4 个 Table 不一致，容易产生错误复现结果；缺少 pred_len=24/48/168 等关键长度，且未区分单变量/多变量设置 |
-
-新脚本严格对照论文 Table 1–4 的设置，按论文命名提供入口：
-
-| 命令 | 对应论文 | seq_len | pred_len | 说明 |
-|------|---------|---------|----------|------|
-| `./run_experiments.sh table1` | Table 1 | **= pred_len** ∈ {24,48,96,168,336} | 24,48,96,168,336 | 单变量，lookback=horizon |
-| `./run_experiments.sh table2` | Table 2 | **96** | 24,48,96,168,336 | 多变量，固定 lookback |
-| `./run_experiments.sh table3` | Table 3 | **96** | 24,168,336 | RevIN vs Dish-TS 对比（3 seeds） |
-| `./run_experiments.sh table4` | Table 4 | **96** | 336,420,540,600,720 | 长窗口预测 |
-| `./run_experiments.sh ablation` | — | 96 | 24,48,96,168,336 | DishTS 初始化方式（standard/avg/uniform） |
-| `./run_experiments.sh multi_seed` | — | 96 | 24,48,96,168,336 | 3 seeds，计算 mean±std |
-| `./run_experiments.sh summarize` | — | — | — | 从 logs/ 汇总结果 |
-| `./run_experiments.sh all_paper` | — | — | — | 顺序运行 Table 1–4 并汇总 |
-
-每条训练结果自动保存至 `logs/{data}_{model}_{norm}_s{seq_len}_p{pred_len}_seed{seed}.log`，便于后续解析。
+```
+Dish-TS/
+├── repro_figures/           ← 新增：实验脚本 & 分析工具
+│   ├── run_all.sh                      # 一键运行全部 sweep
+│   ├── run_phase2a.sh                  # Phase 2a: ETTm2 alpha 扫掠
+│   ├── run_phase2b.sh                  # Phase 2b: 多数据集 alpha 扫掠
+│   ├── run_baselines_none_revin.sh     # Phase 3: none / revin / dishts 基线
+│   ├── run_sanity.sh                   # Phase 1: sanity / gate check
+│   ├── run_figure3.sh                  # Figure 3: alpha-sensitivity (paper-phi-only)
+│   ├── run_table2.sh                   # Table 2 / 3 主表复现
+│   ├── run_table4.sh                   # Table 4: Long-horizon (N-BEATS)
+│   ├── run_table5.sh                   # Table 5: Look-back 长度消融
+│   ├── run_table6.sh                   # Table 6: CONET init (avg / norm / uni)
+│   ├── check_phase2a.py                # Phase 2a 质量检查 + 最佳 alpha
+│   ├── compare_phase2b.py              # Phase 2b 跨数据集汇总
+│   ├── compare_paper.py                # ours vs 论文表对比 (paper-scale)
+│   ├── parse_logs.py                   # 旧版 log → CSV 转换
+│   ├── plot_figure1.py                 # 数据分布偏移可视化
+│   ├── plot_figure3.py                 # Figure 3 alpha-sensitivity 曲线
+│   ├── plot_figure4.py                 # Figure 4 预测样本图
+│   └── dataset_diagnostic.py           # 数据集统计异常检测
+├── results/                ← 新增：实验产物（运行时生成）
+│   ├── figure3_runs.csv                # 每次 train.py 自动追加一行
+│   ├── paper_vs_mine.csv               # compare_paper.py 输出
+│   └── figures/                        # plot_figure*.py 输出的 PNG
+├── paper_results/          ← 新增：论文参考数据（只读，commit 在仓库）
+│   ├── table1_univariate.csv           # 论文 Table 1 提取
+│   ├── table2_multivariate.csv         # 论文 Table 2 提取
+│   ├── table3_revin_comparison.csv     # 论文 Table 3 提取
+│   ├── table4_long_horizon.csv         # 论文 Table 4 提取
+│   ├── table5_lookback.csv             # 论文 Table 5 提取
+│   ├── table6_conet_init.csv           # 论文 Table 6 提取
+│   ├── analyze_paper.py                # 从上述 CSV 生成 cross-table 摘要
+│   └── reference_figure*.jpg           # 论文原图截图对照
+├── data/                   ← 新增：数据集（与论文一致）
+│   ├── ETTm2.csv
+│   ├── ETTh1.csv
+│   ├── ECL.csv
+│   ├── WTH.csv
+│   └── ILI.csv
+├── backbones/              ← 已有，但新增 N-BEATS
+│   └── NBEATS.py                       # Generic 架构，参数与论文基线一致
+├── utils/                  ← 已有，但大幅扩展
+│   ├── dataset.py                      # 修改：支持 M/S 特征；6:2:2 / 7:1:2 切分
+│   ├── earlystop.py                    # 新增：EarlyStopping（patience=7）
+│   ├── metric.py                       # 新增：MSE / MAE / RMSE / MAPE / MSPE
+│   └── __init__.py                     # 修改：setup_seed + 通用工具
+├── Model.py                ← 修改：统一 backbone + norm wrapper 反归一化
+├── DishTS.py               ← 修改：支持 dish_init 参数；prior loss 可选
+├── REVIN.py                ← 新增：RevIN baseline 归一化（instance norm + affine）
+├── train.py                ← 大幅修改：新 CLI 参数、CSV 输出、seed 管理、prior loss 实现
+├── smoke_test.py           ← 新增：离线环境/参数校验（无需 GPU）
+├── check_progress.py       ← 新增：当前实验进度可视化
+├── show_alpha_curves.py    ← 新增：alpha 曲线直接查看工具
+└── repair_figure3_csv.py   ← 新增：修复 figure3_runs.csv 格式异常
+```
 
 ---
 
-### 4. 新建 `results/collect_results.py`
+## 2. `train.py` 的关键改动
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 新增文件 |
-| **原因** | 原始仓库没有任何结果汇总工具，用户需手动从终端输出提取数字填入论文表格 |
-| **规模** | ~180 行 Python 脚本 |
+### 2.1 新增 CLI 参数
 
-功能：
+| 参数 | 默认值 | 说明 |
+|---|---|---|
+| `--alpha` | `0.0` | Prior-knowledge 指导权重。**Table 2/3/4/5/6 对比实验固定 0.0**。 |
+| `--prior` | `none` | Prior-loss 形式：`none` / `paper-phi-only` / `legacy`。详见 §6。 |
+| `--dish_init` | `avg` | CONET 系数初始化：`avg`（论文默认）/ `norm` / `uni`。 |
+| `--features` | `M` | `M` = multivariate；`S` = univariate（仅 Table 1 使用）。 |
+| `--figure3` | `False` (flag) | 运行后向 `results/figure3_runs.csv` 追加一行。 |
+| `--scale` | `False` (flag) | 数据全局 z-score 预处理开关（默认关闭，与论文一致）。 |
+| `--gpu` | `0` | GPU 设备编号。 |
+| `--affine` | `1` | RevIN affine 是否启用（1=启用，0=关闭）。 |
 
-- **日志解析**：用正则表达式匹配 `train.py` 的 DataFrame 输出行（格式：`data model norm seed seq_len pred_len mse mae rmse`），自动解析 `logs/` 目录下所有 `.log`
-- **聚合统计**：按 (data, model, norm, seq_len, pred_len) 分组，计算 mean ± std（论文 Table 3 必需）
-- **CSV 输出**：`summary.csv`（原始）+ `summary_aggregated.csv`（聚合）
-- **LaTeX 表格**：自动生成 `table2_ettm2_multivariate.tex` 和 `table3_revin_vs_dishts.tex`，格式与论文表格一致，可直接插入论文/报告
-- **可视化**：使用 matplotlib 生成 3 个对比图：
-  1. ETTm2 + Autoformer 在不同归一化下 MSE 随 pred_len 的变化曲线（含误差带）
-  2. RevIN vs Dish-TS 在多个数据集上的柱状对比
-  3. 不同模型在 ETTm2 上使用 Dish-TS 的对比
+### 2.2 CSV 自动输出
 
-依赖：`pandas`、`numpy`、`matplotlib`（均在 `requirements.txt` 中）
+当使用 `--figure3` 运行训练时，会在结束时自动向
+`results/figure3_runs.csv` 追加一行，字段如下：
 
----
+```
+dataset, seq_len, pred_len, model, norm, alpha, seed,
+MSE, MAE, RMSE, MAPE, MSPE, dish_init, scaled, prior, features, timestamp
+```
 
-### 5. 重写 `README.md`
+这使 `repro_figures/` 下的所有分析脚本（`check_phase2a.py`、
+`compare_paper.py`、`plot_figure3.py` 等）都可以直接读取此 CSV，
+无需手动整理表格。
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 重大修改 |
-| **原因** | 原始 README 缺乏结构化文档，且未按照论文 4 个 Table 的参数精确设置 |
+### 2.3 seed 管理
 
-改进后的 README 包含以下标准模块：
+`utils/__init__.py` 中 `setup_seed(seed)` 统一设置 `numpy`、
+`torch`、`torch.cuda` 的随机种子，确保多次运行相同 seed 时可复现。
+sweep 脚本固定使用 seeds {2023, 2024, 2025}，与论文一致。
 
-| 模块 | 内容 |
-|------|------|
-| 标题与徽章 | 论文链接、Python 版本、License 标识 |
-| 目录 | 锚点链接导航 |
-| 背景与动机 | 分布偏移问题定义、Dual-CoNet 架构、核心贡献 |
-| 项目结构 | 完整目录树（含所有新增文件，标注 generated 目录） |
-| 安装指南 | 克隆、安装、验证三步流程 |
-| 数据准备 | 5 个数据集的格式、下载地址、文件重命名对照表 |
-| 复现实验 | **按论文 Table 1–4 逐一精确设置**的参数表和运行命令 |
-| 参数说明 | 完整命令行参数表 |
-| 结果汇总 | `results/collect_results.py` 的输出说明、快速验证命令 |
-| 指标定义 | MSE / MAE / RMSE / MAPE / MSPE 的解释 |
-| 引用 | BibTeX 格式 |
-| 致谢 | 上游项目致谢 |
+### 2.4 prior loss 实现
 
-关键改进：
+论文理论形式为：
 
-- **精确对应论文 4 个 Table 的参数**：每个 Table 单独给出 seq_len / pred_len / 模型 / 数据集列表，并在 `run_experiments.sh` 中提供对应入口
-- **下载地址修正**：原 README 中的数据集来源链接已失效（指向被删除的 Autoformer 原始仓库），更新为 GitHub raw URL（ETT 系列）和 Google Drive（ECL/WTH/ILI）
-- **Git 地址更新**：从原始作者仓库改为本仓库地址
+```
+Loss = MSE(ŷ, y) + α · MSE(phi_h, mean_of_true_future_window)
+```
 
----
+在本仓库中通过 `--prior` 选择实现：
 
-### 6. 为 `train.py` 添加模块文档字符串
+- **`--prior none`（默认）**：不加入 prior loss。这是官方开源 Dish-TS 的
+  默认行为，用于 **所有 Table 对比**。
+- **`--prior paper-phi-only`**：训练 HoriConet 预测 true future mean 作为
+  软监督。仅用于 **Figure 3 alpha-sensitivity** 研究。
+- **`--prior legacy`**：早期实现（将预测均值推向 HoriCoNet 估计），会显著
+  恶化 MSE，仅保留作对照。
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 文档增强 |
-| **原因** | 原始代码无任何文件级说明 |
-
-在文件开头添加了 18 行文档字符串，包含：
-
-- 脚本功能概述
-- 所有 5 个数据集的下载来源
-- CSV 格式说明
-- 两个最常用的运行示例
-
----
-
-### 7. 为 `utils/dataset.py` 添加模块文档字符串
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 文档增强 |
-| **原因** | 原始代码无文件级文档 |
-
-在文件开头添加了 16 行文档字符串，包含：
-
-- 数据加载器功能概述
-- 期望的 CSV 格式（date 列 + 特征列）
-- 数据划分策略（按时序 7:1:2 划分）
-- 数据集来源链接
-
----
-
-### 8. 更新 `.gitignore`
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 配置增强 |
-| **原因** | 原始 `.gitignore` 缺少对大文件和运行产物的排除 |
-
-新增规则：
-
-- `logs/` — 排除实验运行产生的日志目录
-
-初始版本还添加了 `dataset/*.csv` 的排除规则，但后续改为将所有数据集文件纳入版本控制（见下方\"数据集入库\"）。
-
----
-
-### 9. 数据集入库
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 数据补充 |
-| **原因** | 原始仓库仅包含 ETTm2.csv，复现者需手动从 Google Drive 下载其余 4 个数据集 |
-
-将全部 5 个基准数据集纳入版本控制：
-
-| 文件 | 大小 | 数据集 |
-|------|------|--------|
-| `ETTm2.csv` | 9.3 MB | ETTm2（已有） |
-| `ETTh1.csv` | 2.5 MB | ETTh1 |
-| `ECL.csv` | 92 MB | Electricity |
-| `WTH.csv` | 7.0 MB | Weather |
-| `ILI.csv` | 67 KB | Illness |
-
-更新 `.gitignore`：移除之前的 `dataset/*.csv` 排除规则，使 clone 后即可一键运行全部实验，无需任何手动下载步骤。
-
----
-
-### 10. `train.py` — 论文参数完全对齐
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 重大修改 |
-| **原因** | 原代码的 batch_size、label_len、alpha 等参数与论文不完全一致，影响实验可复现性 |
-
-**核心对齐点（对照论文 Implementation Details）**：
-
-| 参数 | 论文原文 | 本仓库实现 |
-|------|---------|-----------|
-| **batch_size** | Informer=256, Autoformer=128, Transformer=128, ECL=64 for all | `--batch_size 0` 时自动按上述规则设置；`pred_len>168` 时降为 64 避免 OOM |
-| **label_len** | Transformer 系列通常设为 `max(48, pred_len/2)` | `--label_len 0` 时自动计算 |
-| **optimizer** | Adam | `torch.optim.Adam` ✅ |
-| **loss** | L2 (MSE) | `nn.MSELoss()` ✅ |
-| **lr** | [1e-4, 1e-3] 搜索 | 默认 `1e-3`，可通过 `--lr` 调整 |
-| **alpha (prior loss)** | 搜索 0~1 | 默认 `0.5`，可通过 `--alpha` 调整 |
-| **patience** | 未明确指定，TSF 论文标准=7 | `--patience 7` ✅ |
-| **seed** | 3 次重复取平均 | `--seed 2023/2024/2025`，脚本支持多 seed |
-| **数据划分** | ETT/ILI 6:2:2，其他 7:1:2 | `train.py` 中按 `DATA` 判断比例 ✅ |
-| **硬件** | NVIDIA RTX 3090 24GB | 建议使用 24GB GPU；在 12GB 卡上请将 batch_size 手动设为 64 |
-
-**Prior Knowledge Guidance Loss 实现**：
+核心代码（`train.py` 内）：
 
 ```python
-# 论文公式 5: Loss = MSE(ŷ, y) + α · (mean(ŷ) - ϕ_h)²
-# 仅当 norm == dishts 且 alpha > 0 时启用
+# 论文公式：Loss = MSE(ŷ, y) + α · (phi_h − true_future_mean)^2
 if args.norm == 'dishts' and args.alpha > 0:
-    phih = unify_model.nm.phih  # HoriConet 推断的 horizon level
+    phih = unify_model.nm.phih          # HoriConet 推断的 horizon level
     pred_mean = torch.mean(forecast, dim=1, keepdim=True)
-    prior_loss = torch.mean(torch.pow(pred_mean - phih, 2))
+    if args.prior == 'paper-phi-only':
+        # 仅 phi_h 收到监督（论文 Figure 3 描述的形式）
+        prior_loss = torch.mean(torch.pow(phih - true_future_mean, 2))
+    elif args.prior == 'legacy':
+        # 早期实现：预测均值推向 HoriCoNet 估计（有害）
+        prior_loss = torch.mean(torch.pow(pred_mean - phih, 2))
+    else:
+        prior_loss = 0.0
     loss = loss + args.alpha * prior_loss
 ```
 
----
+### 2.5 训练超参数对照论文
 
-### 11. 新增 `run_paper_exps.sh` — 按论文 4 个 Table 运行
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 新增文件 |
-| **原因** | 原 `run_experiments.sh` 结构不匹配论文 Table 1-4，新脚本严格按论文 Table 组织 |
-
-与 `run_experiments.sh` 的区别：
-- **Table 1**（单变量）：`seq_len = pred_len` ∈ {24,48,96,168,336}
-- **Table 2**（多变量）：`seq_len=96`, `pred_len` ∈ {24,48,96,168,336}
-- **Table 3**（RevIN vs Dish-TS）：`seq_len=96`, `pred_len` ∈ {24,168,336}, **3 seeds**
-- **Table 4**（长窗口）：`seq_len=96`, `pred_len` ∈ {336,420,540,600,720}
-- 新增 `quick` 模式：10 分钟内跑完核心对比实验，用于快速验证
-- 内置结果汇总：自动从 `logs/` 提取 MSE/MAE
-
----
-
-### 12. 数据集目录从 `dataset/` 迁移到 `data/`
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 结构调整 |
-| **原因** | `data/` 是 TSF 论文代码的更常见约定（与官方代码一致） |
+| 参数 | 论文原文 | 本仓库实现 |
+|---|---|---|
+| **batch_size** | Informer=256, Autoformer=128, ECL=64 for all | `--batch_size` 支持手动设置；pred_len>168 时自动降为 64 防 OOM；N-BEATS 默认 256 |
+| **optimizer** | Adam | `torch.optim.Adam` ✅ |
+| **lr** | 1e-3（搜索范围 1e-4 ~ 1e-3） | 默认 `1e-3`，可通过 `--lr` 调整 |
+| **patience** | 未明确指定（TSF 论文标准 = 7） | `--patience 7` ✅ |
+| **train_epochs** | 100 | `--train_epochs 100` ✅ |
+| **scheduler** | ReduceLROnPlateau（论文常见） | ReduceLROnPlateau (patience=3, factor=0.5) ✅ |
+| **d_model** | 512 | 512 ✅ |
+| **n_heads** | 8 | 8 ✅ |
+| **d_ff** | 2048 | 2048 ✅ |
+| **dropout** | 0.05 | 0.05 ✅ |
+| **数据切分** | ETT/ILI 6:2:2；其他 7:1:2 | `utils/dataset.py` 中按 dataset 名自动选择 ✅ |
 
 ---
 
-### 13. `dataset.py` — 支持单变量（Univariate）模式
+## 3. 新增实验脚本的分工（按 Table / Phase 分组）
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 重大修复 |
-| **原因** | 原代码无论传入什么 `--features` 参数，都使用全部列。论文 Table 1 是单变量（只用最后一列），导致结果错误 |
-
-修改：
-- 新增 `features` 参数（`'M'` 多变量 / `'S'` 单变量）
-- `'S'` 模式：只用 `cols[-1]`（最后一列），`n_series=1`
-- `train.py` 中 Dataset 构造调用同步传入 `features=args.features`
-
----
-
-### 14. `train.py` — label_len 越界保护
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | Bug 修复 |
-| **原因** | `label_len = max(48, pred_len//2)` 当 `seq_len=24`（Table 1 短序列）时算出 48 > 24，导致数据集索引越界 |
-
-修复：
-```python
-if args.label_len == 0:
-    args.label_len = max(48, args.pred_len // 2)
-    if args.label_len > args.seq_len:         # 安全上限
-        args.label_len = args.pred_len // 2   # 回退逻辑
-```
+| 脚本 | 对应论文内容 | 主要参数 | 输出 |
+|---|---|---|---|
+| `run_sanity.sh` | Phase 1 — gate check | ETTm2 × {96,168,336} × alpha={0,0.25,0.5,0.75,1.0} × 3 seeds | figure3_runs.csv |
+| `run_phase2a.sh` | Figure 3 alpha 扫掠（ETTm2 集） | ETTm2 × Autoformer × dishts × prior=paper-phi-only | figure3_runs.csv |
+| `run_phase2b.sh` | Figure 3 alpha 扫掠（多数据集） | ECL/ETTh1/WTH × Autoformer × dishts × prior=paper-phi-only | figure3_runs.csv |
+| `run_baselines_none_revin.sh` | Table 2/3 baseline（norm 对比） | 4 数据集 × {none,revin,dishts} × alpha=0.0 | figure3_runs.csv |
+| `run_table2.sh` | Table 1 / Table 2 主表 | features={S,M} + 多 backbone + 多 norm | figure3_runs.csv |
+| `run_table4.sh` | Table 4 long-horizon | N-BEATS × {ECL, ETTh1} × pred_len up to 720 | figure3_runs.csv |
+| `run_table5.sh` | Table 5 lookback ablation | N-BEATS × {ECL, ETTh1} × seq_len ∈ {48..240} | figure3_runs.csv |
+| `run_table6.sh` | Table 6 CONET init ablation | dish_init ∈ {avg, norm, uni} × pred_len ∈ {24,96,168} | figure3_runs.csv |
+| `run_figure3.sh` | Figure 3 alpha-sensitivity 绘图数据 | 与 Phase 2a 相同参数集 | figure3_runs.csv |
+| `check_phase2a.py` | Phase 2a 质量检查 | 读取 figure3_runs.csv，输出 best alpha 表 | stdout |
+| `compare_phase2b.py` | Phase 2b 跨数据集汇总 | 同上 | stdout |
+| `compare_paper.py` | ours vs paper 数值对比 | 使用 per-dataset scale，输出 `results/paper_vs_mine.csv` | CSV + stdout |
+| `plot_figure*.py` | Figure 1/3/4 绘图 | 读取 CSV，生成 PNG | results/figures/*.png |
+| `smoke_test.py` | 离线环境验证 | --seq_len, --pred_len | stdout（无需 GPU） |
 
 ---
 
-### 15. `run_paper_exps.sh` — 按 Table 传入 features 参数
+## 4. 新增 / 修改的核心模块
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | Bug 修复 |
-| **原因** | 脚本未传 `--features` 参数，无法区分单/多变量实验 |
+### 4.1 `Model.py` — 统一 backbone + normalization
 
-修复：
-- Table 1（单变量）：`--features S`
-- Table 2/3/4（多变量）：`--features M`
-- `run_one()` 函数签名增加第 7 参数 `ft_flag`，默认 `M`
+将 forecast backbone（Autoformer / Informer / Transformer / N-BEATS）
+与 normalization 模块（RevIN / Dish-TS / None）解耦。核心流程：
 
-`train.py` 已同步修改数据路径为 `./data/{DATA}.csv`。`.gitignore` 排除 `data/*.csv`，避免将 GB 级数据集传入仓库，README 明确给出下载命令。
+1. 输入先经 normalization 模块（若启用）；
+2. 通过 backbone 预测；
+3. 最后反归一化得到 **raw-scale** 输出，保证 MSE 在原始尺度上计算，
+   与论文一致。
 
----
+### 4.2 `DishTS.py` — Dual-CONET 模块
 
-### 17. 仓库重命名 + 公开可见性 + README 全面重写
+相对原仓库的修改点：
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 重大修改 |
-| **原因** | (1) 仓库从 `Dish-TS` 重命名为 `Dish-TS-Reproduction` 以明确课程作业属性，避免与原论文仓库混淆；(2) 从私有改为公开；(3) 适配公开仓库的 README 全面重写 |
+- 新增 `dish_init` 参数控制 Back-CONET / Hori-CONET 系数初始化
+  （`avg` / `norm` / `uni`）。
+- prior-loss 计算逻辑按 `--prior` 参数切换。
+- 保持与论文一致的 learnable 参数结构（Back-CONET 2 层可学习系数、
+  Hori-CONET 2 层可学习系数）。
 
-修改内容：
-- 仓库重命名为 `Dish-TS-Reproduction`
-- 可见性改为 Public
-- README 全面重写为英文标准学术格式
-- 新增 HTTPS clone 方式（公开仓库无需 SSH）
-- 移除私有仓库特有的 SSH 密钥配置步骤
-- 结构化目录：Requirements → Quick Start → Project Structure → 4-Table Guide → Configuration → Metrics → Citation
-- 每个 Table 独立章节，含参数表和运行命令
-- 新增 Evaluation Metrics 章节（含公式、范围）
-- 新增 Expected Results 章节
-- 新增 Acknowledgments 章节
+### 4.3 `REVIN.py` — RevIN baseline（新增文件）
 
----
+论文 Table 3 用 RevIN 作为 normalization 基线对比 Dish-TS。实现
+instance-normalization（batch 内减去每个样本自身均值，除以自身 std），
+并保留 affine 参数以匹配论文默认设置。
 
-### 18. 删除冗余文件
+### 4.4 `backbones/NBEATS.py` — N-BEATS Generic 架构（新增）
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 清理 |
-| **原因** | 精简仓库，移除被替代的旧版脚本和不参与运行的辅助文件 |
+论文 Table 4 / Table 5 的 baseline backbone 是 N-BEATS。实现与论文一致：
+Generic 架构、`num_stacks=2`、`num_blocks=3`、`num_layers=4`、
+`layer_width=128`、`expansion_coefficient_dim=128`，无协变量、无时间嵌入。
 
-删除文件：
-- `run_experiments.sh` — 旧版实验脚本，已被 `run_paper_exps.sh` 完全替代
-- `run_final_exps.sh` — 旧版实验脚本
-- `results/parse_paper.py` — 论文参数提取参考，不参与运行
-- `results/current_progress.csv` — 中间跟踪文件，每次实验重新生成
+### 4.5 `utils/dataset.py` — 数据加载器
 
-同步更新：README 目录树、run_simplified_exps.sh 注释引用
+修改点：
 
----
+- 新增 `features` 参数（`'M'` multivariate / `'S'` univariate）。
+- `'S'` 模式：只用最后一列（`cols[-1]`），`n_series=1`，与论文 Table 1 一致。
+- 支持 `StandardScaler` 预处理（fit on train only），默认关闭。
+- 按 dataset 名自动选择 train/val/test 切分比例（6:2:2 或 7:1:2）。
 
-### 19. 添加 SSH 断连防护方案（`screen` / `tmux`）
+### 4.6 `utils/__init__.py` — seed 管理
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 增强 |
-| **原因** | SSH 断开会导致实验进程被杀死；`nohup` 无法回连查看实时输出 |
+新增 `setup_seed(seed)` 统一设置 numpy / torch / torch.cuda 的随机种子，
+保证同 seed 多次运行完全可复现。
 
-新增 README 章节 `Preventing SSH Disconnection`，包含三种方案：
-- **`screen`**（推荐）：`screen -S dishts` 创建会话，`Ctrl+A D` 分离，`screen -r` 回连
-- **`tmux`**：`tmux new -s dishts`，`Ctrl+B D` 分离，`tmux attach -t` 回连
-- **`nohup` + `&`**：最简方案，但不能回连查看实时输出
+### 4.7 `utils/earlystop.py` & `utils/metric.py`
 
-同时在 One-Click Run 区域添加醒目的 Warning 框，说明四种方法的对比表。
+- `EarlyStopping` 遵循论文默认：`patience=7`，比较 `val_loss`。
+- `metric.py` 定义 MSE / MAE / RMSE / MAPE / MSPE 计算函数，
+  `train.py` 和分析脚本共用。
 
 ---
 
-### 20. README 平台适配 + 内容去重
+## 5. 文件结构变化总结
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 文档增强 |
-| **原因** | AutoDL 等云平台 screen 默认编码与 tmux 未预装等问题影响上手；One-Click Run 与 SSH 章节存在重复 |
-
-修改内容：
-- 新增 Cloud Platform Notes（AutoDL screen -U 编码参数、tmux 安装命令）
-- 将 One-Click Run 区的 screen/nohup 双方案去重，统一到 SSH 章节
-- 保留每个 Table 的参数表（独立阅读路径所需）
-
----
-
-### 21. `num_workers=0` — Python 3.12 兼容性修复
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 环境兼容性修复 |
-| **文件** | `train.py` |
-| **原因** | Python 3.12 下 `num_workers=4` 触发 PyTorch DataLoader `collate` 竞态崩溃（`Trying to resize storage that is not resizable`），导致 ETTh1 等数据集部分实验失败 |
-
-修改内容：
-- 将 `num_workers=4` 改为 `num_workers=0`
-- 移除 `persistent_workers=True`（仅当 `num_workers>0` 有效）
-- README Notes 新增 Python 3.12 兼容说明
+| 改动类型 | 数量 |
+|---|---|
+| 新增目录 | `repro_figures/`、`results/`、`paper_results/`、`data/` = 4 个 |
+| 新增 shell 脚本 | `run_*.sh` × 11 |
+| 新增 Python 分析 / 绘图脚本 | `check_phase2a.py`、`compare_phase2b.py`、`compare_paper.py`、`plot_figure1.py`、`plot_figure3.py`、`plot_figure4.py`、`dataset_diagnostic.py`、`parse_logs.py`、`smoke_test.py`、`check_progress.py`、`show_alpha_curves.py`、`repair_figure3_csv.py` = 12 个 |
+| 修改原文件 | `train.py`、`Model.py`、`DishTS.py`、`utils/dataset.py`、`utils/__init__.py` |
+| 新增模块文件 | `REVIN.py`、`utils/earlystop.py`、`utils/metric.py`、`backbones/NBEATS.py` |
+| 新增 / 保留的论文参考 CSV | `paper_results/table{1..6}_*.csv` = 6 个 |
 
 ---
 
-### 22. 新建 `paper_results/` — 论文表格数据提取（CSV + 分析脚本）
+## 6. Alpha / Prior 相关设计说明
 
-| 属性 | 说明 |
-|------|------|
-| **类型** | 新增数据/脚本文件集 |
-| **目录** | `paper_results/` |
-| **原因** | 原论文的 5 个核心表格仅以 PDF 形式存在，复现者需要将实验结果与论文数据进行逐表对比；为便于后续程序化对比，将 5 个表格的数据提取为机器可读 CSV 并附分析脚本 |
+> 详细讨论请参见 README 的 "The Alpha Rule" 章节和
+> EXPERIMENT_REPORT.md §4.3。
 
-新增文件清单：
+| 场景 | `--alpha` | `--prior` | 原因 |
+|---|---|---|---|
+| 复现论文 Table 1/2/3/4/5/6 | `0.0` | `none` | 官方开源 Dish-TS 不包含 prior loss；论文 Table 都是 alpha=0 |
+| 复现 Figure 3（alpha 消融） | `∈ {0.0, 0.25, 0.5, 0.75, 1.0}` | `paper-phi-only` | 仅用于探讨 alpha-sensitivity；不参与 Table 对比 |
+| legacy 对照（不推荐） | `> 0` | `legacy` | 用于演示为什么旧的 prior 形式会系统性恶化 MSE |
+| 生产环境 / deployment | `0.0` | `none` | alpha>0 的 prior 项偷看真实未来均值，引入 train/val 分布不一致 |
 
-| 文件 | 内容 |
-|------|------|
-| `paper_results/table1_univariate.csv` | Table 1：单变量预测（Informer/Autoformer/N-BEATS + Dish-TS，MSE/MAE） |
-| `paper_results/table2_multivariate.csv` | Table 2：多变量预测（结构同上） |
-| `paper_results/table3_revin_comparison.csv` | Table 3：Dish-TS vs RevIN 对比（Autoformer，多变量，3 个 horizon） |
-| `paper_results/table4_long_horizon.csv` | Table 4：长窗口预测（horizon=336..720，lookback=96，N-BEATS） |
-| `paper_results/table5_lookback.csv` | Table 5：lookback 长度分析（lookback=48..240，horizon=48，N-BEATS） |
-| `paper_results/analyze_paper.py` | 分析脚本：读取以上 5 个 CSV，逐表计算 Dish-TS 相对 baseline 的 MSE 下降百分比，并输出 cross-table summary |
-
-同时在 README 新增 "Paper Table Data Reference" 章节，提供载入示例、关键观察结论及 cross-table 汇总数字（可作为复现达标指标）。
+在本仓库的 Phase 2a 实验中：**pred_len 越长，越大的 alpha 越有帮助**
+（168: alpha=0.25 比 0.0 低 7.4%；336: alpha=1.0 比 0.0 低 2.1%），
+与论文 Figure 3 的趋势一致。详见 EXPERIMENT_REPORT.md §4.1。
 
 ---
 
-### 23. 新增 N-BEATS backbone（`backbones/NBEATS.py`）
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 新增模型文件 |
-| **路径** | `backbones/NBEATS.py` |
-| **原因** | 论文 Table 4 / Table 5 的主干模型是 N-BEATS（N-BEATS 原生可学习长期趋势与季节性）。官方 Dish-TS 代码中未提供 N-BEATS，必须自行实现才能完整复现 Table 4/5 的对比结果 |
-
-**实现要点**：
-
-- 采用论文 [N-BEATS: Neural Basis Expansion Analysis](https://arxiv.org/abs/1905.10437) 的 Generic 架构（参数与论文 baseline 完全一致）：
-  - `generic_architecture = True`
-  - `num_stacks = 2`, `num_blocks = 3`（每 stack 的 block 数）, `num_layers = 4`（每 block 的 FC 层数）
-  - `layer_width = 128`
-  - `expansion_coefficient_dim = 128`（每个 block 输出的 expansion coefficient 维度；再线性投影到 backcast / forecast）
-  - 每个变量独立跑一个 N-BEATS（权重共享）— 参数量不随 D 增长，符合论文 "保持 layer_width=128 的单变量网络对每个变量重复" 的描述
-  - 输入/输出形状 `(B, L, D)` → `(B, H, D)`，与 `Model.py` 中 "非 former 模型" 调用分支直接兼容
-- `backbones/__init__.py` 新增 NBEATS 入口
-- `train.py` 的 `model_dict` 加入 `'NBEATS': NBEATS`，并把 NBEATS 的默认 batch_size 设为 256（FC 网络轻量，可跑大 batch；论文未显式给出，采用与 Informer 一致的 256）
-
-**smoke test 结果**：
-
-| 数据集 | seq_len | pred_len | 模型 | raw MSE（3 epoch 速测） |
-|--------|---------|----------|------|-------------------------|
-| ETTm2 | 96 | 96 | NBEATS + Dish-TS | ~9.75（layer_width=128 baseline） |
-| ETTm2 | 96 | 96 | Autoformer + Dish-TS | ~18.79 |
-| ILI | 24 | 24 | NBEATS + Dish-TS | ~7.4e9（raw scale，未做 z-score） |
-
-N-BEATS 在 ETTm2 上比 Autoformer 好，而且采用论文标准 `layer_width=128` + `expansion_coefficient_dim=128` 的网络在 3 epoch 速测下就比我之前的 256-wide 网络更低，符合 N-BEATS "紧凑网络对电力数据表现更稳" 的经验现象。
-
----
-
-### 24. 新增 Table 4 / Table 5 运行脚本
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 新增 sweep 脚本 |
-| **文件** | `repro_figures/run_table4.sh`，`repro_figures/run_table5.sh` |
-| **目的** | 复现论文 Table 4（长窗口预测）与 Table 5（lookback 长度消融），并在同一 CSV 写入 `results/figure3_runs.csv` 以便与 `compare_paper.py` 对比 |
-
-**Table 4（`run_table4.sh`）**：
-
-- 固定 `seq_len=96`，`pred_len ∈ {336, 420, 540, 600, 720}`
-- 数据集：`ETTh1`、`ECL`（论文 Table 4：Electricity / ETTh1）
-- 模型：N-BEATS + norm ∈ {none, dishts}（baseline 对比）
-- 默认 3 seeds × 5 pred_len × 2 norms = 30 jobs
-
-**Table 5（`run_table5.sh`）**：
-
-- 固定 `pred_len=48`，`seq_len ∈ {48, 96, 144, 192, 240}`
-- 数据集：`ETTh1`、`ECL`
-- 模型：N-BEATS + norm ∈ {none, dishts}
-- 默认 3 seeds × 5 lookbacks × 2 norms = 30 jobs
-
-两个脚本都把 `--features M`（多变量，与 Table 4/5 一致），且 `--alpha 0 --prior none` 保持与官方 Dish-TS 实现一致（不启用先验 loss）。
-
----
-
-### 25. `train.py` & `compare_paper.py`：支持 features 字段 + auto 缩放规则
-
-| 属性 | 说明 |
-|------|------|
-| **类型** | 训练与分析脚本同步增强 |
-| **文件** | `train.py`，`repro_figures/compare_paper.py` |
-| **原因** | 之前脚本只写 MSE/MAE 到 CSV，但无法从结果区分多变量实验（Table 2/3，MSE ~ 1e-8 量级）与单变量实验（Table 1，MSE ~ 1e-2 ~ 1e-6 量级），导致自动对比时缩放系数用错 |
-
-**具体改动**：
-
-- `train.py` 的 CSV（`paper_summary.csv` 和 `figure3_runs.csv`）新增 `features` 列，记录 `M` / `S`
-- `compare_paper.py` 新的 `--apply-paper-scale auto` 模式（默认）：根据 features 自动选择 scale 表；混合场景回退到 per-dataset 表
-- 保留 `multivariate` / `univariate` / `per-dataset` 三个手动模式，方便 debug
-
----
-
-## 修改统计
-
-| 类别 | 新增文件 | 修改文件 | 删除文件 | 说明 |
-|------|---------|---------|---------|------|
-| 核心代码 | 1 | 4 | 0 | 修复导入 + 论文参数对齐 + 单变量 + label_len + num_workers |
-| 脚本 | 4 | 2 | 2 | run_paper_exps + run_simplified + collect_results + analyze_paper；删除旧版 |
-| 配置 | 1 | 1 | 0 | requirements.txt + .gitignore |
-| 数据 | 9 | 0 | 0 | 5 个数据集 + 4 个 paper table CSV |
-| 文档 | 1 | 2 | 0 | IMPROVEMENTS + README（新增 Paper Table Data Reference 章节） |
-| 清理 | 0 | 0 | 4 | 冗余脚本 + parse_paper + progress.csv |
-| **合计** | **16** | **9** | **6** | 最终仓库简洁、无冗余 |
-
----
-
-## 完整改动时间线
+## 7. 完整改动时间线
 
 | 序号 | 改动 | 时间戳 |
-|------|------|--------|
-| 1 | 新建 `backbones/__init__.py` | 2026-06-09 11:44:46 |
-| 2 | 新建 `requirements.txt` | 2026-06-09 11:44:46 |
-| 3 | 重写 `run_experiments.sh`（Phase→Table 结构化） | 2026-06-09 13:05:51 |
-| 4 | 新建 `results/collect_results.py` | 2026-06-09 19:46:40 |
-| 5 | 重写 `README.md`（初版） | 2026-06-09 13:05:51 |
-| 6 | 添加 `train.py` 文档字符串 | 2026-06-09 12:49:32 |
-| 7 | 添加 `utils/dataset.py` 文档字符串 | 2026-06-09 12:49:32 |
-| 8 | 更新 `.gitignore` | 2026-06-09 13:27:36 |
-| 9 | 数据集入库（4 个新数据集） | 2026-06-09 13:27:36 |
-| 10 | `train.py` 论文参数对齐（batch/lr/patience/prior loss） | 2026-06-10 15:41:55 |
-| 11 | 新建 `run_paper_exps.sh`（4-Table 严格脚本） | 2026-06-10 15:50:39 |
-| 12 | 数据目录 `dataset/` → `data/` | 2026-06-10 16:05:06 |
-| 13 | `dataset.py` 支持单变量 `features='S'` | 2026-06-10 16:05:06 |
-| 14 | `train.py` label_len 越界保护 | 2026-06-10 16:05:06 |
-| 15 | `run_paper_exps.sh` 按 Table 传入 features | 2026-06-10 16:05:06 |
-| 16 | `README.md` 一键运行方案 + 7步部署指南 | 2026-06-10 16:10:50 |
-| 17 | 仓库重命名 → `Dish-TS-Reproduction` + 公开 + README 学术格式重写 | 2026-06-10 16:36:55 |
-| 18 | 删除 4 个冗余文件（旧版脚本 + parse_paper + progress.csv） | 2026-06-10 17:37:36 |
-| 19 | README 添加 SSH 断连防护（screen/tmux 教程 + Warning 对比表） | 2026-06-10 19:35:47 |
-| 20 | README 平台适配（AutoDL 编码/tmux 安装）+ 去重（screen/nohup 合并） | 2026-06-10 20:54:33 |
-| 21 | `train.py` num_workers=0 修复 Python 3.12 DataLoader 崩溃 + README Notes | 2026-06-10 23:18:42 |
-| 22 | 新建 `paper_results/`（5 个论文表格 CSV + analyze_paper.py）+ README "Paper Table Data Reference" 章节 | 2026-06-11 08:20:00 |
-| 23 | 新增 `paper_results/table6_conet_init.csv`（CONET 初始化敏感性 Table 6）+ `repro_figures/figure1_distribution_shift.py`（概念图复现）+ `repro_figures/figure3_alpha_sensitivity.py`（α 敏感性曲线）+ `repro_figures/figure4_prediction_comparison.py`（ETTm2 预测曲线对比）；README 补充用法示例 | 2026-06-11 09:10:00 |
-| 24 | 上传 `paper_results/reference_figure{1,2,3,4}.jpg` 作为论文截图参考；重写 `repro_figures/` 为纯绘图脚本（`plot_figure1.py` / `plot_figure3.py` / `plot_figure4.py`）；扩展 `train.py` 每轮训练自动写入 `results/figure3_runs.csv` 和 `results/figures/figure4_*.csv`；README 增加 "论文参考 / 你的实验结果" 两层职责说明和端到端使用流程 | 2026-06-11 09:40:00 |
-| 25 | `utils/dataset.py` 添加 `StandardScaler` 默认预处理（fit on train only）：解决 MSE 数值比论文大 8-10× 的量级问题；`train.py` 新增 `--no-scale` 保持向后兼容；Scaler 在 train/val/test 间共享；`ettm2_alpha_sweep.py` 新增 `--skip_existing` 自动跳过已完成组合；`figure3_runs.csv` 新增 `seed` 列 | 2026-06-11 13:25:00 |
-| 26 | `requirements.txt` 补加 `scikit-learn>=0.24.0`；修复 `dataset.py` 中 `sklearn` import 为可选（未安装时自动回退 raw 模式 + 警告）；修正 README 中 pip install 命令 | 2026-06-11 13:35:00 |
-| 27 | 新建 `repro_figures/run_all_exps.py`（63-run 一键重跑 Table 2 & 3，含 `--long-horizon` 和自动备份旧 CSV）；新建 `repro_figures/compare_paper.py`（自动对比你的结果 vs 论文 Table 2/3）；新建 `repro_figures/parse_logs.py`（从旧日志解析 MSE 补写 CSV）；新建 `smoke_test.py`（离线参数/环境校验，无需 GPU） | 2026-06-11 13:38:00 |
-| 28 | README 全面更新：CLI Arguments 表格修正（`--batch_size 128`、`--patience 15`、`--label_len` 新公式、`--train_epochs`）；Data Splits 新增 StandardScaler 说明；Batch Size Rules 简化重写；实验指南替换为当前一键工作流（Quick Start → Compare → Alpha → Long-Horizon → Single Cmd）；Project Structure 补充新目录/脚本 | 2026-06-11 14:00:00 |
-| 29 | **Phase 1 & 2a 实验完成 (ETTm2 alpha 扫描)**：新增 4 个 sweep 脚本 (`run_phase2a.sh` / `run_phase2b.sh` / `run_sanity.sh` / `run_baselines_none_revin.sh`) + 2 个分析脚本 (`check_phase2a.py` / `compare_phase2b.py`)；`run_phase2a.sh` 支持 `PATIENCE` / `MAX_EPOCHS` 环境变量覆盖；新增 `results/experiment_report.md` 实验报告；关键发现：**pred_len 越长，alpha 越大越有益**（pred_len=168: alpha=0.25 比 alpha=0.0 低 7.4%；pred_len=336: alpha=1.0 最优），与论文 Figure 3 趋势一致；ETTm2 pred_len=168 论文对比 ratio=1.01×；0 NaN/异常数据 | 2026-06-15 18:00:00 |
+|---|---|---|
+| 1 | 新建 `backbones/__init__.py` | 2026-06-09 |
+| 2 | 新建 `requirements.txt`（torch, numpy, pandas, scikit-learn） | 2026-06-09 |
+| 3 | 重写实验脚本结构（Phase → Table 结构） | 2026-06-09 |
+| 4 | 新建 `results/collect_results.py` / 后续并入 `compare_paper.py` | 2026-06-09 |
+| 5 | 重写 `README.md`（初版英文操作指南） | 2026-06-09 |
+| 6 | 添加 `train.py` 文档字符串（下载来源 / CSV 格式说明 / 示例） | 2026-06-09 |
+| 7 | 添加 `utils/dataset.py` 文档字符串 | 2026-06-09 |
+| 8 | 更新 `.gitignore`（新增 `logs/*.log`、`results/figures/*` 等） | 2026-06-09 |
+| 9 | 数据集入库：ETTm2/ETTh1/ECL/WTH/ILI | 2026-06-09 |
+| 10 | `train.py` 论文参数对齐（batch/lr/patience/prior loss 等） | 2026-06-10 |
+| 11 | 新建 `run_paper_exps.sh` / `run_*.sh` 系列脚本 | 2026-06-10 |
+| 12 | 数据目录 `dataset/` → `data/`（与官方代码命名一致） | 2026-06-10 |
+| 13 | `dataset.py` 支持单变量 `features='S'`（Table 1） | 2026-06-10 |
+| 14 | `train.py` label_len 越界保护（seq_len=24 时自动回退） | 2026-06-10 |
+| 15 | `run_paper_exps.sh` 按 Table 传入 features 参数 | 2026-06-10 |
+| 16 | README 一键运行方案 + 7 步部署指南 | 2026-06-10 |
+| 17 | README 全面重写为学术格式；公开仓库结构；SSH 方案 | 2026-06-10 |
+| 18 | 删除冗余旧版脚本 | 2026-06-10 |
+| 19 | README 添加 SSH 断连防护（screen / tmux / nohup 教程） | 2026-06-10 |
+| 20 | README Cloud Platform Notes（AutoDL UTF-8、tmux 安装命令） | 2026-06-10 |
+| 21 | `train.py` num_workers=0 修复 Python 3.12 DataLoader collate 崩溃 | 2026-06-10 |
+| 22 | 新建 `paper_results/`（6 个论文表格 CSV + analyze_paper.py） | 2026-06-11 |
+| 23 | 新增论文 Figure 1/2/3/4 参考截图 + 绘图脚本（plot_figure*.py） | 2026-06-11 |
+| 24 | 扩展 `train.py` 每轮训练自动写入 `results/figure3_runs.csv` 和 `results/figures/figure4_*.csv` | 2026-06-11 |
+| 25 | `utils/dataset.py` 添加 StandardScaler 默认预处理（fit on train only）；`train.py` 新增 `--no-scale` 向后兼容 | 2026-06-11 |
+| 26 | `requirements.txt` 补 scikit-learn；修复 sklearn import 为可选 | 2026-06-11 |
+| 27 | 新建 `repro_figures/` 下批量脚本；新建 `compare_paper.py` / `parse_logs.py` / `smoke_test.py` | 2026-06-11 |
+| 28 | README CLI 参数表修正；Project Structure 补充新目录/脚本 | 2026-06-11 |
+| 29 | **Phase 1 & 2a 实验完成 (ETTm2 alpha 扫描)**：新增 4 个 sweep 脚本 + 2 个分析脚本；新增 `results/experiment_report.md`（后续被根目录 `EXPERIMENT_REPORT.md` 替代） | 2026-06-15 |
+| 30 | **文档重构**：将代码改动与实验结果分离为 `IMPROVEMENTS.md` + `EXPERIMENT_REPORT.md`；README 保留操作指南；在 README 开头加入 "Document Roadmap"；删除 `results/experiment_report.md` 避免重复 | 2026-06-15 |
 
 ---
 
-*最后更新: 2026-06-15 18:00:00 CST*
+*最后更新：2026-06-15*

@@ -4,3 +4,31 @@ libgomp: Invalid value for environment variable OMP_NUM_THREADS
 libgomp: Invalid value for environment variable OMP_NUM_THREADS
 /root/miniconda3/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Plan failed with a cudnnException: CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR: cudnnFinalize Descriptor Failed cudnn_status: CUDNN_STATUS_NOT_SUPPORTED (Triggered internally at ../aten/src/ATen/native/cudnn/Conv_v8.cpp:919.)
   return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+epoch:0, train_loss:20.41033, val_loss:15.96314
+epoch:1, train_loss:17.64414, val_loss:17.24363
+EarlyStopping counter: 1 out of 7 with 1
+epoch:2, train_loss:17.21681, val_loss:16.91832
+EarlyStopping counter: 2 out of 7 with 2
+epoch:3, train_loss:17.24276, val_loss:16.17069
+EarlyStopping counter: 3 out of 7 with 3
+epoch:4, train_loss:17.01752, val_loss:17.84993
+EarlyStopping counter: 4 out of 7 with 4
+epoch:5, train_loss:16.79623, val_loss:22.34977
+EarlyStopping counter: 5 out of 7 with 5
+epoch:6, train_loss:16.68564, val_loss:18.42171
+EarlyStopping counter: 6 out of 7 with 6
+epoch:7, train_loss:16.17341, val_loss:18.10887
+EarlyStopping counter: 7 out of 7 with 7
+Early stopping with best_score:15.963143348693848
+[train] per-column MSE: 26.590 6.303 25.604 3.288 2.322 0.584 29.447
+================================================================================
+DATA=ETTm2  MODEL=Autoformer  NORM=dishts  SEED=2024  seq_len=96  label_len=84  pred_len=168  batch_size=128  lr=0.001  alpha=0.0  prior=none  dish_init=avg  scale=False  patience=7
+  MSE=13.481050  MAE=2.342270  RMSE=3.671650  MAPE=11020160.000000  MSPE=5189149959127040.000000
+================================================================================
+ data      model   norm  seed  seq_len  label_len  pred_len  batch_size  alpha features      MSE     MAE    RMSE       MAPE         MSPE
+ETTm2 Autoformer dishts  2024       96         84       168         128    0.0        M 13.48105 2.34227 3.67165 11020160.0 5.189150e+15
+[train] appended 1 row to /root/autodl-tmp/Dish-TS/results/figure3_runs.csv
+[train] wrote figure4 sample to /root/autodl-tmp/Dish-TS/results/figures/figure4_ETTm2_Autoformer_dishts_sq96_pd168_alpha0.0_seed2024.csv
+# data=ETTm2 norm=dishts pl=168 seed=2024 alpha=0.0 prior=none
+# /root/miniconda3/bin/python3 /root/autodl-tmp/Dish-TS/train.py --data ETTm2 --model Autoformer --norm dishts --seq_len 96 --pred_len 168 --label_len 84 --batch_size 128 --train_epochs 50 --patience 7 --seed 2024 --gpu 0 --alpha 0.0 --prior none --dish_init avg --figure3
+

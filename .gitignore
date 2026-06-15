@@ -11,3 +11,15 @@ results/*.swp
 # Cache / Python
 __pycache__/
 *.pyc
+
+# Per-run experiment logs (generated, reproducible from scripts)
+logs/*.log
+logs/*.txt
+
+# Generated figure PNGs and per-run CSVs (reproduced by analysis scripts)
+results/figures/*.png
+results/figures/*.csv
+
+# ——— Note: keep results/figure3_runs.csv and results/paper_vs_mine.csv
+# ——— because they serve as the master experiment log and comparison table
+# ——— used by EXPERIMENT_REPORT.md.  They are committed to the repo.
