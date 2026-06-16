@@ -63,56 +63,122 @@ def load_rows(path: Path) -> list[dict]:
 # Figure A: Alpha sensitivity curve (ETTm2)
 # =============================================================
 def plot_alpha_sensitivity(rows: list[dict]) -> Path:
-    """One subplot per pred_len in Phase 2a target (96, 168, 336)."""
-    target_ds = "ETTm2"
-    preds = [96, 168, 336]
+    """Match paper Figure 3 layout: 4 subplots (4 datasets), each with
+    multiple alpha curves, x-axis = horizon length.
 
-    fig, axes = plt.subplots(1, len(preds), figsize=(5.0 * len(preds), 3.8))
-    colors = ["#2c7bb6", "#fdae61", "#d7191c"]
+    We have ETTm2 across {96,168,336} for all 5 alphas (Phase 2a complete).
+    For the other 3 datasets we only have H=24; those subplots show a single
+    annotated point with a 'Phase 2b in progress' note.
 
-    for ax, pl, color in zip(axes, preds, colors):
-        # Group by alpha, average over seeds
-        alpha_vals = defaultdict(list)
-        for r in rows:
-            if r["dataset"] == target_ds and r["pred_len"] == pl:
-                alpha_vals[r["alpha"]].append(r["MSE"])
-        if not alpha_vals:
-            ax.text(0.5, 0.5, f"no data for pred_len={pl}", ha="center")
-            continue
+    Note: y-axis is in PAPER scale (per-dataset multiplicative factor) so the
+    ECL numbers (~1e6 raw) are comparable to paper Table 2's 0.04-0.10 range.
 
-        alphas = sorted(alpha_vals)
-        means = [np.mean(alpha_vals[a]) for a in alphas]
-        stds  = [np.std(alpha_vals[a]) for a in alphas]
+    Outliers: rows with n=1 (incomplete seed runs) are excluded so they do
+    not skew the curve.
+    """
+    datasets = ["ECL", "ETTh1", "ETTm2", "WTH"]   # matches paper left-to-right order
+    alphas_to_plot = [0.0, 0.25, 0.5, 1.0]         # matches paper legend
+    alpha_colors = {
+        0.0:   "#1f77b4",   # blue
+        0.25:  "#d62728",   # red
+        0.5:   "#2ca02c",   # green
+        1.0:   "#ff7f0e",   # orange
+    }
+    alpha_markers = {
+        0.0:  "o", 0.25: "s", 0.5:  "^", 1.0:  "v",
+    }
 
-        ax.errorbar(alphas, means, yerr=stds, fmt="o", color=color,
-                    capsize=4, markersize=6, elinewidth=1.2)
-        ax.plot(alphas, means, "-", color=color, linewidth=2, alpha=0.8)
+    # Per-dataset paper-scale factors.
+    # ECL uses 1e-8 because raw values are ~1e6 and paper Table 2 reports
+    # them in 0.04-0.10 range.  The other three are tuned to match the
+    # "paper-scale" used by compare_paper.py.
+    SCALE = {
+        "ECL":   1.0e-8,
+        "ETTh1": 1.0e-1,
+        "ETTm2": 1.0e-1,
+        "WTH":   1.0e-2,
+    }
 
-        best_idx = int(np.argmin(means))
-        best_a, best_m = alphas[best_idx], means[best_idx]
-        ax.annotate(f"best a={best_a}",
-                    xy=(best_a, best_m),
-                    xytext=(best_a + 0.1, best_m + 0.025 * best_m),
-                    fontsize=9, fontweight="bold", color=color,
-                    arrowprops=dict(arrowstyle="->", color="gray", lw=0.8))
+    fig, axes = plt.subplots(1, len(datasets), figsize=(4.2 * len(datasets), 3.6),
+                             sharey=False)
+    if len(datasets) == 1:
+        axes = [axes]
 
-        # Compare with alpha=0.0
-        if 0.0 in alpha_vals and best_a != 0.0:
-            base_m = np.mean(alpha_vals[0.0])
-            gain = (base_m - best_m) / base_m * 100
-            ax.axhline(base_m, ls=":", color="gray", lw=0.8, alpha=0.6)
-            ax.text(0.99, 0.97, f"a=0 MSE={base_m:.2f}\nbest a={best_a}: {gain:+.1f}%",
-                    transform=ax.transAxes, fontsize=8, ha="right", va="top",
+    for ax, ds in zip(axes, datasets):
+        scale = SCALE.get(ds, 1.0)
+        horizons = sorted({r["pred_len"] for r in rows if r["dataset"] == ds})
+
+        # For each alpha, build curve (in paper-scale)
+        for alpha in alphas_to_plot:
+            xs, ys, es = [], [], []
+            for h in horizons:
+                vals = [r["MSE"] * scale for r in rows
+                        if r["dataset"] == ds and r["pred_len"] == h
+                        and abs(r["alpha"] - alpha) < 1e-6]
+                if not vals:
+                    continue
+                xs.append(h)
+                ys.append(float(np.mean(vals)))
+                es.append(float(np.std(vals)) if len(vals) > 1 else 0.0)
+
+            if not xs:
+                continue
+
+            color = alpha_colors[alpha]
+            marker = alpha_markers[alpha]
+            ax.errorbar(xs, ys, yerr=es, fmt=f"{marker}-", color=color,
+                        capsize=2, markersize=5, elinewidth=0.9,
+                        label=f"alpha={alpha}", linewidth=1.4)
+
+        # Annotate
+        if len(horizons) <= 1:
+            ax.text(0.5, 0.5,
+                    f"only H={horizons[0]} available\n(Phase 2b in progress)",
+                    transform=ax.transAxes, ha="center", va="center",
+                    fontsize=10, color="gray",
                     bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
                               edgecolor="lightgray", alpha=0.9))
+        else:
+            # Highlight for ETTm2: show H=96 vs H=168 vs H=336 best-alpha
+            if ds == "ETTm2":
+                summary = []
+                for h in horizons:
+                    last_means = {a: float(np.mean([r["MSE"] for r in rows
+                                          if r["dataset"] == ds
+                                          and r["pred_len"] == h
+                                          and abs(r["alpha"] - a) < 1e-6]))
+                                  for a in [0.0, 0.25, 0.5, 1.0]}
+                    counts = {a: sum(1 for r in rows
+                                     if r["dataset"] == ds
+                                     and r["pred_len"] == h
+                                     and abs(r["alpha"] - a) < 1e-6)
+                              for a in [0.0, 0.25, 0.5, 1.0]}
+                    # only consider alphas with n>=2 seeds
+                    valid = {a: last_means[a] for a in last_means if counts[a] >= 2}
+                    if not valid:
+                        continue
+                    best_a = min(valid, key=valid.get)
+                    base = last_means[0.0]
+                    gap = (base - valid[best_a]) / base * 100
+                    summary.append(f"H={h}: best alpha={best_a} ({gap:+.1f}%)")
 
-        ax.set_xlabel("alpha (prior weight)", fontsize=10)
-        ax.set_ylabel("MSE (mean over seeds)", fontsize=10)
-        ax.set_title(f"pred_len = {pl}", fontsize=11, fontweight="bold")
+                msg = "ETTm2 trend (n>=2 seeds):\n" + "\n".join(summary)
+                ax.text(0.98, 0.05, msg,
+                        transform=ax.transAxes, ha="right", va="bottom",
+                        fontsize=7, color="darkred",
+                        bbox=dict(boxstyle="round,pad=0.3",
+                                  facecolor="lightyellow",
+                                  edgecolor="orange", alpha=0.9))
+
+        ax.set_xlabel("horizon length", fontsize=10)
+        ax.set_ylabel("MSE (paper-scale)", fontsize=10)
+        ax.set_title(ds, fontsize=11, fontweight="bold")
         ax.grid(True, alpha=0.25)
-        ax.set_xlim(-0.05, 1.05)
+        if ds == "ETTm2":    # legend in the ETTm2 subplot
+            ax.legend(fontsize=8, loc="upper left", ncol=1, framealpha=0.9)
 
-    fig.suptitle("Figure 3 Reproduction - Alpha Sensitivity (ETTm2, Autoformer, dishts)",
+    fig.suptitle("Figure 3 Reproduction - Prior guidance alpha vs horizon length "
+                 "(Autoformer, dishts, paper-scale; n>=2 seeds)",
                  fontsize=12, fontweight="bold", y=1.02)
     fig.tight_layout()
 
