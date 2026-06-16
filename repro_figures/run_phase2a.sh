@@ -18,7 +18,9 @@
 #   alphas     : 0.0, 0.25, 0.5, 0.75, 1.0
 #   seeds      : 2023, 2024, 2025
 # Total jobs : 3 horizons x 5 alphas x 3 seeds = 45
-# Runtime    : ~60-90 minutes on a single RTX 3090.
+# Runtime    : ~14 h on a single RTX 3090 at default patience=7 / max_epochs=100.
+#              ~7 h with the recommended PATIENCE=3 MAX_EPOCHS=70 override (trend
+#              experiments are insensitive to early-stop threshold).
 #
 # Outputs
 # -------

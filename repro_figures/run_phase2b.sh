@@ -13,7 +13,9 @@
 #   alphas   : 0.0, 0.25, 0.5, 0.75, 1.0
 #   seeds    : 2023, 2024, 2025
 # Total per dataset : 3 horizons x 5 alphas x 3 seeds = 45 jobs.
-# Total for 3 datasets: 135 jobs (~6-9 hours on a single 3090).
+# Total for 3 datasets: 135 jobs (~38-40 h on a single 3090 at default
+#                        patience=7 / max_epochs=100; ~20 h with the
+#                        recommended PATIENCE=3 MAX_EPOCHS=70 override).
 #
 # Batch size:  64 for ECL / WTH (wider feature dim, more memory)
 #              128 for ETTh1 / ETTm2
