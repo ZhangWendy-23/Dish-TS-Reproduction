@@ -355,10 +355,10 @@ multi-dataset summary.
 |-------|--------|----------|-------------|
 | Phase 1 — ETTm2 gate check (27 jobs) | ✅ Done | 27/27 | alpha=0.0 best on short horizons; Gate passed |
 | Phase 2a — ETTm2 dense alpha sweep (45 jobs) | ✅ Done | 45/45 | **Longer pred_len benefits more from larger alpha** (matches paper Fig.3) |
-| Phase 2b — 3-dataset alpha sweep | ⏳ Pending | 0/135 | Waiting for Phase 2a completion |
+| Phase 2b — 3-dataset alpha sweep | 🔄 Running | 1/135 | ECL, ETTh1, WTH; screen: `dishts-phase2b` |
 | Phase 3 — None / RevIN baselines | 🟡 Partial | partial | norm=dishts beats none/revin on pred_len ≥ 96 |
 
-**Phase 2a interim results (ETTm2, Autoformer, paper-phi-only, mean over 3 seeds):**
+**Phase 2a final results (ETTm2, Autoformer, paper-phi-only, mean over seeds):**
 
 | pred_len | alpha=0.0 | alpha=0.25 | alpha=0.5 | alpha=0.75 | alpha=1.0 | Best alpha |
 |----------|-----------|------------|-----------|------------|-----------|------------|

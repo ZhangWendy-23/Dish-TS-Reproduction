@@ -116,14 +116,14 @@ python3 repro_figures/plot_figure3.py
 | Phase 0 (Smoke Test) | ✅ 完成 | 2026-06-14 | 1 | 单个 pred_len=24 验证 |
 | Phase 1 (Gate Check) | ✅ 完成 | 2026-06-14 | ~12 | ETTm2 alpha=0.0 baseline 验证 |
 | Phase 2a (ETTm2 alpha 扫掠) | ✅ 完成 | 2026-06-15 | **45 / 45** | 3 pred_len × 5 alpha × 3 seeds，**质量检查通过（45 cells 完整，0 NaN）**；核心结论见 §4 |
-| Phase 2b (多数据集 alpha 扫掠) | ⏳ 待执行 | — | 0 | 需运行 ECL / ETTh1 / WTH；脚本：`bash repro_figures/run_phase2b.sh` |
+| Phase 2b (多数据集 alpha 扫掠) | 🔄 进行中 | 2026-06-15 | **1/135** | ECL / ETTh1 / WTH；screen: `dishts-phase2b`；脚本：`bash repro_figures/run_phase2b.sh` |
 | Phase 3 (none / revin 基线) | 🟡 部分完成 | 2026-06-15 | 少量 | ETTm2 有少量数据，需补全 4 数据集；脚本：`bash repro_figures/run_baselines_none_revin.sh` |
 | Figure 3 PNG | ⏳ 待生成 | — | — | 等 Phase 2b 完成后 `python3 repro_figures/plot_figure3.py` |
 | Table 2 / 3 对比 | 🟡 初步 | 2026-06-15 | — | 已有 ETTm2，ratio ≈ 1.0×；ETTm2 pred_len=168 ratio = **1.01×**（几乎完全匹配） |
 
 **`results/figure3_runs.csv` 累计数据：**
 
-- 总行数：~80+ rows
+- 总行数：93 rows
 - 数据集覆盖：ETTm2 (主)、ETTh1 (少量)、WTH (少量)
 - prior 覆盖：paper-phi-only (Phase 2a), none (Phase 3 baseline)
 - 预测窗口：24, 96, 168, 336
@@ -296,7 +296,7 @@ norm=revin:
 | 日期 | 内容 |
 |---|---|
 | 2026-06-14 | 完成环境搭建；Smoke Test 通过；完成 Phase 1 gate check；启动 Phase 2a sweep |
-| 2026-06-15 | Phase 2a 完成（45/45，0 NaN）；确认 **"pred_len 越长 alpha 越大越有益"**；ETTm2 pred_len=168 **ratio=1.01×** 几乎完全匹配论文；整理实验报告；进入 Phase 2b 准备 |
+| 2026-06-15 | Phase 2a 完成（45/45，0 NaN）；确认 **"pred_len 越长 alpha 越大越有益"**；ETTm2 pred_len=168 **ratio=1.01×** 几乎完全匹配论文；整理实验报告；**Phase 2b 启动**（ECL / ETTh1 / WTH，135 jobs，screen: `dishts-phase2b`） |
 
 ---
 
