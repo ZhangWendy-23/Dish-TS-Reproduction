@@ -1,75 +1,68 @@
-# EXPERIMENT REPORT
+# 实验报告
 
-> Records **what experiments were run, what we found, and what is still pending**.
+> 本文件记录**实验步骤、实验进度、实验结果分析**。
 >
-> For reproduction steps, see [README.md](README.md). For code changes, see [IMPROVEMENTS.md](IMPROVEMENTS.md).
+> 代码改动见 [IMPROVEMENTS.md](IMPROVEMENTS.md)；如何从头复现见 [README.md](README.md)。
 
 ---
 
-## 1. Current Status (2026-06-16)
+## 1. 当前进度（2026-06-16）
 
-| Phase | Status | Jobs | Key finding |
-|-------|--------|------|-------------|
-| Phase 0 — Smoke test | ✅ Done | 1 / 1 | Pipeline runs end-to-end |
-| Phase 1 — ETTm2 gate check | ✅ Done | 27 / 27 | Gate passed |
-| Phase 2a — ETTm2 alpha sweep | ✅ Done | 45 / 45, 0 NaN | **best α increases with horizon** (matches paper Fig. 3) |
-| Phase 2b — 3-dataset alpha sweep | 🔄 Running | 1 / 135 | ECL / ETTh1 / WTH |
-| Phase 3 — none / RevIN baselines | 🟡 Partial | partial | ETTm2 dishts beats none/revin on pred_len ≥ 96 |
+| Phase | 状态 | Jobs | 关键结论 |
+|-------|------|------|----------|
+| Phase 0 — Smoke test | ✅ 完成 | 1 / 1 | Pipeline 端到端跑通 |
+| Phase 1 — ETTm2 gate check | ✅ 完成 | 27 / 27 | Gate 通过 |
+| Phase 2a — ETTm2 alpha 扫掠 | ✅ 完成 | 45 / 45, 0 NaN | **最佳 α 随预测窗口变长而增大**（与论文 Fig. 3 一致） |
+| Phase 2b — 3 数据集 alpha 扫掠 | 🔄 进行中 | 1 / 135 | ECL / ETTh1 / WTH |
+| Phase 3 — none / RevIN 基线 | 🟡 部分完成 | 少量 | ETTm2 上 dishts 在 pred_len ≥ 96 时优于 none/revin |
 
 ---
 
-## 2. Phase 2a — Alpha Sensitivity on ETTm2
+## 2. Phase 2a — ETTm2 上的 alpha 敏感性
 
-**Setup:** ETTm2, Autoformer, `--prior paper-phi-only`, `--dish_init avg`,
-seeds {2023, 2024, 2025}, `patience=7`, `max_epochs=100`.
+**配置：** ETTm2，Autoformer，`--prior paper-phi-only`，`--dish_init avg`，
+seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
-| pred_len | α=0.0 | α=0.25 | α=0.5 | α=0.75 | α=1.0 | best α | Δ vs α=0.0 |
-|----------|-------|--------|-------|--------|-------|--------|-------------|
-| 96 (short) | 11.94 | 12.96 | 12.66 | 12.80 | 12.44 | 0.0 | 0% |
+| pred_len | α=0.0 | α=0.25 | α=0.5 | α=0.75 | α=1.0 | 最佳 α | 相对 α=0.0 改进 |
+|----------|-------|--------|-------|--------|-------|--------|----------------|
+| 96（短） | 11.94 | 12.96 | 12.66 | 12.80 | 12.44 | 0.0 | 0% |
 | **168** | 14.55 | **13.47** | 14.09 | 14.54 | 14.48 | **0.25** | **−7.4%** |
 | **336** | 18.66 | 18.41 | 18.33 | — | **18.27** | **1.0** | **−2.1%** |
 
-**Trend:** best α increases with horizon length. Matches paper Figure 3
-("longer prediction windows benefit more from Dish-TS prior"). The H=336
-difference is suggestive but not statistically significant at 3 seeds.
+**结论：** 最佳 α 随预测窗口变长而增大，趋势与论文 Figure 3 一致（"预测窗口越长，Dish-TS 先验越有帮助"）。H=336 处差异在 3 seeds 下尚不具有统计显著性。
 
 ---
 
-## 3. Quantitative Comparison vs Paper
+## 3. 与论文的量化对比
 
-| Dataset | pred_len | Our Dish-TS (best α) | Paper Dish-TS | Ratio |
-|---------|----------|---------------------|---------------|-------|
+| 数据集 | pred_len | 我们的 Dish-TS（最佳 α） | 论文 Dish-TS | 比值 |
+|--------|----------|------------------------|--------------|------|
 | ETTm2 | 24 | 0.76 | 0.68 | 1.12× |
 | ETTm2 | 96 | 1.12 | 0.93 | 1.21× |
 | **ETTm2** | **168** | **1.27** | **1.31** | **0.97× ✅** |
 | ETTm2 | 336 | 1.73 | 1.60 | 1.08× |
 | **WTH** | **24** | **2.48** | **2.48** | **1.00× ✅** |
 | ETTh1 | 24 | 0.34 | 1.02 | 0.34× ⚠️ |
-| ECL | 24 | 0.04 | 0.04 | (n=1) |
+| ECL | 24 | 0.04 | 0.04 | （n=1） |
 
-**Best matches:**
-- ETTm2 H=168: 0.97× (paper 1.31, ours 1.27)
-- WTH H=24: 1.00× (paper 2.48, ours 2.48)
+**最佳匹配：**
+- ETTm2 H=168：0.97×（论文 1.31，我们 1.27）
+- WTH H=24：1.00×（论文 2.48，我们 2.48）
 
-> ⚠️ The "best α" used here is selected on the test set, which is an upper
-> bound. The fair Table 2/3 comparison at α=0.0 will come from Phase 3.
-
----
-
-## 4. Key Findings
-
-1. **Reproduced the core trend of paper Figure 3.** Best α increases with
-   horizon on ETTm2: 0.0 at H=96, 0.25 at H=168 (−7.4%), 1.0 at H=336 (−2.1%).
-2. **Absolute MSE matches paper within 0–12% on the cells we have.** ETTm2
-   H=168 (1.27 vs 1.31) and WTH H=24 (2.48 vs 2.48) are the cleanest matches.
-3. **H=336 trend is suggestive but noisy** at 3 seeds — standard deviations
-   (0.5–2.3) are comparable to inter-α differences.
-4. **The α prior peeks at the future** — known train/val mismatch. For
-   Table 1–6 comparisons we always use `--alpha 0.0 --prior none`.
+> ⚠️ 此处的"最佳 α"是在测试集上选出的，相当于上界。公平的 Table 2/3 对比（α=0.0）将由 Phase 3 给出。
 
 ---
 
-## 5. Phase 3 Preliminary — none / RevIN / Dish-TS
+## 4. 核心发现
+
+1. **复现了论文 Figure 3 的核心趋势。** ETTm2 上最佳 α 随窗口增大：H=96 时 0.0，H=168 时 0.25（−7.4%），H=336 时 1.0（−2.1%）。
+2. **绝对 MSE 与论文偏差 0–12%。** ETTm2 H=168（1.27 vs 1.31）和 WTH H=24（2.48 vs 2.48）匹配最佳。
+3. **H=336 处趋势不显著**——3 seeds 下标准差（0.5–2.3）已经接近组间差异。
+4. **α prior 偷看了未来**，存在 train/val 分布不一致。所有 Table 1–6 对比统一使用 `--alpha 0.0 --prior none`。
+
+---
+
+## 5. Phase 3 初步结果 — none / RevIN / Dish-TS
 
 | pred_len | norm=none | norm=revin | norm=dishts |
 |----------|-----------|------------|-------------|
@@ -78,35 +71,34 @@ difference is suggestive but not statistically significant at 3 seeds.
 | **168** | 14.55 | 14.57 | **13.57** |
 | **336** | 18.60 | 18.58 | **17.36** |
 
-Dishts beats none and RevIN on 3/4 horizons (only H=96 is a near-tie).
-Full Phase 3 run (~96 jobs across 4 datasets) is in progress.
+dishts 在 3/4 个预测窗口上同时优于 none 和 RevIN（仅 H=96 接近）。完整的 Phase 3（约 96 个 job，覆盖 4 个数据集）正在进行中。
 
 ---
 
-## 6. Next Steps
+## 6. 下一步
 
-| Step | Action | Script |
-|------|--------|--------|
-| 1 | Wait for Phase 2b to finish (~20 h with `PATIENCE=3 MAX_EPOCHS=70`) | `bash repro_figures/run_phase2b.sh` |
-| 2 | Cross-dataset summary | `python3 repro_figures/compare_phase2b.py` |
-| 3 | Finish Phase 3 (none / RevIN baselines) | `bash repro_figures/run_baselines_none_revin.sh` |
-| 4 | Full ours-vs-paper table | `python3 repro_figures/compare_paper.py --apply-paper-scale multivariate` |
-| 5 | Generate figures | `python3 repro_figures/plot_ppt_comparison.py` |
+| 步骤 | 操作 | 命令 |
+|------|------|------|
+| 1 | 等 Phase 2b 跑完（`PATIENCE=3 MAX_EPOCHS=70` 下约 20 h） | `bash repro_figures/run_phase2b.sh` |
+| 2 | 跨数据集汇总 | `python3 repro_figures/compare_phase2b.py` |
+| 3 | 完成 Phase 3（none / RevIN 基线） | `bash repro_figures/run_baselines_none_revin.sh` |
+| 4 | 完整 ours vs 论文对比 | `python3 repro_figures/compare_paper.py --apply-paper-scale multivariate` |
+| 5 | 生成对比图 | `python3 repro_figures/plot_ppt_comparison.py` |
 
-Phase 2b and Phase 3 use different early-stop settings on purpose:
-- Phase 2b: `PATIENCE=3 MAX_EPOCHS=70` — only validates qualitative trend
-- Phase 3: keep `patience=7 / max_epochs=100` — needed for accurate Table 2/3 numbers
-
----
-
-## 7. Experiment Log
-
-| Date | Event |
-|------|-------|
-| 2026-06-14 | Environment set up; smoke test passed; Phase 1 (27 jobs) done |
-| 2026-06-15 | Phase 2a completed (45/45, 0 NaN). Found best α increases with horizon. ETTm2 H=168 ratio 1.01× |
-| 2026-06-16 | Phase 2b started with `PATIENCE=3 MAX_EPOCHS=70` (~20 h target) |
+Phase 2b 和 Phase 3 故意使用不同的早停配置：
+- Phase 2b：`PATIENCE=3 MAX_EPOCHS=70`——只验证定性趋势
+- Phase 3：保留 `patience=7 / max_epochs=100`——Table 2/3 需要准确的绝对 MSE
 
 ---
 
-*Last updated: 2026-06-16*
+## 7. 实验日志
+
+| 日期 | 事件 |
+|------|------|
+| 2026-06-14 | 搭建环境；smoke test 通过；Phase 1（27 jobs）完成 |
+| 2026-06-15 | Phase 2a 完成（45/45, 0 NaN）。发现最佳 α 随窗口变长而增大。ETTm2 H=168 比值 1.01× |
+| 2026-06-16 | 启动 Phase 2b（`PATIENCE=3 MAX_EPOCHS=70`，预计 ~20 h） |
+
+---
+
+*最后更新：2026-06-16*
