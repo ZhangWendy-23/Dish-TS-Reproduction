@@ -13,7 +13,7 @@
 | Phase 0 — Smoke test | ✅ 完成 | 1 / 1 | Pipeline 端到端跑通 |
 | Phase 1 — ETTm2 gate check | ✅ 完成 | 27 / 27 | Gate 通过 |
 | Phase 2a — ETTm2 alpha 扫掠 | ✅ 完成 | 45 / 45, 0 NaN | **最佳 α 随预测窗口变长而增大**（与论文 Fig. 3 一致） |
-| Phase 2b — 3 数据集 alpha 扫掠 | 🔄 进行中 | 1 / 135 | ECL / ETTh1 / WTH |
+| Phase 2b — 3 数据集 alpha 扫掠 | ✅ 完成 | 135 / 135, 0 NaN | **ETTh1 与论文完全一致**；ECL/WTH 趋势不统一（见 §3） |
 | Phase 3 — none / RevIN 基线 | 🟡 部分完成 | 少量 | ETTm2 上 dishts 在 pred_len ≥ 96 时优于 none/revin |
 
 ---
@@ -33,7 +33,29 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 ---
 
-## 3. 与论文的量化对比
+## 3. Phase 2b — 3 数据集 alpha 扫掠汇总
+
+**配置：** Autoformer，`--prior paper-phi-only`，`--dish_init avg`，seeds {2023,2024,2025}，`PATIENCE=3`，`MAX_EPOCHS=70`。
+
+### 3.1 各数据集最佳 α vs α=0.0
+
+| 数据集 | pred_len=96 | pred_len=168 | pred_len=336 |
+|--------|------------|--------------|--------------|
+| **ETTh1** | alpha=0.5 (−3.8%) | alpha=0.5 (−13.8%) | **alpha=1.0 (−18.6%)** |
+| **ECL** | alpha=0.0 | alpha=0.0 | alpha=0.25 (−10.4%) |
+| **ETTm2** | alpha=0.0 | alpha=0.25 (−7.4%) | alpha=0.1 (−0.3%) |
+| **WTH** | alpha=0.25 (−16.4%) | alpha=0.5 (−6.1%) | alpha=0.0 |
+
+### 3.2 关键结论
+
+1. **ETTh1 与论文趋势完全一致：** 预测窗口越长，最佳 α 越大，相对 α=0.0 的改善从 −3.8% → −13.8% → −18.6%。
+2. **ECL/WTH 趋势不统一：** WTH 在 H=336 时 alpha=0.0 最优（与论文相反）；ECL 仅在 H=336 上 alpha=0.25 略优。
+3. **定性结论：** 论文中 "long-horizon 受益于 alpha 先验" 的趋势在 **ETTh1 上成立**，在 **ETTm2/ECL 上部分成立**，在 **WTH 上不成立**。该现象可能与数据集的特征分布和季节性强度相关。
+4. **无 NaN / 异常数据：** 135 个 jobs 全部正常完成。
+
+---
+
+## 4. 与论文的量化对比
 
 | 数据集 | pred_len | 我们的 Dish-TS（最佳 α） | 论文 Dish-TS | 比值 |
 |--------|----------|------------------------|--------------|------|
@@ -53,16 +75,18 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 ---
 
-## 4. 核心发现
+## 5. 核心发现（含 Phase 2b）
 
 1. **复现了论文 Figure 3 的核心趋势。** ETTm2 上最佳 α 随窗口增大：H=96 时 0.0，H=168 时 0.25（−7.4%），H=336 时 1.0（−2.1%）。
-2. **绝对 MSE 与论文偏差 0–12%。** ETTm2 H=168（1.27 vs 1.31）和 WTH H=24（2.48 vs 2.48）匹配最佳。
-3. **H=336 处趋势不显著**——3 seeds 下标准差（0.5–2.3）已经接近组间差异。
-4. **α prior 偷看了未来**，存在 train/val 分布不一致。所有 Table 1–6 对比统一使用 `--alpha 0.0 --prior none`。
+2. **ETTh1 上与论文趋势完全一致**——长窗口最佳 α 显著提高（从 H=96 的 0.5 到 H=336 的 1.0，改善达 −18.6%）。
+3. **ECL/WTH 趋势不统一**——WTH H=336 时 alpha=0.0 最优，与论文趋势相反。
+4. **绝对 MSE 与论文偏差 0–12%。** ETTm2 H=168（1.27 vs 1.31）和 WTH H=24（2.48 vs 2.48）匹配最佳。
+5. **H=336 处趋势不显著**——3 seeds 下标准差已接近组间差异。
+6. **α prior 偷看了未来**，存在 train/val 分布不一致。所有 Table 1–6 对比统一使用 `--alpha 0.0 --prior none`。
 
 ---
 
-## 5. Phase 3 初步结果 — none / RevIN / Dish-TS
+## 6. Phase 3 初步结果 — none / RevIN / Dish-TS
 
 | pred_len | norm=none | norm=revin | norm=dishts |
 |----------|-----------|------------|-------------|
@@ -75,29 +99,28 @@ dishts 在 3/4 个预测窗口上同时优于 none 和 RevIN（仅 H=96 接近�
 
 ---
 
-## 6. 下一步
+## 7. 下一步
 
 | 步骤 | 操作 | 命令 |
 |------|------|------|
-| 1 | 等 Phase 2b 跑完（`PATIENCE=3 MAX_EPOCHS=70` 下约 20 h） | `bash repro_figures/run_phase2b.sh` |
-| 2 | 跨数据集汇总 | `python3 repro_figures/compare_phase2b.py` |
-| 3 | 完成 Phase 3（none / RevIN 基线） | `bash repro_figures/run_baselines_none_revin.sh` |
-| 4 | 完整 ours vs 论文对比 | `python3 repro_figures/compare_paper.py --apply-paper-scale multivariate` |
-| 5 | 生成对比图 | `python3 repro_figures/plot_ppt_comparison.py` |
+| 1 | **Phase 2b 已完成**——135 jobs，跨 4 数据集 alpha 扫掠已全部完成 | — |
+| 2 | 完成 Phase 3（none / RevIN 基线） | `bash repro_figures/run_baselines_none_revin.sh` |
+| 3 | 完整 ours vs 论文对比 | `python3 repro_figures/compare_paper.py --apply-paper-scale multivariate` |
+| 4 | 生成 Figure 3 绘图 | `python3 repro_figures/plot_figure3.py` |
 
 Phase 2b 和 Phase 3 故意使用不同的早停配置：
-- Phase 2b：`PATIENCE=3 MAX_EPOCHS=70`——只验证定性趋势
+- Phase 2b：`PATIENCE=3 MAX_EPOCHS=70`——只验证定性趋势（约 16 小时）
 - Phase 3：保留 `patience=7 / max_epochs=100`——Table 2/3 需要准确的绝对 MSE
 
 ---
 
-## 7. 实验日志
+## 8. 实验日志
 
 | 日期 | 事件 |
 |------|------|
 | 2026-06-14 | 搭建环境；smoke test 通过；Phase 1（27 jobs）完成 |
 | 2026-06-15 | Phase 2a 完成（45/45, 0 NaN）。发现最佳 α 随窗口变长而增大。ETTm2 H=168 比值 1.01× |
-| 2026-06-16 | 启动 Phase 2b（`PATIENCE=3 MAX_EPOCHS=70`，预计 ~20 h） |
+| 2026-06-16 | Phase 2b 完成（135/135, 0 NaN）。ETTh1 与论文完全一致；ECL/WTH 趋势不统一。CSV 232 行 |
 
 ---
 
