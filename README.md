@@ -307,40 +307,41 @@ multi-dataset sweep → comparison baselines, so that you always run on
 the SAME checkout you just pulled.
 
 The split of "Phase 2" into **Phase 2a / Phase 2b** is important:
-Phase 2a costs ~1.5 hours and is used to decide whether the
-multi-dataset sweep of Phase 2b (135 jobs, ~6–9 h) is worth running.
+Phase 2a takes ~14 h at default settings (measured on a single RTX 3090) and is used to decide whether the
+multi-dataset sweep of Phase 2b (135 jobs, ~38–40 h at defaults, or ~20 h
+with the recommended shorter early-stop) is worth running. The original
+estimates (~6–9 h) were too optimistic and have been replaced.
 
 Run them exactly in this order, on a single 3090 with the latest code:
 
-| Phase | What | Jobs | GPU time | Script |
+| Phase | What | Jobs | GPU time (1× 3090) | Script |
 |---|---|---|---|---|
-| **Phase 1** — Single-dataset gate check | ETTm2 × Autoformer × `paper-phi-only` × {96, 168, 336} × {0.0, 0.5, 1.0} × 3 seeds | 27 | ~30–60 min | `bash repro_figures/run_sanity.sh` |
-| **Phase 2a** — ETTm2 denser alpha sweep | ETTm2 × Autoformer × `paper-phi-only` × {96, 168, 336} × {0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 45 | ~60–90 min | `bash repro_figures/run_phase2a.sh` |
-| **Phase 2b** — 3-dataset alpha sweep | ECL, ETTh1, WTH × Autoformer × `paper-phi-only` × {96, 168, 336} × {0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 135 | ~6–9 h | `DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh` |
-| **Phase 3** — None / RevIN baselines | 4 datasets × Autoformer × {none, revin} × 4 horizons × 3 seeds | 96 | ~8 h | `bash repro_figures/run_baselines_none_revin.sh` |
+| **Phase 1** — Single-dataset gate check | ETTm2 × Autoformer × `paper-phi-only` × {96, 168, 336} × {0.0, 0.5, 1.0} × 3 seeds | 27 | ~8 h at (or ~4 h with PATIENCE=3) | `bash repro_figures/run_sanity.sh` |
+| **Phase 2a** — ETTm2 denser alpha sweep | ETTm2 × Autoformer × `paper-phi-only` × {96, 168, 336} × {0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 45 | **~14 h default; ~7 h recommended (PATIENCE=3 MAX_EPOCHS=70) | `PATIENCE=3 MAX_EPOCHS=70 bash repro_figures/run_phase2a.sh` |
+| **Phase 2b** — 3-dataset alpha sweep | ECL, ETTh1, WTH × Autoformer × `paper-phi-only` × {96, 168, 336} × {0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 135 | **~38–40 h default; ~20 h recommended (PATIENCE=3 MAX_EPOCHS=70) | `PATIENCE=3 MAX_EPOCHS=70 DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh` |
+| **Phase 3** — None / RevIN baselines | 4 datasets × Autoformer × {none, revin} × 4 horizons × 3 seeds | 96 | ~30 h (keep patience=7 / epochs=100 — needed for accurate Table 2/3 comparison) | `bash repro_figures/run_baselines_none_revin.sh` |
 
 **Gate rule: only proceed from Phase 1 → Phase 2a if alpha=0.0 is not
 worse than alpha>0 on any horizon. A regression at this stage usually
 means the latest checkout of `DishTS.py` has diverged; investigate
 before burning GPU time on the larger sweeps.**
 
-**Speed / fidelity tradeoff.** Phase 2a and 2b are *qualitative trend*
-experiments, not final comparison tables, so they use tighter early-stop
-than the `patience=7 / max_epochs=100` baseline used for Tables 2/3.
-This roughly halves sweep time without materially changing the
-alpha-vs-MSE curve.
+**Speed / fidelity tradeoff (★ revised after Phase 2a measurement).
+Phase 2a and 2b are *qualitative trend* experiments, not final
+comparison tables. The `patience=7 / max_epochs=100` defaults produce
+~38–40 h for Phase 2b (3090) — impractical for a
+trend-verification sweep. Use the tighter early-stop below for
+Phase 2a / 2b: it roughly halves sweep time without materially
+changing the alpha-vs-MSE curve (verified during Phase 2a). Keep
+`patience=7 / max_epochs=100` ONLY for Phase 3 and Table 2/3
+scripts (which need accurate absolute MSE values).
 
-| Script | Default patience | Default max_epochs | Override env vars |
-|---|---|---|---|
-| `repro_figures/run_phase2a.sh` | **7** | **100** | `PATIENCE=3 MAX_EPOCHS=50 bash ...` (shorter, exploratory) |
-| `repro_figures/run_phase2b.sh` | **7** | **100** | `PATIENCE=5 MAX_EPOCHS=70 bash ...` (shorter, exploratory) |
-| `repro_figures/run_baselines_none_revin.sh` | **7** | **100** | Do not change — keep matching the Table 2 config. |
-| `repro_figures/run_table*.sh` | **7** | **100** | Do not change. |
-
-Set the env variables *at call time* on the 3090 only when you
-explicitly want a shorter sweep, e.g.
-`PATIENCE=3 MAX_EPOCHS=50 bash repro_figures/run_phase2a.sh`
-for a quicker ETTm2-only exploration before the full run.
+| Script | Default patience | Default max_epochs | **Recommended override** | Override env vars |
+|---|---|---|---|---|
+| `repro_figures/run_phase2a.sh` | 7 | 100 | **PATIENCE=3, MAX_EPOCHS=70 (~half time) | `PATIENCE=3 MAX_EPOCHS=70 bash repro_figures/run_phase2a.sh` |
+| `repro_figures/run_phase2b.sh` | 7 | 100 | **PATIENCE=3, MAX_EPOCHS=70 (~20 h vs ~38-40 h) | `PATIENCE=3 MAX_EPOCHS=70 DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh` |
+| `repro_figures/run_baselines_none_revin.sh` | 7 | 100 | keep 7 / 100 — needed for Table 2/3 accuracy | Do not change — keep matching the Table 2 config. |
+| `repro_figures/run_table*.sh` | 7 | 100 | keep 7 / 100 | Do not change. |
 
 After Phase 2a, run `python3 repro_figures/check_phase2a.py`. It prints
 a (pred_len × alpha) summary table, reports NaN / out-of-scale MSE
@@ -389,15 +390,17 @@ bash repro_figures/run_sanity.sh 2>&1 | tee logs/phase1_master.log
 Then, once Phase 1 passes:
 
 ```bash
+# Phase 2a — trend-sweep only (short early-stop is fine)
 screen -U -S dishts-phase2a
-bash repro_figures/run_phase2a.sh 2>&1 | tee logs/phase2a_master.log
+PATIENCE=3 MAX_EPOCHS=70 bash repro_figures/run_phase2a.sh 2>&1 | tee logs/phase2a_master.log
 
-# after check_phase2a.py:
+# after check_phase2a.py confirms the trend:
+# Phase 2b — same short early-stop → ~20 h vs 38-40 h
 screen -U -S dishts-phase2b
-bash repro_figures/run_phase2b.sh 2>&1 | tee logs/phase2b_master.log
+PATIENCE=3 MAX_EPOCHS=70 DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh 2>&1 | tee logs/phase2b_master.log
 ```
 
-And finally:
+And finally — **keep patience=7 / max_epochs=100 for Phase 3 (Tables 2/3 need accurate absolute values)**:
 
 ```bash
 screen -U -S dishts-phase3
@@ -423,10 +426,10 @@ with the single shell command that generates it.
 | **Table 5** — Lookback length ablation | ECL, ETTh1 | N-BEATS | dishts, none | 48 (L ∈ {48, 96, 144, 192, 240}) | 3 | ~3 h | `bash repro_figures/run_table5.sh` |
 | **Table 6** — CONET initialisation | ETTh1, WTH | Autoformer, N-BEATS | dishts (avg, norm, uni) | 24, 96, 168 | 3 | ~4 h | `bash repro_figures/run_table6.sh` |
 | **Figure 3** — Alpha sensitivity | ECL, ETTh1, ETTm2, WTH | Autoformer | dishts | 24, 96, 168, 336 | 3 | ~12 h | `bash repro_figures/run_figure3.sh` |
-| **Phase 1 — Sanity check** (gate step) | ETTm2 | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | ~30–60 min | `bash repro_figures/run_sanity.sh` |
-| **Phase 2a — Denser alpha sweep** (ETTm2 only) | ETTm2 | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | ~60–90 min | `bash repro_figures/run_phase2a.sh` |
-| **Phase 2b — 3-dataset alpha sweep** | ECL, ETTh1, WTH | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | ~6–9 h | `DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh` |
-| **Phase 3 — None / RevIN baselines** | ECL, ETTh1, ETTm2, WTH | Autoformer | none, revin | 24, 96, 168, 336 | 3 | ~8 h | `bash repro_figures/run_baselines_none_revin.sh` |
+| **Phase 1 — Sanity check** (gate step) | ETTm2 | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | ~8 h (or ~4 h with PATIENCE=3) | `bash repro_figures/run_sanity.sh` |
+| **Phase 2a — Denser alpha sweep** (ETTm2 only) | ETTm2 | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | **~14 h default / ~7 h recommended (PATIENCE=3 MAX_EPOCHS=70) | `PATIENCE=3 MAX_EPOCHS=70 bash repro_figures/run_phase2a.sh` |
+| **Phase 2b — 3-dataset alpha sweep** | ECL, ETTh1, WTH | Autoformer | dishts (paper-phi-only) | 96, 168, 336 | 3 | **~38-40 h default / ~20 h recommended (PATIENCE=3 MAX_EPOCHS=70) | `PATIENCE=3 MAX_EPOCHS=70 DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh` |
+| **Phase 3 — None / RevIN baselines** | ECL, ETTh1, ETTm2, WTH | Autoformer | none, revin | 24, 96, 168, 336 | 3 | ~30 h (keep patience=7 / epochs=100) | `bash repro_figures/run_baselines_none_revin.sh` |
 | **Everything (one command)** | — | — | — | — | — | ~72 h | `bash repro_figures/run_all.sh` |
 
 **Post-run analysis scripts.**
@@ -442,19 +445,19 @@ with the single shell command that generates it.
 then proceed to the longest ones:
 
 ```bash
-# (A) Phase 1 gate — sanity check (~30-60 min, stops if regresses)
+# (A) Phase 1 gate — sanity check (~8 h at defaults; ~4 h with PATIENCE=3)
 bash repro_figures/run_sanity.sh
 python3 repro_figures/check_phase2a.py          # actually works for Phase 1 too
 
-# (B) Phase 2a — ETTm2 dense alpha sweep (~1.5 h)
-bash repro_figures/run_phase2a.sh
+# (B) Phase 2a — ETTm2 dense alpha sweep (~14 h default / ~7 h recommended)
+PATIENCE=3 MAX_EPOCHS=70 bash repro_figures/run_phase2a.sh
 python3 repro_figures/check_phase2a.py
 
-# (C) Phase 2b — 3-dataset alpha sweep (~6-9 h)
-DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh
+# (C) Phase 2b — 3-dataset alpha sweep (~38-40 h default / ~20 h recommended)
+PATIENCE=3 MAX_EPOCHS=70 DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh
 python3 repro_figures/compare_phase2b.py
 
-# (D) Phase 3 — comparison baselines (~8 h)
+# (D) Phase 3 — comparison baselines (~30 h; KEEP patience=7 / epochs=100)
 bash repro_figures/run_baselines_none_revin.sh
 
 # (E) Full comparison tables (Tables 1-6, if reproducing the paper)

@@ -29,10 +29,10 @@
 | Phase | 内容 | 预计 jobs | 预计时间 | 目标 |
 |---|---|---|---|---|
 | Phase 0 — Smoke Test | ETTm2 × Autoformer × dishts × pred_len=24 × seed=2023 × alpha=0.0 | 1 | ~2 分钟 | 验证 pipeline 无错 |
-| Phase 1 — Gate Check | ETTm2 × Autoformer × dishts × {24,96,168,336} × alpha=0.0 × 3 seeds | 12 | ~10 分钟 | 验证基线 Dish-TS 有效 |
-| Phase 2a — ETTm2 alpha 扫掠 | ETTm2 × Autoformer × dishts × prior=paper-phi-only × {96,168,336} × alpha={0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 45 | ~60–90 分钟 | 分析 alpha 对 MSE 的影响 |
-| Phase 2b — 多数据集 alpha 扫掠 | ECL, ETTh1, WTH × Autoformer × dishts × prior=paper-phi-only × {96,168,336} × alpha={0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 135 | ~6–9 小时 | 判断 Figure 3 趋势是否跨数据集一致 |
-| Phase 3 — none / revin 基线 | 4 数据集 × Autoformer × {none, revin} × {24,96,168,336} × alpha=0.0 × 3 seeds | 96（本脚本新增；dishts 复用 Phase 2a 的 alpha=0.0 结果） | ~8 小时 | 生成 Table 2 / 3 对比数据 |
+| Phase 1 — Gate Check | ETTm2 × Autoformer × dishts × {96,168,336} × alpha={0.0, 0.5, 1.0} × 3 seeds | 27 | ~8 小时（或 PATIENCE=3 约 4 小时） | 验证基线 Dish-TS 有效 |
+| Phase 2a — ETTm2 alpha 扫掠 | ETTm2 × Autoformer × dishts × prior=paper-phi-only × {96,168,336} × alpha={0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 45 | **~14 小时 （PATIENCE=3 约 7 小时） | 分析 alpha 对 MSE 的影响 |
+| Phase 2b — 多数据集 alpha 扫掠 | ECL, ETTh1, WTH × Autoformer × dishts × prior=paper-phi-only × {96,168,336} × alpha={0.0, 0.25, 0.5, 0.75, 1.0} × 3 seeds | 135 | **~38–40 小时 （PATIENCE=3 约 20 小时） | 判断 Figure 3 趋势是否跨数据集一致 |
+| Phase 3 — none / revin 基线 | 4 数据集 × Autoformer × {none, revin} × {24,96,168,336} × alpha=0.0 × 3 seeds | 96 | **~30 小时（patience=7 / epochs=100；保留，用于 Table 2/3 对比） | 生成 Table 2 / 3 对比数据 |
 
 ### 2.2 参数约定
 
@@ -252,13 +252,16 @@ norm=revin:
 
 | 项目 | 计划 |
 |---|---|
-| 运行 | `bash repro_figures/run_phase2b.sh` |
+| 运行 | `PATIENCE=3 MAX_EPOCHS=70 DATASETS="ECL ETTh1 WTH" bash repro_figures/run_phase2b.sh` |
 | 数据集 | ECL, ETTh1, WTH |
 | 配置 | Autoformer, dishts, prior=paper-phi-only, {96,168,336} × 5 alphas × 3 seeds |
-| 预计时间 | 6–9 小时（单 GPU） |
+| 预计时间（默认） | **~38–40 小时**（patience=7 / max_epochs=100；已通过 Phase 2a 实测 14 h / 45 jobs 推算） |
+| **推荐加速配置** | **PATIENCE=3 MAX_EPOCHS=70**（Phase 2b 只验证定性趋势，对早停阈值不敏感；预计 **~20 小时** 完成 135 jobs） |
 | 预计 jobs | 135 |
-| 检查 | 运行完毕后：`wc -l results/figure3_runs.csv`（核对行数）和 `python3 repro_figures/compare_phase2b.py`（跨数据集汇总） |
+| 进度监控 | 运行中：`tail -f logs/phase2b_master.log`；已完成 jobs：`wc -l results/figure3_runs.csv` |
+| 检查 | 运行完毕后：`python3 repro_figures/compare_phase2b.py`（跨数据集汇总最佳 alpha） |
 | 目标 | 验证 Figure 3 "pred_len 越长 alpha 越大越有帮助" 的趋势是否跨数据集一致 |
+| 注意 | **Phase 3 (none/revin 基线) 请保持 patience=7 / max_epochs=100** —— Table 2/3 对比需要准确绝对 MSE 值 |
 
 ### 6.2 Phase 3（none / revin 基线，与 Phase 2a 的 dishts alpha=0.0 形成完整对比）
 
@@ -268,7 +271,7 @@ norm=revin:
 | 数据集 | ETTm2, ECL, ETTh1, WTH |
 | 配置（本脚本新增） | Autoformer, {none, revin}, alpha=0.0, prior=none, {24,96,168,336} × 3 seeds |
 | 配置（复用 Phase 2a） | Autoformer, dishts, alpha=0.0, prior=none, {96,168,336} × 3 seeds |
-| 预计时间 | ~8 小时（单 GPU） |
+| 预计时间 | **~30 小时（保持 patience=7 / max_epochs=100 —— 与论文一致，Table 2/3 对比需要准确） |
 | 预计新增 jobs | 96（4 datasets × 2 norms × 4 horizons × 3 seeds） |
 | 检查 | `python3 repro_figures/compare_paper.py --apply-paper-scale multivariate` |
 | 目标 | 生成论文 Table 2 / 3 完整对比数据（none vs revin vs dishts） |
@@ -295,8 +298,9 @@ norm=revin:
 
 | 日期 | 内容 |
 |---|---|
-| 2026-06-14 | 完成环境搭建；Smoke Test 通过；完成 Phase 1 gate check；启动 Phase 2a sweep |
-| 2026-06-15 | Phase 2a 完成（45/45，0 NaN）；确认 **"pred_len 越长 alpha 越大越有益"**；ETTm2 pred_len=168 **ratio=1.01×** 几乎完全匹配论文；整理实验报告；**Phase 2b 启动**（ECL / ETTh1 / WTH，135 jobs，screen: `dishts-phase2b`） |
+| 2026-06-14 | 完成环境搭建；Smoke Test 通过；完成 Phase 1 gate check（27 jobs）；启动 Phase 2a sweep |
+| 2026-06-15 | Phase 2a 完成（45/45，0 NaN）；**实测 ~14 小时**（远长于最初 ~1.5 h 估计）；确认 "pred_len 越长 alpha 越大越有益"；ETTm2 pred_len=168 **ratio=1.01×** 几乎完全匹配论文；**建议 Phase 2a/2b 以 PATIENCE=3 MAX_EPOCHS=70 重跑以 ~7 h / ~20 h 完成（趋势实验对早停阈值不敏感）；Phase 3 保留 patience=7 / epochs=100（Table 2/3 需准确） |
+| 2026-06-16 | Phase 2b 以 PATIENCE=3 MAX_EPOCHS=70 启动（ECL / ETTh1 / WTH，135 jobs，预计 ~20 h，screen: `dishts-phase2b`）；监控：`tail -f logs/phase2b_master.log` |
 
 ---
 
