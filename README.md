@@ -148,7 +148,6 @@ python3 repro_figures/plot_figure3.py \
     --input results/figure3_runs.csv --output results/figures/figure3.png
 python3 repro_figures/plot_figure4.py --data ETTm2 --pred_len 168 \
     --output results/figures/figure4_ETTm2_H168.png
-python3 repro_figures/plot_ppt_comparison.py   # PPT-ready comparison
 ```
 
 ---
