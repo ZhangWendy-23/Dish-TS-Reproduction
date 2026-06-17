@@ -246,21 +246,28 @@ def plot_dishts_vs_paper(rows: list[dict]) -> Path:
                        color="#bababa", edgecolor="gray", linewidth=0.8, hatch="//")
 
         # ratio + best alpha labels
+        # Reserve 25% headroom ABOVE the tallest bar so ratio labels never
+        # collide with the subplot title.
+        ymax_axis = max(max(ours_vals + [0.01]), max(paper_vals + [0.01])) * 1.25
+        ax.set_ylim(top=ymax_axis)
         for i, (xi, ov, pv, (best_a, n, rat)) in enumerate(zip(x, ours_vals, paper_vals, annotations)):
             color = "green" if 0.95 <= rat <= 1.05 else ("darkorange" if 0.85 <= rat <= 1.15 else "red")
-            ax.text(xi, max(ov, pv) * 1.07, f"{rat:.2f}x",
+            ax.text(xi, max(ov, pv) * 1.10, f"{rat:.2f}x",
                     ha="center", fontsize=8, fontweight="bold", color=color)
             ax.text(xi, max(ov, pv) * 0.04, f"alpha={best_a}\n(n={n})",
                     ha="center", fontsize=7, color="white", fontweight="bold")
 
         ax.set_xticks(x)
         ax.set_xticklabels(x_labels, fontsize=9)
-        ax.set_title(f"{ds}  (best alpha per horizon)", fontsize=11, fontweight="bold")
+        # Push subplot title higher so it does not collide with ratio labels.
+        ax.set_title(f"{ds}  (best alpha per horizon)", fontsize=11,
+                     fontweight="bold", pad=14)
         ax.set_ylabel("MSE (paper-scale)", fontsize=10)
         ax.grid(axis="y", alpha=0.25)
         if ds == datasets[0]:
             ax.legend(fontsize=8, loc="upper left")
 
+    # Push suptitle high so it does not collide with subplot titles.
     fig.suptitle("Dish-TS Reproduction vs Paper (Autoformer, multivariate, paper-scale)",
                  fontsize=12, fontweight="bold", y=1.02)
     fig.tight_layout()
