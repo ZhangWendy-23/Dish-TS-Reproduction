@@ -55,6 +55,12 @@ def load_rows(path: Path) -> list[dict]:
                 continue
             if r["norm"] != "dishts" or math.isnan(r["MSE"]) or math.isinf(r["MSE"]):
                 continue
+            # Exclude H=24: Phase 2a/2b only scan {96, 168, 336} (paper Fig.3
+            # does not cover H=24). Only ECL has 5 alpha values at H=24 from
+            # an early ad-hoc run; plotting it together with the 3 main horizons
+            # would be misleading.
+            if r["pred_len"] == 24:
+                continue
             rows.append(r)
     return rows
 
@@ -199,7 +205,7 @@ def plot_dishts_vs_paper(rows: list[dict]) -> Path:
     # 1. Compute our best (dataset, pred_len) -> (best_alpha, best_mse_raw, n_seeds)
     cell_best = {}
     for ds in ["ETTm2", "WTH", "ETTh1", "ECL"]:
-        for pl in [24, 96, 168, 336]:
+        for pl in [96, 168, 336]:  # Phase 2a/2b scan range (H=24 excluded)
             cell = defaultdict(list)
             for r in rows:
                 if r["dataset"] == ds and r["pred_len"] == pl:
@@ -214,7 +220,7 @@ def plot_dishts_vs_paper(rows: list[dict]) -> Path:
 
     # 2. Build plot
     datasets = ["ETTm2", "WTH", "ETTh1"]
-    common_lens = [24, 96, 168, 336]
+    common_lens = [96, 168, 336]  # match Phase 2a/2b scan range
 
     fig, axes = plt.subplots(1, len(datasets), figsize=(4.5 * len(datasets), 4.2))
 
@@ -292,7 +298,7 @@ def main() -> int:
     print("\nBest (alpha) per (dataset, pred_len):")
     print(f"  {'dataset':>8s} {'pred_len':>9s} {'best_a':>7s} {'raw_MSE':>10s} {'scaled_MSE':>11s} {'paper':>10s} {'ratio':>6s}")
     for ds in ["ETTm2", "WTH", "ETTh1", "ECL"]:
-        for pl in [24, 96, 168, 336]:
+        for pl in [96, 168, 336]:  # Phase 2a/2b scan range (H=24 excluded)
             cell = defaultdict(list)
             for r in rows:
                 if r["dataset"] == ds and r["pred_len"] == pl:
