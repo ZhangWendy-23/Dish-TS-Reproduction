@@ -32,13 +32,13 @@ GPU="${GPU:-0}"
 SEEDS=(2023 2024 2025)
 PREDS=(24 48 96 168 336)
 MODELS=("Informer" "Autoformer" "N-BEATS")
-NORMS=(${NORMS:-"none revin dishts"})
+NORMS=(${NORMS:-none revin dishts})
 
 # `--seq_len 0` is the repo convention for "auto-set to pred_len" so that
 # the experiment automatically respects the paper's L=H rule.
 SEQ_LEN=0
 
-DATASETS=(${DATASET_SUBSET:-"ECL ETTh1 ETTm2 Weather"})
+DATASETS=(${DATASET_SUBSET:-ECL ETTh1 ETTm2 WTH})
 
 mkdir -p logs results
 

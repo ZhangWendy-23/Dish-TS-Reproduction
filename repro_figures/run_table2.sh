@@ -33,7 +33,7 @@ SEEDS=(2023 2024 2025)
 MODELS=(Informer Autoformer NBEATS)
 NORMS=(none revin dishts)
 PREDS=(24 96 168 336)
-DATASETS=(${DATASET_SUBSET:-"ECL ETTh1 ETTm2 WTH"})
+DATASETS=(${DATASET_SUBSET:-ECL ETTh1 ETTm2 WTH})
 
 mkdir -p logs results
 
