@@ -88,59 +88,90 @@ def main() -> int:
 
     # Plot: 4 panels (one per dataset), 3 bars (one per pred_len)
     n_ds = len(args.datasets)
-    fig, axes = plt.subplots(1, n_ds, figsize=(4 * n_ds, 5), sharey=False)
+    fig, axes = plt.subplots(
+        1, n_ds, figsize=(3.6 * n_ds, 5.2), sharey=False
+    )
     if n_ds == 1:
         axes = [axes]
 
     # x positions: pred_len groups
     x = np.arange(len(args.pred_lens))
-    width = 0.55
+    width = 0.6
 
-    for ax, ds in zip(axes, args.datasets):
+    # leave room on top for labels
+    plt.subplots_adjust(top=0.82, bottom=0.10, left=0.06, right=0.98,
+                        wspace=0.30)
+
+    for ax_idx, (ax, ds) in enumerate(zip(axes, args.datasets)):
         heights = []
-        labels = []
+        labels_text = []
         colors = []
         for pl in args.pred_lens:
             cell = [c for c in cells if c[0] == ds and c[1] == pl]
             if not cell:
                 heights.append(0)
-                labels.append("")
+                labels_text.append("")
                 colors.append("lightgray")
             else:
                 _, _, best_al, base, best, pct = cell[0]
                 heights.append(pct)
-                labels.append(f"α*={best_al}\n({pct:+.1f}%)")
+                # only show α* label inside the bar (no extra noise)
+                if pct <= -0.1:                     # real improvement
+                    labels_text.append(f"α*={best_al}\n{pct:+.1f}%")
+                else:                                # no improvement
+                    labels_text.append("α*=0.0")
                 # color: green if improvement, red if regression
                 colors.append("#2ca02c" if pct <= 0 else "#d62728")
 
-        bars = ax.bar(x, heights, width, color=colors, edgecolor="black", linewidth=0.8)
-        # value labels above/below bars
-        for bar, label in zip(bars, labels):
-            h = bar.get_height()
-            va = "bottom" if h <= 0 else "top"
-            offset = 0.3 if h <= 0 else -0.3
-            ax.text(bar.get_x() + bar.get_width() / 2, h + offset,
-                    label, ha="center", va=va, fontsize=9, fontweight="bold")
+        bars = ax.bar(x, heights, width, color=colors,
+                      edgecolor="black", linewidth=0.8)
 
+        # place ALL labels INSIDE bars (no labels above plot area to avoid
+        # title / neighbour-subplot overlap)
+        for bar, label in zip(bars, labels_text):
+            if not label:
+                continue
+            h = bar.get_height()
+            # bottom of bar (since most bars are negative)
+            y_text = h / 2 if h != 0 else -0.5
+            ax.text(bar.get_x() + bar.get_width() / 2, y_text, label,
+                    ha="center", va="center", fontsize=9,
+                    fontweight="bold", color="white")
+
+        # Title: keep inside the axes (top), do not use figure title
+        ax.set_title(ds, fontsize=13, fontweight="bold", pad=8)
         ax.axhline(0, color="black", linewidth=0.8)
         ax.set_xticks(x)
         ax.set_xticklabels([f"H={pl}" for pl in args.pred_lens], fontsize=10)
-        ax.set_title(ds, fontsize=13, fontweight="bold")
         ax.set_xlabel("Horizon", fontsize=10)
         ax.grid(True, axis="y", alpha=0.3)
-        # Mark ETTh1 as "matches paper Fig 3"
+
+        # ETTh1 highlight
         if ds == "ETTh1":
-            ax.set_facecolor("#eaf7ea")  # light green tint
+            ax.set_facecolor("#eaf7ea")
+
+        # extend y limits a bit so labels and bars are not clipped
+        ymin, ymax = ax.get_ylim()
+        ymin = min(ymin, min(heights + [0]) * 1.15 - 1)
+        ymax = max(ymax, 2)
+        ax.set_ylim(ymin, ymax)
 
     axes[0].set_ylabel("Δ MSE vs α=0.0 (%)", fontsize=10)
+
+    # Suptitle at very top with sufficient padding
     fig.suptitle(
         "Best-α Improvement vs No-Prior (Dishts, Autoformer, --prior paper-phi-only)",
-        fontsize=13, fontweight="bold"
+        fontsize=12, fontweight="bold", y=0.96,
     )
-    plt.tight_layout()
+
+    # Subtitle / paper-trend line as figure-level text
+    fig.text(0.5, 0.90,
+             "ETTh1 (highlighted): best-α improves from -3.8% to -18.6% as H grows — matches paper Fig. 3",
+             ha="center", fontsize=10, color="darkred", style="italic")
+
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(out, dpi=150, bbox_inches="tight")
+    plt.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")
     print(f"Saved {out}")
 
     # Also print the table for inspection
