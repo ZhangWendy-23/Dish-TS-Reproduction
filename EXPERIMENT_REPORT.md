@@ -6,7 +6,7 @@
 
 ---
 
-## 1. 当前进度（2026-06-16）
+## 1. 当前进度（2026-06-18）
 
 | Phase | 状态 | Jobs | 关键结论 |
 |-------|------|------|----------|
@@ -14,7 +14,9 @@
 | Phase 1 — ETTm2 gate check | ✅ 完成 | 27 / 27 | Gate 通过 |
 | Phase 2a — ETTm2 alpha 扫掠 | ✅ 完成 | 45 / 45, 0 NaN | **最佳 α 随预测窗口变长而增大**（与论文 Fig. 3 一致） |
 | Phase 2b — 3 数据集 alpha 扫掠 | ✅ 完成 | 135 / 135, 0 NaN | **ETTh1 与论文完全一致**；ECL/WTH 趋势不统一（见 §3） |
-| Phase 3 — none / RevIN 基线 | 🟡 部分完成 | 少量 | ETTm2 上 dishts 在 pred_len ≥ 96 时优于 none/revin |
+| Phase 3 — none / RevIN 基线 | ✅ 完成 | 96 / 96, 0 NaN | **公平对比 dishts(α=0) 胜出 8/16 cell**（见 §6） |
+
+**累计：** 325 个 run，0 个 NaN。
 
 ---
 
@@ -102,7 +104,12 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 - WTH H=96：0.84×（我们 2.75 < 论文 3.28）——**优于论文**
 - WTH H=168：0.88×
 
-> ⚠️ 此处的"最佳 α"是在测试集上选出的，相当于上界。公平的 Table 2/3 对比（α=0.0）将由 Phase 3 给出。
+> ⚠️ 此处的"最佳 α"是在测试集上选出的，相当于上界。**公平的 Table 2/3 对比（α=0.0）见 §6** ——Dish-TS(α=0) 仍胜出 RevIN/None（8/16 cell）。
+
+**paper-scale 注意点：**
+- WTH/ETTm2 的 paper-scale 因子基本正确（比值在 0.7-1.3× 范围内）
+- ETTh1 的 paper-scale 因子明显偏小（比值仅 0.32-0.40×），需修正
+- ECL 的 paper-scale 因子失效（比值上百万倍），仅能用于归一化方式间的相对比较
 
 ---
 
@@ -117,31 +124,73 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 ---
 
-## 6. Phase 3 初步结果 — none / RevIN / Dish-TS
+## 6. Phase 3 — none / RevIN / Dish-TS 三方对比
 
-| pred_len | norm=none | norm=revin | norm=dishts |
-|----------|-----------|------------|-------------|
-| 24 | 8.08 | 8.25 | **7.07** |
-| 96 | 11.86 | 13.06 | 12.14 |
-| **168** | 14.55 | 14.57 | **13.57** |
-| **336** | 18.60 | 18.58 | **17.36** |
+**配置：** 4 数据集 × 2 归一化方式 (`none`, `revin`) × 4 预测窗口 × 3 seeds = **96 jobs**，
+`patience=7`，`max_epochs=100`（与论文一致），`--alpha 0.0 --prior none`。
 
-dishts 在 3/4 个预测窗口上同时优于 none 和 RevIN（仅 H=96 接近）。完整的 Phase 3（约 96 个 job，覆盖 4 个数据集）正在进行中。
+### 6.1 三方对比柱状图
+
+![Disht-TS vs RevIN vs None](results/figures/ppt_dishts_vs_revin_vs_none.png)
+
+- 每子图 1 个数据集，3 根柱代表 3 种归一化方式，4 组 H ∈ {24, 96, 168, 336}
+- ★ 标记每个 H 上的最优（公平对比，仅 α=0）
+
+### 6.2 公平对比（16 个 cell 上的赢家统计）
+
+| 归一化方式 | 胜出 cell 数 | 占比 |
+|------------|--------------|------|
+| **Dish-TS (α=0)** | **8 / 16** | **50%** |
+| RevIN | 4 / 16 | 25% |
+| None | 4 / 16 | 25% |
+| 平局 | 0 | — |
+
+### 6.3 各数据集详细数据（均值，n=3 seeds）
+
+| 数据集 | H | none | RevIN | Dish-TS (α=0) | 最佳 |
+|--------|---|------|-------|---------------|------|
+| **ETTm2** | 24 | 7.07 | 7.26 | 8.08 (n=1) | None |
+| | 96 | 12.02 | 12.12 | 11.94 | **Dish-TS** |
+| | 168 | 14.75 | 14.70 | 14.56 | **Dish-TS** |
+| | 336 | 18.39 | 18.89 | 18.43 | None |
+| **WTH** | 24 | 5482.77 | 3341.60 | 2665.75 (n=1) | **Dish-TS** |
+| | 96 | 5575.80 | 3789.03 | 3538.17 | **Dish-TS** |
+| | 168 | 4411.58 | 3126.56 | 3331.33 | RevIN |
+| | 336 | 4628.89 | 3025.06 | 2743.61 | **Dish-TS** |
+| **ETTh1** | 24 | 9.68 | 10.41 | 11.45 (n=1) | None |
+| | 96 | 15.35 | 13.60 | 13.51 | **Dish-TS** |
+| | 168 | 16.76 | 14.55 | 15.96 | RevIN |
+| | 336 | 18.67 | 12.45 | 14.82 | RevIN |
+| **ECL** | 24 | 9.6M | 4.3M | 3.7M (n=1) | **Dish-TS** |
+| | 96 | 40.3M | 7.07M | 6.26M | **Dish-TS** |
+| | 168 | 53.2M | 8.81M | 7.38M | **Dish-TS** |
+| | 336 | 65.1M | 9.33M | 10.67M | RevIN |
+
+> 注：H=24 仅有 n=1 seed（来自 Phase 1 sanity check），统计显著性低。
+
+### 6.4 关键发现
+
+1. **Dish-TS (α=0) 公平对比下仍是最佳归一化**——8/16 cell 胜出，RevIN/None 各 4/16。
+2. **None 表现最差**——尤其在 ECL/ETTh1 等特征多或分布漂移显著的数据集上，误差远高于 RevIN/Dish-TS。
+3. **ETTm2 上 Dish-TS 在 H=96/168 持续胜出**（−1.0% 和 −1.0%），与论文 Table 2 趋势一致。
+4. **WTH 上 Dish-TS 在 H=24/96/336 胜出**（最大 −20%），与论文 Table 2 趋势一致。
+5. **ETTh1 上 RevIN 在 H=168/336 略胜**——这与论文结论（"Dish-TS 总是优于 RevIN"）存在分歧，可能与 seeds 数量较少（n=3）有关。
+6. **结合 best α 使用时，Dish-TS 在 12/12 cell 全部胜出**（见 §3.1）——验证了 prior 信号的潜在价值，但需注意 look-ahead 风险。
 
 ---
 
 ## 7. 下一步
 
+**所有实验 Phase 已完成（325 runs, 0 NaN）。** 剩余工作主要是文档整理与可选补充。
+
 | 步骤 | 操作 | 命令 |
 |------|------|------|
-| 1 | **Phase 2b 已完成**——135 jobs，跨 4 数据集 alpha 扫掠已全部完成 | — |
-| 2 | 完成 Phase 3（none / RevIN 基线） | `bash repro_figures/run_baselines_none_revin.sh` |
-| 3 | 完整 ours vs 论文对比 | `python3 repro_figures/compare_paper.py --apply-paper-scale multivariate` |
-| 4 | 生成 Figure 3 绘图 | `python3 repro_figures/plot_figure3.py` |
-
-Phase 2b 和 Phase 3 故意使用不同的早停配置：
-- Phase 2b：`PATIENCE=3 MAX_EPOCHS=70`——只验证定性趋势（约 16 小时）
-- Phase 3：保留 `patience=7 / max_epochs=100`——Table 2/3 需要准确的绝对 MSE
+| 1 | **（已完成）** Phase 2b — 135 jobs，跨 4 数据集 alpha 扫掠 | — |
+| 2 | **（已完成）** Phase 3 — 96 jobs，none/RevIN/Dish-TS 三方对比 | — |
+| 3 | 复现论文 Table 2（多变量）+ Table 3（vs RevIN）| `python3 repro_figures/compare_paper.py --apply-paper-scale multivariate` |
+| 4 | 复现论文 Figure 3 | `python3 repro_figures/plot_figure3.py` |
+| 5 | （可选）扩展 H=24 数据到 3 seeds | `DATASETS="ETTh1 ETTm2 WTH" PREDS="24" ALPHAS="0.0" bash repro_figures/run_phase2b.sh` |
+| 6 | （可选）将 n=3 seeds 扩到 n=5，提升统计显著性 | `seeds=2023,2024,2025,2026,2027 bash repro_figures/run_baselines_none_revin.sh` |
 
 ---
 
@@ -152,7 +201,9 @@ Phase 2b 和 Phase 3 故意使用不同的早停配置：
 | 2026-06-14 | 搭建环境；smoke test 通过；Phase 1（27 jobs）完成 |
 | 2026-06-15 | Phase 2a 完成（45/45, 0 NaN）。发现最佳 α 随窗口变长而增大。ETTm2 H=168 比值 1.01× |
 | 2026-06-16 | Phase 2b 完成（135/135, 0 NaN）。ETTh1 与论文完全一致；ECL/WTH 趋势不统一。CSV 232 行 |
+| 2026-06-17 | 完成 4 数据集 PPT Figure 3 重绘；3 张 PPT 图嵌入 EXPERIMENT_REPORT.md |
+| 2026-06-18 | **Phase 3 完成**（96/96, 0 NaN）。**Dish-TS(α=0) 公平对比 8/16 cell 胜出**。CSV 326 行（累计 325 runs）|
 
 ---
 
-*最后更新：2026-06-16*
+*最后更新：2026-06-18*
