@@ -1,6 +1,6 @@
-"""Disht-TS vs RevIN vs none comparison (Phase 3) — 4th PPT figure.
+"""Disht-TS vs RevIN vs none comparison (Phase 3) — 4-subplot bar chart for the report.
 
-Generates results/figures/ppt_dishts_vs_revin_vs_none.png with 4 subplots
+Generates results/figures/phase3_dishts_vs_revin_vs_none.png with 4 subplots
 (one per dataset), each showing 3-norm comparison (dishts-α=0, revin, none)
 at H ∈ {24, 96, 168, 336}.
 
@@ -108,7 +108,7 @@ win_str = f"Fair wins: dishts={wins['dishts']}/{total}, revin={wins['revin']}, n
 fig.text(0.5, -0.02, win_str, ha="center", fontsize=10, style="italic")
 
 fig.tight_layout()
-out = "results/figures/ppt_dishts_vs_revin_vs_none.png"
+out = "results/figures/phase3_dishts_vs_revin_vs_none.png"
 os.makedirs(os.path.dirname(out), exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"Saved: {out}")

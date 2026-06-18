@@ -28,7 +28,9 @@ Dish-TS-Reproduction/
 │   ├── compare_phase2b.py        Phase 2b 跨数据集汇总
 │   ├── compare_paper.py          ours vs 论文对比表
 │   ├── plot_figure{1,3,4}.py     绘图脚本
-│   ├── plot_ppt_comparison.py    PPT 友好的对比图
+│   ├── plot_phase2b_summary.py   报告友好的对比图
+│   ├── plot_phase2b_best_alpha.py
+│   ├── plot_phase3_summary.py
 │   └── dataset_diagnostic.py
 │
 ├── results/                      [新目录]  输出（运行后自动生成）

@@ -59,7 +59,7 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 下图为论文 Figure 3 的复现——4 个子图对应 4 个数据集，4 条曲线对应 4 个 α 值，x 轴为预测窗口长度。
 
-![Figure 3 复现](results/figures/ppt_figure3_alpha_ETTm2.png)
+![4 数据集 α 曲线](results/figures/phase2b_figure3_alpha_curves.png)
 
 **读图要点：**
 - **ETTh1** 最清晰复现论文 Fig.3 的趋势——长窗口处 α=0.5/1.0 显著低于 α=0.0
@@ -69,7 +69,7 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 ### 3.4 最佳 α 相对 α=0.0 的改善（跨数据集汇总）
 
-![最佳 α 改善柱状图](results/figures/ppt_best_alpha_improvement.png)
+![最佳 α 改善柱状图](results/figures/phase2b_best_alpha_improvement.png)
 
 12 个 (dataset, H) 单元中，**7 个**有正改善。**ETTh1 子图**（绿色背景）最佳地复现了论文 Fig.3 的趋势——H 越大，最佳 α 越有效，改善从 −3.8% 一路增大到 −18.6%。
 
@@ -95,7 +95,7 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 **柱状图对比：**
 
-![Disht-TS 复现 vs 论文](results/figures/ppt_dishts_vs_paper.png)
+![Disht-TS 复现 vs 论文](results/figures/phase2b_dishts_vs_paper.png)
 
 柱顶比值颜色：🟢 0.95–1.05×（与论文基本一致） / 🟠 0.85–1.15×（轻微偏差） / 🔴 其它（明显偏差）。
 
@@ -131,7 +131,7 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 ### 6.1 三方对比柱状图
 
-![Disht-TS vs RevIN vs None](results/figures/ppt_dishts_vs_revin_vs_none.png)
+![Disht-TS vs RevIN vs None](results/figures/phase3_dishts_vs_revin_vs_none.png)
 
 - 每子图 1 个数据集，3 根柱代表 3 种归一化方式，4 组 H ∈ {24, 96, 168, 336}
 - ★ 标记每个 H 上的最优（公平对比，仅 α=0）

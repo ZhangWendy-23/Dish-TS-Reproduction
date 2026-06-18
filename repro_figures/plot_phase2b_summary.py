@@ -1,11 +1,11 @@
-"""Generate PPT-ready comparison figures: our reproduction vs paper.
+"""Generate report-ready comparison figures: our reproduction vs paper.
 
 Produces two PNGs in results/figures/:
-  1. ppt_figure3_alpha_ETTm2.png  — alpha-sensitivity curve (our Figure 3 reproduction)
-  2. ppt_dishts_vs_paper.png      — bar chart: our dishts MSE vs paper dishts MSE
+  1. phase2b_figure3_alpha_curves.png  — alpha-sensitivity curve (our Figure 3 reproduction)
+  2. phase2b_dishts_vs_paper.png      — bar chart: our dishts MSE vs paper dishts MSE
 
 Usage:
-    python3 repro_figures/plot_ppt_comparison.py
+    python3 repro_figures/plot_phase2b_summary.py
 """
 
 from __future__ import annotations
@@ -188,7 +188,7 @@ def plot_alpha_sensitivity(rows: list[dict]) -> Path:
                  fontsize=12, fontweight="bold", y=1.02)
     fig.tight_layout()
 
-    out = OUT_DIR / "ppt_figure3_alpha_ETTm2.png"
+    out = OUT_DIR / "phase2b_figure3_alpha_curves.png"
     fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  v {out}")
@@ -278,7 +278,7 @@ def plot_dishts_vs_paper(rows: list[dict]) -> Path:
                  fontsize=12, fontweight="bold", y=1.02)
     fig.tight_layout()
 
-    out = OUT_DIR / "ppt_dishts_vs_paper.png"
+    out = OUT_DIR / "phase2b_dishts_vs_paper.png"
     fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  v {out}")

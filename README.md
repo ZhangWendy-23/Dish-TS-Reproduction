@@ -195,7 +195,9 @@ Dish-TS-Reproduction/
 │   ├── compare_paper.py          # Ours-vs-paper table
 │   ├── compare_phase2b.py        # Phase 2b multi-dataset summary
 │   ├── plot_figure{1,3,4}.py     # Plot scripts
-│   ├── plot_ppt_comparison.py    # PPT-ready figures
+│   ├── plot_phase2b_summary.py   # Report figures
+│   ├── plot_phase2b_best_alpha.py
+│   ├── plot_phase3_summary.py
 │   └── dataset_diagnostic.py
 ├── paper_results/                # Paper reference tables and figures
 ├── backbones/                    # Autoformer, Informer, Transformer, NBEATS

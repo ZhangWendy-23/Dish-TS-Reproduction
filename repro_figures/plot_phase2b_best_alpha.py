@@ -22,7 +22,7 @@ import numpy as np
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--input", default="results/figure3_runs.csv")
-    ap.add_argument("--output", default="results/figures/ppt_best_alpha_improvement.png")
+    ap.add_argument("--output", default="results/figures/phase2b_best_alpha_improvement.png")
     ap.add_argument("--datasets", nargs="+",
                     default=["ETTm2", "ETTh1", "ECL", "WTH"])
     ap.add_argument("--pred-lens", type=int, nargs="+",
