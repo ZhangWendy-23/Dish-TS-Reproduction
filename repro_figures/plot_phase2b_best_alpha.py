@@ -29,6 +29,8 @@ def main() -> int:
                     default=[96, 168, 336])
     ap.add_argument("--alphas", nargs="+", type=float,
                     default=[0.0, 0.25, 0.5, 0.75, 1.0])
+    ap.add_argument("--prior", default="paper-phi-only",
+                    help="Only keep rows with this prior (e.g. paper-phi-only, none)")
     ap.add_argument("--min-n", type=int, default=2)
     args = ap.parse_args()
 
@@ -38,7 +40,7 @@ def main() -> int:
         return 2
 
     rows = list(csv.DictReader(csv_path.open()))
-    rows = [r for r in rows if r.get("norm") == "dishts"]
+    rows = [r for r in rows if r.get("norm") == "dishts" and r.get("prior") == args.prior]
 
     # (dataset, pred_len, alpha) -> list of MSE
     agg: dict[tuple[str, int, float], list[float]] = defaultdict(list)
