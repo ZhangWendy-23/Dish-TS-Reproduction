@@ -55,6 +55,12 @@ def load_rows(path: Path) -> list[dict]:
                 continue
             if r["norm"] != "dishts" or math.isnan(r["MSE"]) or math.isinf(r["MSE"]):
                 continue
+            # Exclude H=24: Phase 2a/2b only scan {96, 168, 336} (paper Fig.3
+            # does not cover H=24). Only ECL has 5 alpha values at H=24 from
+            # an early ad-hoc run; plotting it together with the 3 main horizons
+            # would be misleading.
+            if r["pred_len"] == 24:
+                continue
             rows.append(r)
     return rows
 
@@ -199,7 +205,7 @@ def plot_dishts_vs_paper(rows: list[dict]) -> Path:
     # 1. Compute our best (dataset, pred_len) -> (best_alpha, best_mse_raw, n_seeds)
     cell_best = {}
     for ds in ["ETTm2", "WTH", "ETTh1", "ECL"]:
-        for pl in [24, 96, 168, 336]:
+        for pl in [96, 168, 336]:  # Phase 2a/2b scan range (H=24 excluded)
             cell = defaultdict(list)
             for r in rows:
                 if r["dataset"] == ds and r["pred_len"] == pl:
@@ -214,7 +220,7 @@ def plot_dishts_vs_paper(rows: list[dict]) -> Path:
 
     # 2. Build plot
     datasets = ["ETTm2", "WTH", "ETTh1"]
-    common_lens = [24, 96, 168, 336]
+    common_lens = [96, 168, 336]  # match Phase 2a/2b scan range
 
     fig, axes = plt.subplots(1, len(datasets), figsize=(4.5 * len(datasets), 4.2))
 
@@ -246,21 +252,28 @@ def plot_dishts_vs_paper(rows: list[dict]) -> Path:
                        color="#bababa", edgecolor="gray", linewidth=0.8, hatch="//")
 
         # ratio + best alpha labels
+        # Reserve 25% headroom ABOVE the tallest bar so ratio labels never
+        # collide with the subplot title.
+        ymax_axis = max(max(ours_vals + [0.01]), max(paper_vals + [0.01])) * 1.25
+        ax.set_ylim(top=ymax_axis)
         for i, (xi, ov, pv, (best_a, n, rat)) in enumerate(zip(x, ours_vals, paper_vals, annotations)):
             color = "green" if 0.95 <= rat <= 1.05 else ("darkorange" if 0.85 <= rat <= 1.15 else "red")
-            ax.text(xi, max(ov, pv) * 1.07, f"{rat:.2f}x",
+            ax.text(xi, max(ov, pv) * 1.10, f"{rat:.2f}x",
                     ha="center", fontsize=8, fontweight="bold", color=color)
             ax.text(xi, max(ov, pv) * 0.04, f"alpha={best_a}\n(n={n})",
                     ha="center", fontsize=7, color="white", fontweight="bold")
 
         ax.set_xticks(x)
         ax.set_xticklabels(x_labels, fontsize=9)
-        ax.set_title(f"{ds}  (best alpha per horizon)", fontsize=11, fontweight="bold")
+        # Push subplot title higher so it does not collide with ratio labels.
+        ax.set_title(f"{ds}  (best alpha per horizon)", fontsize=11,
+                     fontweight="bold", pad=14)
         ax.set_ylabel("MSE (paper-scale)", fontsize=10)
         ax.grid(axis="y", alpha=0.25)
         if ds == datasets[0]:
             ax.legend(fontsize=8, loc="upper left")
 
+    # Push suptitle high so it does not collide with subplot titles.
     fig.suptitle("Dish-TS Reproduction vs Paper (Autoformer, multivariate, paper-scale)",
                  fontsize=12, fontweight="bold", y=1.02)
     fig.tight_layout()
@@ -285,7 +298,7 @@ def main() -> int:
     print("\nBest (alpha) per (dataset, pred_len):")
     print(f"  {'dataset':>8s} {'pred_len':>9s} {'best_a':>7s} {'raw_MSE':>10s} {'scaled_MSE':>11s} {'paper':>10s} {'ratio':>6s}")
     for ds in ["ETTm2", "WTH", "ETTh1", "ECL"]:
-        for pl in [24, 96, 168, 336]:
+        for pl in [96, 168, 336]:  # Phase 2a/2b scan range (H=24 excluded)
             cell = defaultdict(list)
             for r in rows:
                 if r["dataset"] == ds and r["pred_len"] == pl:
