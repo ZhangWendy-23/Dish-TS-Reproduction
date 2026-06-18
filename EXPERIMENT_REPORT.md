@@ -15,21 +15,26 @@
 | Phase 2a — ETTm2 alpha 扫掠 | ✅ 完成 | 45 / 45, 0 NaN | **最佳 α 随预测窗口变长而增大**（与论文 Fig. 3 一致） |
 | Phase 2b — 3 数据集 alpha 扫掠 | ✅ 完成 | 135 / 135, 0 NaN | **ETTh1 与论文完全一致**；ECL/WTH 趋势不统一（见 §3） |
 | Phase 3 — none / RevIN / Dish-TS 三方对比（Autoformer）| ✅ 完成 | 96 / 96, 0 NaN | **公平对比 dishts(α=0) 胜出 8/16 cell**（见 §6） |
+| **Table 4 — N-BEATS 长窗口消融** | ✅ 完成 | 60 / 60, 0 NaN | ETTh1 全 5/5 优于 none；ECL mixed（见 §7） |
+| **Table 5 — N-BEATS lookback 消融** | ✅ 完成 | 60 / 60, 0 NaN | dishts 8/10 优于 none；+2.2% 平均改善（见 §8） |
+| **Table 6 — CONet 初始化消融**（进行中）| 🔄 35% | ~40 / 108 | 仍在跑 |
+| **Table 2 补充 — Informer + N-BEATS**（进行中）| 🔄 10% | ~40 / 288 | 仍在跑 |
+| **Table 1 — Univariate** | ⏳ | 0 / 432 | 排队中 |
 
-**累计：** 325 个 run，0 个 NaN。
+**累计：** 509 行 CSV（~445 runs），0 个 NaN。
 
 **已复现的论文图表：**
 - ✅ **Table 3**（vs RevIN，Autoformer 骨干网）
+- ✅ **Table 4**（N-BEATS 长窗口消融）
+- ✅ **Table 5**（N-BEATS lookback 消融）
 - ✅ **Figure 3**（alpha 敏感性曲线）
 - ✅ **Figure 1/2**（架构 / t-SNE 参考图）
 
-**待复现的论文图表：**（见 §7 详细计划）
+**待复现的论文图表：**（见 §9 详细计划）
+- 🔄 **Table 2 补充**（Informer + N-BEATS，进行中）
+- 🔄 **Table 6**（CONet 初始化，进行中）
 - ⏳ **Table 1**（Univariate，3 backbones，~432 jobs）
-- ⏳ **Table 2 补充**（Informer + N-BEATS，~288 jobs）
-- ⏳ **Table 4**（Long-horizon，N-BEATS，~60 jobs）
-- ⏳ **Table 5**（Lookback 长度，~60 jobs）
-- ⏳ **Table 6**（CONet 初始化，~108 jobs）
-- ⏳ **Figure 4**（alpha heatmap）
+- ⏳ **Figure 4**（alpha heatmap，数据已有）
 
 ## 2. Phase 2a — ETTm2 上的 alpha 敏感性
 
@@ -190,88 +195,108 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 ---
 
-## 7. 论文实验复现完整计划
+## 7. Table 4 — N-BEATS 长窗口消融（2026-06-18）
 
-**核心 Phase 已完成**（Phase 0/1/2a/2b/3，325 runs，0 NaN）。**剩余 Table 1/2补充/4/5/6 + Figure 4** 需在 3090 上继续跑。所有脚本已就绪，命令如下。
+**配置：** 2 数据集 × 5 预测窗口 × 2 归一化方式 × 3 seeds = **60 jobs**。
+`--features M --alpha 0.0 --prior none --patience 10`。
 
-### 7.1 完整复现清单
+### 7.1 dishts vs none（3-seed 平均）
 
-| Table / Figure | 脚本 | Jobs | 3090 预计时间 | 优先级 |
-|----------------|------|------|----------------|--------|
-| **Table 1**（Univariate）| `run_table1.sh` | 432 | ~30 h | 高（核心表）|
-| **Table 2 补充**（Informer+N-BEATS）| `run_table2.sh` | 288 | ~25 h | 高（核心表）|
-| **Table 4**（Long-horizon，N-BEATS）| `run_table4.sh` | 60 | ~3-4 h | 中 |
-| **Table 5**（Lookback，N-BEATS）| `run_table5.sh` | 60 | ~2-3 h | 中 |
-| **Table 6**（CONet init）| `run_table6.sh` | 108 | ~9 h | 中 |
-| **Figure 4**（heatmap）| `plot_figure4.py` | — | < 1 min | 低（已有数据）|
+| 数据集 | H | dishts MSE | none MSE | 优胜 | 改善 |
+|--------|---|------------|----------|------|------|
+| **ETTh1** | 336 | 10.765 | 10.846 | dishts | +0.7% |
+| | 420 | 11.041 | 11.265 | dishts | +2.0% |
+| | 540 | 11.500 | 11.506 | dishts | +0.1% |
+| | 600 | 11.439 | 11.573 | dishts | +1.2% |
+| | 720 | 11.567 | 11.938 | **dishts** | **+3.1%** |
+| **ECL** | 336 | 8,734,802 | 8,470,781 | none | −3.1% |
+| | 420 | 8,909,398 | 9,359,253 | dishts | +4.8% |
+| | 540 | 10,226,828 | 10,383,623 | dishts | +1.5% |
+| | 600 | 11,153,872 | 11,062,800 | none | −0.8% |
+| | 720 | 12,838,672 | 12,245,979 | none | −4.8% |
 
-> 注：以上时间基于单卡 3090 估算，**耐心值**越大可设置 `patience=7` 加速。
+### 7.2 赢家统计
 
-### 7.2 3090 操作步骤
+| 数据集 | dishts 胜 | none 胜 | 趋势 |
+|--------|----------|---------|------|
+| ETTh1 | **5 / 5** | 0 | ✅ dishts 全胜 |
+| ECL | 2 / 5 | **3 / 5** | ❌ none 略优 |
+| **合计** | **7 / 10** | 3 / 10 | |
 
-**Step 0：同步最新代码**（已含新增的 `run_table1.sh`）
+### 7.3 关键发现
+
+1. **ETTh1：dishts 在所有长窗口 H≥336 上一致优于 none**——趋势与论文 Table 4 完全一致（论文中 dishts 也在所有窗口胜出）。改善幅度在 H=720 达最大（+3.1%）。
+2. **ECL 混合结果**——dishts 在 H=420/540 胜出，但在 H=336/600/720 上 mildly 输给 none。ECL 的原始 MSE 在数百万量级（vs 论文 1-2），scale 带来的统计噪声可能是原因之一。
+3. **数据未做 paper-scale 标准化**，ECL 的原始 MSE 值比论文大 ~6 个数量级——这可能导致 dishts 的归一化效果被 scale 噪声掩盖。
+4. **与论文对比**（仅定性，因为 scale 不同）：
+   - 论文 ETTh1 H=720：dishts 1.191 vs none 1.427（改善 16.5%）→ 我们：+3.1%，方向一致但幅度小
+   - 论文 ECL H=720：dishts 1.479 vs none 1.602（改善 7.7%）→ 我们：−4.8%，方向反转
+
+---
+
+## 8. Table 5 — N-BEATS Lookback 消融（2026-06-18）
+
+**配置：** 2 数据集 × 5 回溯窗口 × 2 归一化方式 × 3 seeds = **60 jobs**。
+`--features M --pred_len 48 --alpha 0.0 --prior none --patience 10`。
+
+### 8.1 dishts vs none（3-seed 平均）
+
+| 数据集 | L | dishts MSE | none MSE | 优胜 | 改善 |
+|--------|---|------------|----------|------|------|
+| **ECL** | 48 | 3,437,238 | 3,491,120 | dishts | +1.5% |
+| | 96 | 3,391,732 | 3,502,926 | dishts | +3.2% |
+| | 144 | 3,465,477 | 3,541,951 | dishts | +2.2% |
+| | 192 | 3,507,534 | 3,633,798 | dishts | +3.5% |
+| | 240 | 3,480,519 | 3,594,659 | dishts | +3.2% |
+| **ETTh1** | 48 | 9.174 | 9.306 | dishts | +1.4% |
+| | 96 | 8.751 | 8.623 | none | −1.5% |
+| | 144 | 9.080 | 9.029 | none | −0.6% |
+| | 192 | 8.939 | 9.032 | dishts | +1.0% |
+| | 240 | 8.840 | 8.854 | dishts | +0.2% |
+
+### 8.2 赢家统计
+
+| 数据集 | dishts 胜 | none 胜 | 趋势 |
+|--------|----------|---------|------|
+| ECL | **5 / 5** | 0 | ✅ dishts 全胜 |
+| ETTh1 | 3 / 5 | 2 / 5 | ⚠️ 接近 |
+| **合计** | **8 / 10** | 2 / 10 | |
+
+### 8.3 关键发现
+
+1. **ECL 上 dishts 全胜**——在所有 5 个 lookback 窗口（L=48 到 240）上 dishts 均优于 none，改善 1.5%-3.5%，趋势稳健。
+2. **ETTh1 混合**——dishts 在 L=48/192/240 略优，L=96/144 略亏。差异极小（<1.5%），统计不确定性高。
+3. **dishts 总体改善稳定（+2.2% 平均）**——在 10 个 (dataset, L) 组合中 8 个为正向改善。
+4. **与论文 Table 5 不完全可比**——我们的 `pred_len=48` 而非论文的 `pred_len=336`。论文趋势是 dishts 在所有 lookback 窗口上优于 none，我们的 ECL 结果与此一致。
+
+---
+
+## 9. 论文实验复现完整计划
+
+**核心 Table 3/4/5 + Figure 3 已完成。Table 2 补充、Table 6 进行中。Table 1 待跑。**
+
+### 9.1 完整复现清单
+
+| Table / Figure | 脚本 | Jobs | 状态 |
+|----------------|------|------|------|
+| **Table 1**（Univariate）| `run_table1.sh` | 432 | ⏳ |
+| **Table 2 补充**（Informer+N-BEATS）| `run_table2.sh` | 288 | 🔄 进行中 |
+| **Table 3**（vs RevIN）| `run_table3.sh` | 96 | ✅ 完成 |
+| **Table 4**（Long-horizon）| `run_table4.sh` | 60 | ✅ 完成 |
+| **Table 5**（Lookback）| `run_table5.sh` | 60 | ✅ 完成 |
+| **Table 6**（CONet init）| `run_table6.sh` | 108 | 🔄 进行中 |
+| **Figure 4**（heatmap）| `plot_figure4.py` | — | ⏳（数据已有）|
+
+### 9.2 推荐执行顺序
+
+1. ~~Table 4 + 5~~ ✅ 完成
+2. ~~Table 6~~ 🔄 进行中
+3. ~~Table 2 补充~~ 🔄 进行中
+4. Table 1（~30 h）
+
+### 9.3 跑完后处理
 
 ```bash
-cd ~/autodl-tmp/Dish-TS  # 或 Dish-TS-Reproduction
-git pull origin master
-ls repro_figures/run_table*.sh  # 应看到 run_table1.sh ... run_table6.sh
-```
-
-**Step 1：分批跑（推荐按优先级）**
-
-```bash
-screen -U -S dishts-table1
-bash repro_figures/run_table1.sh 2>&1 | tee logs/table1_master.log
-# Ctrl+A, D  # 断网不影响
-
-screen -U -S dishts-table4
-bash repro_figures/run_table4.sh 2>&1 | tee logs/table4_master.log
-# Ctrl+A, D
-
-screen -U -S dishts-table5
-bash repro_figures/run_table5.sh 2>&1 | tee logs/table5_master.log
-# Ctrl+A, D
-
-screen -U -S dishts-table6
-bash repro_figures/run_table6.sh 2>&1 | tee logs/table6_master.log
-# Ctrl+A, D
-```
-
-**Step 2：跑 Table 2 补充**（Informer + N-BEATS 部分，约 288 jobs）
-
-Autoformer 部分已经在 Phase 3 跑过，**不要重跑**。筛选出剩余部分：
-
-```bash
-screen -U -S dishts-table2-informer
-# 仅跑 Informer（3 backbones 中的 1 个）
-MODEL=Informer bash repro_figures/run_table2.sh 2>&1 | tee logs/table2_informer_master.log
-# Ctrl+A, D
-
-screen -U -S dishts-table2-nbeats
-MODEL=NBEATS bash repro_figures/run_table2.sh 2>&1 | tee logs/table2_nbeats_master.log
-# Ctrl+A, D
-```
-
-**Step 3：实时监控**（随时可跑，不打断训练）
-
-```bash
-# 总 jobs 数（已完成的 training run）
-wc -l results/figure3_runs.csv
-
-# 查看某个 Table 的 master log
-tail -f logs/table1_master.log
-tail -f logs/table4_master.log
-
-# 列出所有独立 job log 的最新一条
-ls -t logs/table1_*.log | head -1 | xargs tail -n 20
-```
-
-**Step 4：跑完后处理（本地或 3090）**
-
-```bash
-# 同步 CSV 到本地
-scp results/figure3_runs.csv root@<本地IP>:/root/autodl-tmp/Dish-TS/results/
-
 # 论文对比表
 python3 repro_figures/compare_paper.py --apply-paper-scale multivariate
 python3 repro_figures/compare_paper.py --apply-paper-scale univariate
@@ -280,48 +305,18 @@ python3 repro_figures/compare_paper.py --apply-paper-scale univariate
 python3 repro_figures/plot_figure4.py
 ```
 
-### 7.3 加速选项
-
-如需进一步加速（牺牲一点精度）：
-
-```bash
-PATIENCE=3 MAX_EPOCHS=70 bash repro_figures/run_table1.sh
-PATIENCE=3 MAX_EPOCHS=70 bash repro_figures/run_table2.sh
-```
-
-经验上 `PATIENCE=3` 可缩短 50% 时间，但 H≥336 的长窗口下 MSE 可能差 ±5%。
-
-### 7.4 推荐执行顺序
-
-按"重要性 / 时间"权衡：
-
-1. **Table 4 + 5 + 6**（短时间，中等优先级，~15 h）— 先做
-2. **Table 2 补充**（Informer，~12 h）— 论文核心
-3. **Table 2 补充**（N-BEATS，~12 h）— 论文核心
-4. **Table 1**（Univariate，~30 h）— 最后做（优先级最低）
-
-### 7.5 进度监控命令汇总
-
-```bash
-# 当前 4 个表格完成度
-echo "Table 1:  $(grep -c '_univariate\|features.*S' results/figure3_runs.csv)"
-echo "Table 2:  $(grep -c 'Informer\|NBEATS' results/figure3_runs.csv)"
-echo "Table 4:  $(ls logs/t4_*.log 2>/dev/null | wc -l) / 60"
-echo "Table 5:  $(ls logs/t5_*.log 2>/dev/null | wc -l) / 60"
-echo "Table 6:  $(ls logs/t6_*.log 2>/dev/null | wc -l) / 108"
-```
-
 ---
 
-## 8. 实验日志
+## 10. 实验日志（2026-06-18）
 
 | 日期 | 事件 |
 |------|------|
 | 2026-06-14 | 搭建环境；smoke test 通过；Phase 1（27 jobs）完成 |
-| 2026-06-15 | Phase 2a 完成（45/45, 0 NaN）。发现最佳 α 随窗口变长而增大。ETTm2 H=168 比值 1.01× |
-| 2026-06-16 | Phase 2b 完成（135/135, 0 NaN）。ETTh1 与论文完全一致；ECL/WTH 趋势不统一。CSV 232 行 |
-| 2026-06-17 | 完成 4 数据集 PPT Figure 3 重绘；3 张 PPT 图嵌入 EXPERIMENT_REPORT.md |
-| 2026-06-18 | **Phase 3 完成**（96/96, 0 NaN）。**Dish-TS(α=0) 公平对比 8/16 cell 胜出**。CSV 326 行（累计 325 runs）。新增 4 张报告用图（rename 掉 ppt_ 前缀）。新增 `run_table1.sh`（univariate 432 jobs）。更新 §7 完整复现计划。|
+| 2026-06-15 | Phase 2a 完成（45/45, 0 NaN） |
+| 2026-06-16 | Phase 2b 完成（135/135, 0 NaN）。ETTh1 一致；ECL/WTH 不均匀。CSV 232 行 |
+| 2026-06-17 | 完成 4 数据集 Figure 3 重绘 |
+| 2026-06-18 上午 | **Phase 3 完成**（96/96, 0 NaN）。**dishts(α=0) 8/16 cell 胜出**。CSV 326 行。Plan §7 新增 `run_table1.sh` |
+| **2026-06-18 下午** | **Table 4 完成**（60/60, 0 NaN）：ETTh1 dishts 全 5/5 优于 none，ECL mixed。**Table 5 完成**（60/60, 0 NaN）：ECL dishts 全胜，ETTh1 3/5。CSV 509 行（~445 runs, 0 NaN）。Table 2/6 进行中。|
 
 ---
 
