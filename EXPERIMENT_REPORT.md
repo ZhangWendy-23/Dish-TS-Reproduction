@@ -15,26 +15,26 @@
 | Phase 2a — ETTm2 alpha 扫掠 | ✅ 完成 | 45 / 45, 0 NaN | **最佳 α 随预测窗口变长而增大**（与论文 Fig. 3 一致） |
 | Phase 2b — 3 数据集 alpha 扫掠 | ✅ 完成 | 135 / 135, 0 NaN | **ETTh1 与论文完全一致**；ECL/WTH 趋势不统一（见 §3） |
 | Phase 3 — none / RevIN / Dish-TS 三方对比（Autoformer）| ✅ 完成 | 96 / 96, 0 NaN | **公平对比 dishts(α=0) 胜出 8/16 cell**（见 §6） |
-| **Table 2**（3 backbones × 3 norms, Informer/Autoformer）| 🔄 运行中 | ~12/432 | ECL Informer none，当前 H=96 |
-| **Table 3**（RevIN vs Dishts 扩展）| 🔄 运行中 | ~6/540 | ECL Informer none，H=96 |
-| **Table 4**（Long-horizon, N-BEATS）| 🔄 进行中 | ~55/60 | ETTh1 完成，ECL 进行中 |
-| **Table 5**（Lookback ablation, N-BEATS）| 🔄 进行中 | ~55/60 | ETTh1 完成，ECL 进行中 |
-| **Table 6**（CONET init ablation）| 🔄 运行中 | ~60/108 | WTH Autoformer H=96 init=avg |
+| **Table 2**（3 backbones × 3 norms, Informer/Autoformer）| 🔄 运行中 | ~16/432 | Informer none 阶段 |
+| **Table 3**（RevIN vs Dishts 扩展）| 🔄 运行中 | ~1/540 | 初期阶段 |
+| **Table 4**（Long-horizon, N-BEATS）| ✅ **完成** | **60/60** | 全部 job 结束 |
+| **Table 5**（Lookback ablation, N-BEATS）| ✅ **完成** | **60/60** | 全部 job 结束 |
+| **Table 6**（CONET init ablation）| 🔄 运行中 | ~78/108 | 当前进行中 |
 
-**累计：** 620 个 run，0 个 NaN。
+**累计：** 628 个 run，0 个 NaN。
 
 **已复现的论文图表：**
 - ✅ **Table 3**（vs RevIN，Autoformer 骨干网）
+- ✅ **Table 4**（Long-horizon，N-BEATS）— 60 jobs 完成
+- ✅ **Table 5**（Lookback 长度，N-BEATS）— 60 jobs 完成
 - ✅ **Figure 3**（alpha 敏感性曲线）
 - ✅ **Figure 1/2**（架构 / t-SNE 参考图）
 
 **待复现的论文图表：**（见 §7 详细计划）
 - ⏳ **Table 1**（Univariate，3 backbones，~432 jobs）— 未开始
-- 🔄 **Table 2 补充**（Informer + N-BEATS，432 jobs）— 运行中 (~12/432)
-- 🔄 **Table 3**（RevIN vs Dishts 扩展，540 jobs）— 运行中 (~6/540)
-- 🔄 **Table 4**（Long-horizon，N-BEATS，~60 jobs）— 进行中 (~55/60)
-- 🔄 **Table 5**（Lookback 长度，~60 jobs）— 进行中 (~55/60)
-- 🔄 **Table 6**（CONet 初始化，108 jobs）— 运行中 (~60/108)
+- 🔄 **Table 2**（3 backbones × 3 norms，432 jobs）— 运行中 (~16/432)
+- 🔄 **Table 3**（RevIN vs Dishts 扩展，540 jobs）— 运行中 (~1/540)
+- 🔄 **Table 6**（CONet 初始化，108 jobs）— 运行中 (~78/108)
 - ⏳ **Figure 4**（alpha heatmap）— 数据就绪
 
 ## 2. Phase 2a — ETTm2 上的 alpha 敏感性
@@ -328,7 +328,7 @@ echo "Table 6:  $(ls logs/t6_*.log 2>/dev/null | wc -l) / 108"
 | 2026-06-16 | Phase 2b 完成（135/135, 0 NaN）。ETTh1 与论文完全一致；ECL/WTH 趋势不统一。CSV 232 行 |
 | 2026-06-17 | 完成 4 数据集 PPT Figure 3 重绘；3 张 PPT 图嵌入 EXPERIMENT_REPORT.md |
 | 2026-06-18 | **Phase 3 完成**（96/96, 0 NaN）。**Dish-TS(α=0) 公平对比 8/16 cell 胜出**。CSV 326 行（累计 325 runs）。新增 4 张报告用图（rename 掉 ppt_ 前缀）。新增 `run_table1.sh`（univariate 432 jobs）。更新 §7 完整复现计划。|
-| 2026-06-19 | **Table 2/3/4/5/6 启动**。6 个后台进程并发运行（nohup）。CSV 增长到 **620 行**。Table 6 进行过半（~60/108）。Table 4/5 的 ETTh1 部分完成，ECL 部分进行中。Table 2/3 的 Informer none 部分启动中。|
+| 2026-06-19 | **Table 2/3/4/5/6 启动**。Table 4 ✅完成（60/60），Table 5 ✅完成（60/60）。Table 6 进行中（~78/108）。Table 2/3 初期推进中。CSV 增长到 **628 行**，0 NaN。|
 
 ---
 
