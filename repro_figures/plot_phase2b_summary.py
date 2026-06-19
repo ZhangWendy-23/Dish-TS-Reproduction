@@ -42,8 +42,8 @@ SCALE_MULTI = {
 }
 
 
-def load_rows(path: Path, prior: str = "paper-phi-only") -> list[dict]:
-    """Load dishts rows filtered by prior. Default: paper-phi-only (Phase 2b)."""
+def load_rows(path: Path) -> list[dict]:
+    """Load ALL dishts rows (any alpha, any prior). Returns list with raw MSE."""
     rows = []
     with open(path, newline="") as fh:
         for r in csv.DictReader(fh):
@@ -53,7 +53,7 @@ def load_rows(path: Path, prior: str = "paper-phi-only") -> list[dict]:
                 r["MSE"] = float(r["MSE"])
             except (KeyError, ValueError):
                 continue
-            if r["norm"] != "dishts" or r.get("prior") != prior or math.isnan(r["MSE"]) or math.isinf(r["MSE"]):
+            if r["norm"] != "dishts" or math.isnan(r["MSE"]) or math.isinf(r["MSE"]):
                 continue
             # Exclude H=24: Phase 2a/2b only scan {96, 168, 336} (paper Fig.3
             # does not cover H=24). Only ECL has 5 alpha values at H=24 from

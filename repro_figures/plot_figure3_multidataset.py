@@ -29,8 +29,6 @@ def main() -> int:
                     default=[96, 168, 336])
     ap.add_argument("--min-n", type=int, default=2,
                     help="min seeds to include a (dataset, pred_len, alpha) cell")
-    ap.add_argument("--prior", default="paper-phi-only",
-                    help="Only keep rows with this prior (e.g. paper-phi-only, none)")
     args = ap.parse_args()
 
     csv_path = Path(args.input)
@@ -39,8 +37,8 @@ def main() -> int:
         return 2
 
     rows = list(csv.DictReader(csv_path.open()))
-    # Keep dishts only, and require a specific prior to avoid mixing experiment phases
-    rows = [r for r in rows if r.get("norm") == "dishts" and r.get("prior") == args.prior]
+    # Keep dishts only
+    rows = [r for r in rows if r.get("norm") == "dishts"]
 
     # aggregate: (dataset, pred_len, alpha) -> list of MSE
     agg: dict[tuple[str, int, float], list[float]] = defaultdict(list)
