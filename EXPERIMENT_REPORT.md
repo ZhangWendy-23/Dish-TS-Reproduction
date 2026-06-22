@@ -495,9 +495,9 @@ echo "Table 6:  $(ls logs/t6_*.log 2>/dev/null | wc -l) / 108"
 | 2026-06-18 | **Phase 3 完成**（96/96, 0 NaN）。**Dish-TS(α=0) 公平对比 9/11 cell 胜出**。CSV 326 行。新增 `run_table1.sh`。更新 §7 完整复现计划。|
 | 2026-06-19 | **Table 4/5/6 完成**（60/60, 60/60, 108/108）。新增 §7–§9 详细分析。**CSV 增长到 722 行**，0 NaN。Dish-TS 在 RevIN 对比中胜出 9/11 cell (82%)。|
 | 2026-06-21 | **CSV 增长到 1004 行**。Table 2 扩展到 323+ logs，覆盖 3 backbones × 3 norms × 4 datasets。**Dish-TS 胜出 24/32 (75%) cell**。ECL Informer none 在 H=336 有 25 个异常值。§7.4 更新最新发现。|
-| 2026-06-22 | **CSV 增长到 1220 行**。Table 2 推进到 505 logs (~98%)。**Dish-TS 38/56 (67%) cell 最优**，RevIN 11/56 (19%)，None 7/56 (12%)。ECL 上 Dish-TS 优势最大 (16/19, 84%)。Table 3 进入 ETTm2 dishts 阶段。|
+| 2026-06-23 | 机器停机，所有实验中断。CSV 1295 行。**Table 2 仅缺 30 jobs（WTH NBEATS）**，T3 缺 60 jobs。创建 `run_restart_missing.sh` 去重重启。GPU RTX 3090 98% 利用率运行中。|
 | 2026-06-19 晚 | **Table 2 Informer none 阶段推进**：跑了约 85 个 Informer none runs；Table 6 用 (avg/norm/uni) 重跑，uni 在 50% cell 胜出。发现 **ECL Informer 训练极度不稳定**（MSE 波动 10⁶→10⁸）。CSV 增长到 **1567 行**。|
 
 ---
 
-*最后更新：2026-06-22（Table 2 接近完成，1220 runs, 505 logs）*
+*最后更新：2026-06-23（停机后重启，1295 runs, 去重重启 90 jobs）*
