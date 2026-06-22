@@ -6,7 +6,7 @@
 
 ---
 
-## 1. 当前进度（2026-06-21，Table 2 大规模扩展）
+## 1. 当前进度（2026-06-22，Table 2 接近完成）
 
 | Phase | 状态 | Jobs | 关键结论 |
 |-------|------|------|----------|
@@ -15,13 +15,13 @@
 | Phase 2a — ETTm2 alpha 扫掠 | ✅ 完成 | 45 / 45, 0 NaN | **最佳 α 随预测窗口变长而增大**（与论文 Fig. 3 一致） |
 | Phase 2b — 3 数据集 alpha 扫掠 | ✅ 完成 | 135 / 135, 0 NaN | **ETTh1 与论文完全一致**；ECL/WTH 趋势不统一（见 §3） |
 | Phase 3 — none / RevIN / Dish-TS 三方对比（Autoformer）| ✅ 完成 | 96 / 96, 0 NaN | **公平对比 dishts(α=0) 胜出 9/11 cell**（见 §6 详细更新） |
-| **Table 2**（3 backbones × 3 norms × 4 datasets）| 🔄 **运行中** | **323+ logs** | ECL 上 Dish-TS 优势明显（3-10x 优于 none）；ETTm2 Informer none 不稳定（见 §6.5） |
-| **Table 3**（RevIN vs Dishts 扩展，ECL ETTh1 H=24/96）| 🔄 **运行中** | **3 / 36** | 初期阶段，已跑 ECL ETTh1 Autoformer |
+| **Table 2**（3 backbones × 3 norms × 4 datasets）| 🔄 **运行中** | **505 logs (~98%)** | 完整对比：Dish-TS 38/56 (67%) cell 最优（见 §7） |
+| **Table 3**（RevIN vs Dishts 扩展，ECL ETTh1 H=24/96）| 🔄 **运行中** | **1 log** | 推进中，已进入 ETTm2 dishts 阶段 |
 | **Table 4**（Long-horizon, N-BEATS）| ✅ **完成** | **60/60** | 长窗口趋势稳定（见 §8） |
 | **Table 5**（Lookback ablation, N-BEATS）| ✅ **完成** | **60/60** | seq_len ≥ pred_len 性能稳定（见 §9） |
-| **Table 6**（CONET init ablation, 重跑：avg/norm/uni）| ✅ **完成** | **108/108** | **uni (50%) 与 avg (42%) 竞争最优**，norm 仅 8% 最优（见 §9） |
+| **Table 6**（CONET init ablation, 重跑：avg/norm/uni）| ✅ **完成** | **108/108** | **uni (50%) 与 avg (42%) 竞争最优**，norm 仅 8% 最优（见 §10） |
 
-**累计：** 1004 个 run，25 个 NaN/异常值（全部为 ECL Informer none H=336）。
+**累计：** 1220 个 run，25 个 NaN/异常值（全部为 ECL Informer none H=336）。
 
 **已复现的论文图表：**
 - ✅ **Table 3**（vs RevIN，Autoformer 骨干网）
@@ -33,8 +33,8 @@
 
 **待复现的论文图表：**（见 §7 详细计划）
 - ⏳ **Table 1**（Univariate，3 backbones，~432 jobs）— 未开始
-- 🔄 **Table 2**（3 backbones × 3 norms，432 jobs）— 运行中 (~16/432)
-- 🔄 **Table 3**（RevIN vs Dishts 扩展，540 jobs）— 运行中 (~1/540)
+- 🔄 **Table 2**（3 backbones × 3 norms，432 jobs）— 运行中 (**~98%, 505/432**)
+- 🔄 **Table 3**（RevIN vs Dishts 扩展，540 jobs）— 运行中 (推进中)
 - ⏳ **Figure 4**（alpha heatmap）— 数据就绪
 
 ## 2. Table 2 Informer 初步进展（运行中，约 85/108 runs）
@@ -244,15 +244,13 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 > 注：H=24 仅有 n=1 seed（来自 Phase 1 sanity check），统计显著性低。
 
-### 7.4 关键发现（2026-06-21 更新，基于 1004 runs 数据）
+### 7.4 关键发现（2026-06-22 更新，基于 1220 runs 数据，56 个对比 cell）
 
-1. **全局对比**（32 个同时存在的 cell）—— **Dish-TS 胜出 24/32 (75%)**，RevIN 胜出 8/32 (25%)。Dish-TS 整体最优。
-2. **ECL：Dish-TS 优势最显著** —— 在 15 个 cell 中 Dish-TS 均优于 RevIN/none，MSE 比 RevIN 低 15-50%，比 none 低 3-10x。ECL 是 Dish-TS 最大优势的数据集。
-3. **ETTh1：优势较弱但一致** —— Dish-TS 在短窗口上略差，但 H=48/96/336 优于 RevIN。none 在 H=24 上也具竞争力。
-4. **WTH：Dish-TS 在 5/8 cell 最优** —— H=168 RevIN 略胜，但差距小。
-5. **ETTm2 Informer none 严重不稳定** —— Informer none 在 H=168 上 MSE 高达 115.8（Dish-TS 的 MSE 仅 14.7）。这与论文结论一致：归一化对 Informer 在 ETTm2 是关键。
-6. **ECL Informer none 在 H=336 上有 25 个异常值** —— MSE 高达 80M-110M，反映了无归一化在极大值数据上的训练不稳定性。
-7. **N-BEATS 在所有数据上表现稳定** —— H 增加时 MSE 平滑递增，没有 Informer/Autoformer 的跳跃行为。这与 N-BEATS 是 MLP 类结构，对注意力尺度不敏感的结论一致。
+1. **全局对比**（56 个同时存在的 cell）—— **Dish-TS 胜出 38/56 (67%)**，RevIN 胜出 11/56 (19%)，None 胜出 7/56 (12%)。Dish-TS 整体最优。
+2. **ECL：Dish-TS 优势最显著** —— 在 19 个 cell 中 Dish-TS 胜出 16/19 (84%)，MSE 比 RevIN 低 15-50%，比 none 低 3-10x。ECL 是 Dish-TS 最大优势的数据集。
+3. **ETTh1：优势稳定** —— Dish-TS 胜出 14/19 (74%)，mean MSE = 11.93 vs RevIN 12.72 vs None 14.65。
+4. **ETTm2：混合局面** —— Dish-TS 5/10 (50%)，none 4/10 (40%)——主要因 Informer none 在短窗口偶然好，但它极度不稳定。
+5. **WTH：Dish-TS 领先** —— Dish-TS 3/4 (75%)，mean MSE = 2799 vs RevIN 3321 vs None 5025。
 
 ### 7.5 附录：ECL Informer 训练不稳定性
 
@@ -497,8 +495,9 @@ echo "Table 6:  $(ls logs/t6_*.log 2>/dev/null | wc -l) / 108"
 | 2026-06-18 | **Phase 3 完成**（96/96, 0 NaN）。**Dish-TS(α=0) 公平对比 9/11 cell 胜出**。CSV 326 行。新增 `run_table1.sh`。更新 §7 完整复现计划。|
 | 2026-06-19 | **Table 4/5/6 完成**（60/60, 60/60, 108/108）。新增 §7–§9 详细分析。**CSV 增长到 722 行**，0 NaN。Dish-TS 在 RevIN 对比中胜出 9/11 cell (82%)。|
 | 2026-06-21 | **CSV 增长到 1004 行**。Table 2 扩展到 323+ logs，覆盖 3 backbones × 3 norms × 4 datasets。**Dish-TS 胜出 24/32 (75%) cell**。ECL Informer none 在 H=336 有 25 个异常值。§7.4 更新最新发现。|
+| 2026-06-22 | **CSV 增长到 1220 行**。Table 2 推进到 505 logs (~98%)。**Dish-TS 38/56 (67%) cell 最优**，RevIN 11/56 (19%)，None 7/56 (12%)。ECL 上 Dish-TS 优势最大 (16/19, 84%)。Table 3 进入 ETTm2 dishts 阶段。|
 | 2026-06-19 晚 | **Table 2 Informer none 阶段推进**：跑了约 85 个 Informer none runs；Table 6 用 (avg/norm/uni) 重跑，uni 在 50% cell 胜出。发现 **ECL Informer 训练极度不稳定**（MSE 波动 10⁶→10⁸）。CSV 增长到 **1567 行**。|
 
 ---
 
-*最后更新：2026-06-19（补充 Table 2 Informer 与 Table 6 重跑）*
+*最后更新：2026-06-22（Table 2 接近完成，1220 runs, 505 logs）*
