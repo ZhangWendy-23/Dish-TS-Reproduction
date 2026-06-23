@@ -22,6 +22,7 @@ Dish-TS-Reproduction/
 │   ├── run_phase2b.sh            Phase 2b — 3 数据集 alpha 扫掠
 │   ├── run_baselines_none_revin.sh  Phase 3 — none / RevIN 基线
 │   ├── run_table{1..6}.sh        Table 1–6 主表复现
+│   ├── run_restart_missing.sh     停机后去重重启脚本
 │   ├── run_figure3.sh            Figure 3 alpha 敏感性
 │   ├── run_all.sh                一键运行所有 sweep
 │   ├── check_phase2a.py          Phase 2a 质量检查（NaN、最佳 alpha）
@@ -153,4 +154,4 @@ if args.norm == 'dishts' and args.alpha > 0:
 
 ---
 
-*最后更新：2026-06-16*
+*最后更新：2026-06-23*
