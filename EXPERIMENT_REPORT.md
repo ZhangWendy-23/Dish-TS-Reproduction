@@ -29,11 +29,13 @@
 - ✅ **Table 4**（Long-horizon，N-BEATS）
 - ✅ **Table 5**（Lookback 长度，N-BEATS）
 - ✅ **Table 6**（CONET init ablation）
-- ✅ **Figure 3**（alpha 敏感性分析）
-- ✅ **Figure 3**（alpha 敏感性曲线）
+- ✅ **Figure 3**（alpha 敏感性曲线，4 数据集）
+- ✅ **Figure 4**（定性预测对比）
 - ✅ **Figure 1/2**（架构 / t-SNE 参考图）
 
-**待复现的论文图表：**（见 §7 详细计划）
+![汇总对比](results/figures/summary_comparison.png)
+
+**待复现：**
 - ⏳ **Table 1**（Univariate，3 backbones，~432 jobs）— 未开始
 
 ## 2. Table 2 Informer 初步进展（运行中，约 85/108 runs）
@@ -72,6 +74,8 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 **结论：** 最佳 α 随预测窗口变长而增大，趋势与论文 Figure 3 一致（"预测窗口越长，Dish-TS 先验越有帮助"）。H=336 处差异在 3 seeds 下尚不具有统计显著性。
 
+![ETTm2 alpha 曲线](results/figures/figure3_ETTm2.png)
+
 ---
 
 ## 4. Phase 2b — 3 数据集 alpha 扫掠汇总
@@ -98,7 +102,7 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 下图为论文 Figure 3 的复现——4 个子图对应 4 个数据集，4 条曲线对应 4 个 α 值，x 轴为预测窗口长度。
 
-![4 数据集 α 曲线](results/figures/phase2b_figure3_alpha_curves.png)
+![4 数据集 Figure 3 复现](results/figures/figure3_multidataset.png)
 
 **读图要点：**
 - **ETTh1** 最清晰复现论文 Fig.3 的趋势——长窗口处 α=0.5/1.0 显著低于 α=0.0
@@ -243,13 +247,13 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 > 注：H=24 仅有 n=1 seed（来自 Phase 1 sanity check），统计显著性低。
 
-### 7.4 关键发现（2026-06-22 更新，基于 1220 runs 数据，56 个对比 cell）
+### 7.4 关键发现（最终更新，基于 1340 runs，65 个对比 cell）
 
-1. **全局对比**（56 个同时存在的 cell）—— **Dish-TS 胜出 38/56 (67%)**，RevIN 胜出 11/56 (19%)，None 胜出 7/56 (12%)。Dish-TS 整体最优。
-2. **ECL：Dish-TS 优势最显著** —— 在 19 个 cell 中 Dish-TS 胜出 16/19 (84%)，MSE 比 RevIN 低 15-50%，比 none 低 3-10x。ECL 是 Dish-TS 最大优势的数据集。
-3. **ETTh1：优势稳定** —— Dish-TS 胜出 14/19 (74%)，mean MSE = 11.93 vs RevIN 12.72 vs None 14.65。
-4. **ETTm2：混合局面** —— Dish-TS 5/10 (50%)，none 4/10 (40%)——主要因 Informer none 在短窗口偶然好，但它极度不稳定。
-5. **WTH：Dish-TS 领先** —— Dish-TS 3/4 (75%)，mean MSE = 2799 vs RevIN 3321 vs None 5025。
+1. **全局对比**（65 个同时存在的 cell）—— **Dish-TS 胜出 45/65 (69%)**，RevIN 胜出 12/65 (18%)，None 胜出 8/65 (12%)。Dish-TS 整体最优。
+2. **ECL：Dish-TS 优势最显著** —— 在 19 个 cell 中 Dish-TS 胜出 16/19 (84%)，MSE 比 RevIN 低 15-50%，比 none 低 3-10x。
+3. **ETTh1：优势稳定** —— Dish-TS 胜出 14/19 (74%)。
+4. **ETTm2：混合局面** —— Dish-TS 6/14 (43%)，RevIN 和 None 也有竞争力。
+5. **WTH：Dish-TS 领先** —— Dish-TS 9/13 (69%)。
 
 ### 7.5 附录：ECL Informer 训练不稳定性
 
@@ -293,6 +297,8 @@ Informer 在 ECL（electricity）数据集上训练极度不稳定。同一种�
 2. **N-BEATS 对 look-back 长度不敏感**——即使 seq_len=96（远小于 pred_len=720），性能仍稳定。
 3. **与论文结论一致**——论文 Table 4 中 N-BEATS 在长窗口上显著优于 Informer/Autoformer，
    本复现验证了该趋势。
+
+![Figure 4 定性预测对比 (ETTm2)](results/figures/figure4_ETTm2.png)
 
 ---
 
