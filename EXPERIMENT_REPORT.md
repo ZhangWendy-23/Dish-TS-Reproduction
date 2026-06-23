@@ -33,7 +33,7 @@
 - ✅ **Figure 4**（定性预测对比）
 - ✅ **Figure 1/2**（架构 / t-SNE 参考图）
 
-![汇总对比](file:///root/autodl-tmp/Dish-TS-Reproduction/results/figures/summary_comparison.png)
+![汇总对比](results/figures/summary_comparison.png)
 
 **待复现：**
 - ⏳ **Table 1**（Univariate，3 backbones，~432 jobs）— 未开始
@@ -74,7 +74,7 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 **结论：** 最佳 α 随预测窗口变长而增大，趋势与论文 Figure 3 一致（"预测窗口越长，Dish-TS 先验越有帮助"）。H=336 处差异在 3 seeds 下尚不具有统计显著性。
 
-![ETTm2 alpha 曲线](file:///root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure3_ETTm2.png)
+![ETTm2 alpha 曲线](results/figures/figure3_ETTm2.png)
 
 ---
 
@@ -102,7 +102,7 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 下图为论文 Figure 3 的复现——4 个子图对应 4 个数据集，4 条曲线对应 4 个 α 值，x 轴为预测窗口长度。
 
-![4 数据集 Figure 3 复现](file:///root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure3_multidataset.png)
+![4 数据集 Figure 3 复现](results/figures/figure3_multidataset.png)
 
 **读图要点：**
 - **ETTh1** 最清晰复现论文 Fig.3 的趋势——长窗口处 α=0.5/1.0 显著低于 α=0.0
@@ -112,7 +112,7 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 ### 4.4 最佳 α 相对 α=0.0 的改善（跨数据集汇总）
 
-![最佳 α 改善柱状图](file:///root/autodl-tmp/Dish-TS-Reproduction/results/figures/phase2b_best_alpha_improvement.png)
+![最佳 α 改善柱状图](results/figures/phase2b_best_alpha_improvement.png)
 
 12 个 (dataset, H) 单元中，**7 个**有正改善。**ETTh1 子图**（绿色背景）最佳地复现了论文 Fig.3 的趋势——H 越大，最佳 α 越有效，改善从 −3.8% 一路增大到 −18.6%。
 
@@ -210,7 +210,7 @@ seeds {2023, 2024, 2025}，`patience=7`，`max_epochs=100`。
 
 ### 7.1 三方对比柱状图
 
-![Disht-TS vs RevIN vs None](file:///root/autodl-tmp/Dish-TS-Reproduction/results/figures/phase3_dishts_vs_revin_vs_none.png)
+![Disht-TS vs RevIN vs None](results/figures/phase3_dishts_vs_revin_vs_none.png)
 
 - 每子图 1 个数据集，3 根柱代表 3 种归一化方式，4 组 H ∈ {24, 96, 168, 336}
 - ★ 标记每个 H 上的最优（公平对比，仅 α=0）
@@ -298,7 +298,7 @@ Informer 在 ECL（electricity）数据集上训练极度不稳定。同一种�
 3. **与论文结论一致**——论文 Table 4 中 N-BEATS 在长窗口上显著优于 Informer/Autoformer，
    本复现验证了该趋势。
 
-![Figure 4 定性预测对比 (ETTm2)](file:///root/autodl-tmp/Dish-TS-Reproduction/results/figures/figure4_ETTm2.png)
+![Figure 4 定性预测对比 (ETTm2)](results/figures/figure4_ETTm2.png)
 
 ---
 
