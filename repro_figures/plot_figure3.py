@@ -99,9 +99,13 @@ def _plot(agg: dict, out_dir: Path) -> list[Path]:
         nrows = (len(preds) + ncols - 1) // ncols
         fig, axes = plt.subplots(nrows, ncols, figsize=(4 * ncols + 1, 3 * nrows + 1),
                                  sharey=False)
-        if not isinstance(axes, list):
-            axes = [axes]
-        axes_flat = [a for row in axes for a in row] if nrows > 1 else axes
+        import numpy as np
+        if isinstance(axes, np.ndarray):
+            axes_flat = list(axes.flatten())
+        elif isinstance(axes, list):
+            axes_flat = axes
+        else:
+            axes_flat = [axes]
         fig.suptitle(f"Figure 3 — alpha sensitivity ({ds})", fontsize=12)
 
         for ax, pred_len in zip(axes_flat, preds):
