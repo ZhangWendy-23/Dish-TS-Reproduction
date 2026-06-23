@@ -16,8 +16,7 @@ __pycache__/
 logs/*.log
 logs/*.txt
 
-# Generated figure PNGs and per-run CSVs (reproduced by analysis scripts)
-results/figures/*.png
+# Generated figure PNGs (committed — part of the experimental report)
 results/figures/*.csv
 
 # ——— Note: keep results/figure3_runs.csv and results/paper_vs_mine.csv
