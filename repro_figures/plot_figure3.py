@@ -94,7 +94,19 @@ def _plot(agg: dict, out_dir: Path) -> list[Path]:
     produced: list[Path] = []
     for ds in datasets:
         # Collect relevant keys for this dataset.
-        preds = sorted({k[1] for k in agg if k[0] == ds})
+        preds_all = sorted({k[1] for k in agg if k[0] == ds})
+        # Filter: only keep pred_lens with >1 alpha value
+        preds = []
+        for pl in preds_all:
+            alphas = sorted({k[2] for k in agg if k[0] == ds and k[1] == pl})
+            if len(alphas) > 1:
+                preds.append(pl)
+        # For ETTh1 and ECL, cap at pred_len=336
+        if ds in ("ETTh1", "ECL"):
+            preds = [pl for pl in preds if pl <= 336]
+        if not preds:
+            print(f"  [{ds}] no pred_len with >1 alpha, skipping plot", file=sys.stderr)
+            continue
         ncols = min(2, len(preds))
         nrows = (len(preds) + ncols - 1) // ncols
         fig, axes = plt.subplots(nrows, ncols, figsize=(4 * ncols + 1, 3 * nrows + 1),
