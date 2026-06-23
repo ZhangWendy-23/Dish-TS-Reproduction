@@ -139,7 +139,7 @@ def _plot(agg: dict, out_dir: Path) -> list[Path]:
 
         fig.tight_layout(rect=(0, 0, 1, 0.96))
         out_path = out_dir / f"figure3_{ds}.png"
-        fig.savefig(out_path, dpi=140)
+        fig.savefig(out_path, dpi=150)
         plt.close(fig)
         produced.append(out_path)
     return produced
