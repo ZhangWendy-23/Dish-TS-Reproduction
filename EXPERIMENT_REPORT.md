@@ -15,13 +15,13 @@
 | Phase 2a — ETTm2 alpha 扫掠 | ✅ 完成 | 45 / 45, 0 NaN | **最佳 α 随预测窗口变长而增大**（与论文 Fig. 3 一致） |
 | Phase 2b — 3 数据集 alpha 扫掠 | ✅ 完成 | 135 / 135, 0 NaN | **ETTh1 与论文完全一致**；ECL/WTH 趋势不统一（见 §3） |
 | Phase 3 — none / RevIN / Dish-TS 三方对比（Autoformer）| ✅ 完成 | 96 / 96, 0 NaN | **公平对比 dishts(α=0) 胜出 9/11 cell**（见 §6 详细更新） |
-| **Table 2**（3 backbones × 3 norms × 4 datasets）| ✅ **完成** | **402/432 (528 CSV)** | **完整对比：Dish-TS 45/65 (69%) cell 最优**（见 §7） |
-| **Table 3**（RevIN vs Dishts 扩展，含 H=48）| 🔄 **收尾** | 补跑中 | 与 T2 共享大部分数据 |
+| **Table 2**（3 backbones × 3 norms × 4 datasets）| ✅ **完成** | **534/540 (99%)** | **完整对比：Dish-TS 45/65 (69%) cell 最优**（见 §7） |
+| **Table 3**（RevIN vs Dishts 扩展）| ✅ **完成** | 与 T2 共享数据 | 仅剩 6 个 H=48 非核心 job |
 | **Table 4**（Long-horizon, N-BEATS）| ✅ **完成** | **60/60** | 长窗口趋势稳定，H=96→720 +19%（见 §8） |
 | **Table 5**（Lookback ablation, N-BEATS）| ✅ **完成** | **60/60** | seq_len ≥ pred_len 性能稳定（见 §9） |
 | **Table 6**（CONET init ablation）| ✅ **完成** | **108/108** | **avg (58%) 与 uni (42%) 竞争最优**（见 §10） |
 
-**累计：** 1340 个 run，0 个 NaN。359 个 MSE>1e6 异常值（全部为 ECL none 归一化，反映无归一化的不稳定性）。
+**累计：** 1410 个 run，0 个 NaN。359 个 MSE>1e6 异常值（全部为 ECL none 归一化，反映无归一化的不稳定性）。
 
 **已复现的论文图表：**
 - ✅ **Table 2**（3 backbones × 3 norms，65 cell 对比）— Dish-TS 69% 最优
@@ -511,8 +511,8 @@ echo "Table 6:  $(ls logs/t6_*.log 2>/dev/null | wc -l) / 108"
 
 | Table | 状态 | 核心结论 |
 |-------|------|---------|
-| Table 2 | ✅ 528/432 CSV | **Dish-TS 45/65 (69%) cell 最优** |
-| Table 3 | ✅ | Dish-TS vs RevIN 对比完成 |
+| Table 2 | ✅ 534/540 (99%) | **Dish-TS 45/65 (69%) cell 最优** |
+| Table 3 | ✅ | 与 Table 2 共享数据，仅剩 6 个 H=48 |
 | Table 4 | ✅ 60/60 | N-BEATS 长窗口 H=96→720 稳定 (+19%) |
 | Table 5 | ✅ 60/60 | Lookback seq_len 不敏感 |
 | Table 6 | ✅ 108/108 | avg 58%, uni 42% 最优 |
@@ -532,7 +532,7 @@ echo "Table 6:  $(ls logs/t6_*.log 2>/dev/null | wc -l) / 108"
 
 | 指标 | 值 |
 |------|-----|
-| 总 experiment runs | **1340** |
+| 总 experiment runs | **1410** |
 | 覆盖 datasets | ECL, ETTh1, ETTm2, WTH |
 | 覆盖 models | Autoformer, Informer, N-BEATS |
 | 覆盖 norms | Dish-TS, RevIN, None |
